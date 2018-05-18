@@ -5,7 +5,6 @@
 #'
 #' @name serenity.viz
 #' @docType package
-#' @import shiny miniUI
 NULL
 
 ## Launch function ----
@@ -17,7 +16,6 @@ NULL
 #' \dontrun{
 #' serenity.viz::serenity.viz()
 #' }
-#' @import shiny miniUI
 #' @export
 serenity.viz <- function() {
   message("Starting Serenity Viz...")
@@ -26,7 +24,12 @@ serenity.viz <- function() {
       stop("Calling serenity.viz start function but serenity.viz is not installed.")
   }
 
-  viewer <- shiny::dialogViewer("Serenity Viz", width = 900, height = 700)
+  resourcePath <- system.file("gadgets", "serenity.viz",
+                              package = "serenity.viz")
+  shiny::addResourcePath("svg", resourcePath)
+
+  # viewer <- shiny::dialogViewer("Serenity Viz", width = 1000, height = 600)
+  viewer <- shiny::browserViewer()
   shiny::runGadget(shiny::shinyApp(ui = ui(), server), viewer = viewer,
                    stopOnCancel = TRUE)
 }
