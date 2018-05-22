@@ -71,6 +71,18 @@ server <- function(input, output, session) {
     })
   })
 
+  # Render layers
+  output$layers <- renderUI({
+    cls <- "col geom-blank selected"
+    div(
+      class = cls,
+      div(id = "layer-blank",
+          class = "layer-inner",
+          `data-colnum` = 1
+      )
+    )
+  })
+
   # Receive event from JS: a geom was selected/deselected
   observeEvent(input$jsColNum, {
     newNum <- input$jsColNum[1]

@@ -45,8 +45,10 @@ ui <- function() {
       fillCol(
         flex = c(8, 4),
         tagList(
-          div(id = "selected-layers-row",
-              "Layouts"),
+          div(
+            id = "selected-layers-row",
+            uiOutput("layers", inline = TRUE)
+          ),
           plotOutput("scatterPlot",
                      height = "100%")
         ),
@@ -69,10 +71,10 @@ ui <- function() {
     ),
     shinyjs::hidden(
       absolutePanel(id="help-pane",
-                    top = 44,
+                    top = 123,
                     left = "25%",
                     width = "50%",
-                    height = "64%",
+                    height = "61%",
                     draggable = FALSE
       )
     )

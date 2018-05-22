@@ -37,7 +37,7 @@ body {
 }
 
 #cpanel-code {
-  margin-top: 65px; /* min-height + margin-top of #selected-layers-row.  No JS for now... */
+  margin-top: 78px; /* min-height + margin-top + <extra> of #selected-layers-row.  No JS for now... */
 }
 
 #selected-layers-row {
@@ -58,7 +58,8 @@ body {
   -ms-user-select: none;
 }
 
-#selected-geoms-row .col {
+#selected-geoms-row .col,
+#selected-layers-row .col {
   cursor: pointer;
   vertical-align: middle;
   border: 1px solid #eee;
@@ -74,17 +75,20 @@ body {
 }
 
 #selected-geoms-row .col:hover,
+#selected-layers-row .col:hover,
 #selected-vars-col .grid:hover,
 #selected-aes-col .grid:hover {
   box-shadow: 0 0 0 1px #fafafa, 0 0 0 3px #AAA;
 }
 
-#selected-geoms-row .col.selected {
+#selected-geoms-row .col.selected,
+#selected-layers-row .col.selected {
   cursor: default;
   box-shadow: 0 0 0 1px #fafafa, 0 0 0 3px #666;
 }
 
-.selected-geom-inner {
+.selected-geom-inner,
+.layer-inner {
   height: 100%;
   width: 100%;
 }
@@ -109,6 +113,10 @@ body {
   margin-left: 15px;
 }
 
+.geom-blank {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8AgMAAABHkjHhAAAADFBMVEUAAADDw8Pf39////8rOwR2AAAAIUlEQVR4AWNAB1KrkMESBv3/yOAH/fij/FH+KB8jP6IBAPMiKJ7xlAlRAAAAAElFTkSuQmCC) no-repeat;
+  background-size: 100%;
+}
 .geom-bar {
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8AQMAAAAAMksxAAAABlBMVEX///8mJiZ40e/1AAAAFUlEQVR4AWOgN6j//2CYMSDkMGQAAG9VqnFBc2JcAAAAAElFTkSuQmCC) no-repeat;
     background-size: 100%;
