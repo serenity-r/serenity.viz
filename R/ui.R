@@ -24,17 +24,17 @@ ui <- function() {
       flex = c(1, 2, 1),
       fillCol(
         miniContentPanel(
-          selectInput('variables',
-                      'Iris Data',
-                      colnames(iris),
-                      multiple=TRUE,
-                      selectize=FALSE,
-                      size=ncol(iris))
+          wellPanel(
+            div(
+              id = "selected-vars-col",
+              uiOutput("dataVariables", inline = FALSE)
+            )
+          )
         ),
         miniContentPanel(
           wellPanel(
             div(
-              id = "selected-cols-row",
+              id = "selected-geoms-row",
               uiOutput("selectedGeoms", inline = TRUE)
             ),
             height = "100%",
@@ -43,19 +43,28 @@ ui <- function() {
         )
       ),
       fillCol(
-        flex = c(2, 1),
-        plotOutput("scatterPlot",
-                   height = "100%"),
+        flex = c(8, 4),
+        tagList(
+          div(id = "selected-layers-row",
+              "Layouts"),
+          plotOutput("scatterPlot",
+                     height = "100%")
+        ),
         miniContentPanel(
+          id = "cpanel-code",
           wellPanel("ggplot(data = iris,
                             aes(x = Sepal.Length,
                                 fill = Species)) +
                         geom_bar(stat = 'bin')"),
           padding = 0,
-          scrollable = FALSE)
+          scrollable = FALSE
+        )
       ),
       miniContentPanel(
-        div(id = "dropzone")
+        id = "selected-aes-col",
+        wellPanel(
+          uiOutput("aesthetics", inline = FALSE)
+        )
       )
     ),
     shinyjs::hidden(
@@ -64,14 +73,7 @@ ui <- function() {
                     left = "25%",
                     width = "50%",
                     height = "64%",
-                    draggable = FALSE,
-                    HTML(markdown::markdownToHTML(fragment.only=TRUE, text=c(
-                        "This is an absolutePanel that uses `bottom` and `right` attributes.
-
-It also has `draggable = TRUE`, so you can drag it to move it around the page.  The slight transparency is due to `style = 'opacity: 0.92'`.
-
-You can put anything in absolutePanel, including inputs and outputs:"
-                      )))
+                    draggable = FALSE
       )
     )
   )

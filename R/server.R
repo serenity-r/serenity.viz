@@ -21,6 +21,39 @@ server <- function(input, output, session) {
     stopApp()
   })
 
+  # Render variable divs
+  output$dataVariables <- renderUI({
+    var_names <- colnames(iris)
+    lapply(seq_along(var_names), function(varNum) {
+      cls <- paste0("grid ", var_names[varNum])
+      div(
+        class = cls,
+        div(id = var_names[varNum],
+            class = "varname",
+            `data-colnum` = varNum,
+            var_names[varNum]
+        )
+      )
+    })
+  })
+
+  # Render aesthetics divs
+  output$aesthetics <- renderUI({
+    geom_type <- ifelse(values$selectedNum == 0, "default", geoms_[input$jsColNum[1]])
+    aes_names <- aesthetics[[geom_type]]
+    lapply(seq_along(aes_names), function(aesNum) {
+      cls <- "grid"
+      div(
+        class = cls,
+        div(id = aes_names[aesNum],
+            class = "aesname",
+            `data-colnum` = aesNum,
+            aes_names[aesNum]
+        )
+      )
+    })
+  })
+
   # Render geom icons
   output$selectedGeoms <- renderUI({
     lapply(seq_along(geoms), function(colNum) {
@@ -31,7 +64,7 @@ server <- function(input, output, session) {
       div(
         class = cls,
         div(id = geoms[colNum],
-          class = "selected-col-inner",
+          class = "selected-geom-inner",
           `data-colnum` = colNum
         )
       )
@@ -63,9 +96,6 @@ server <- function(input, output, session) {
   })
 
   output$scatterPlot <- renderPlot({
-    ggplot2::ggplot(data = iris,
-           aes(x = Sepal.Length,
-               fill = Species)) +
-      geom_bar(stat = "bin")
+    iris %>% ggplot2::ggplot()
   })
 }
