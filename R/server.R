@@ -57,15 +57,16 @@ server <- function(input, output, session) {
   # Render geom icons
   output$selectedGeoms <- renderUI({
     lapply(seq_along(geoms), function(colNum) {
-      cls <- paste0("col ", geoms[colNum])
+      cls <- paste0("col geom ", geoms[colNum])
       if (colNum == values$selectedNum) {
         cls <- paste0(cls, " selected")
       }
       div(
+        id = geoms[colNum],
         class = cls,
-        div(id = geoms[colNum],
-          class = "selected-geom-inner",
-          `data-colnum` = colNum
+        draggable = TRUE,
+        div(class = "selected-geom-inner",
+            `data-colnum` = colNum
         )
       )
     })

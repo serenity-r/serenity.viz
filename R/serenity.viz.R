@@ -24,9 +24,8 @@ serenity.viz <- function() {
       stop("Calling serenity.viz start function but serenity.viz is not installed.")
   }
 
-  resourcePath <- system.file("gadgets", "serenity.viz",
-                              package = "serenity.viz")
-  shiny::addResourcePath("svg", resourcePath)
+  # resourcePath <- system.file("gadgets", "serenity.viz",
+  #                             package = "serenity.viz")
 
   # viewer <- shiny::dialogViewer("Serenity Viz", width = 1000, height = 600)
   viewer <- shiny::browserViewer()

@@ -45,8 +45,7 @@ ui <- function() {
       fillCol(
         flex = c(8, 4),
         tagList(
-          div(
-            id = "selected-layers-row",
+          dropZoneInput("selected-layers-row",
             uiOutput("layers", inline = TRUE)
           ),
           plotOutput("scatterPlot",
