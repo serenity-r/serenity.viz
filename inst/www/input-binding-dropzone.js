@@ -41,10 +41,12 @@ $.extend(dropZoneBinding, {
     return $(scope).find('.dropzone');
   },
   getValue: function(el) {
-    return $(el).text();
+    return $(el).children().map(function () {
+      return this.classList[1];
+    }).get();
   },
   setValue: function(el, value) {
-    $(el).text();
+    $(el).text(value);
   },
   subscribe: function(el, callback) {
     $(el).on("change.dropZoneBinding", function(e) {

@@ -63,10 +63,7 @@ ui <- function() {
         ),
         miniContentPanel(
           id = "cpanel-code",
-          wellPanel("ggplot(data = iris,
-                            aes(x = Sepal.Length,
-                                fill = Species)) +
-                        geom_bar(stat = 'bin')"),
+          verbatimTextOutput("code"),
           padding = 0,
           scrollable = FALSE
         )

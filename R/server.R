@@ -72,10 +72,6 @@ server <- function(input, output, session) {
     })
   })
 
-  # Render layers
-  output$layers <- renderUI({
-  })
-
   # Receive event from JS: a geom was selected/deselected
   observeEvent(input$jsColNum, {
     newNum <- input$jsColNum[1]
@@ -103,4 +99,8 @@ server <- function(input, output, session) {
   output$scatterPlot <- renderPlot({
     iris %>% ggplot2::ggplot()
   })
+
+  output$code <- renderText({
+    input$`selected-layers-row`
+    })
 }
