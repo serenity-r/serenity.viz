@@ -50,7 +50,13 @@ ui <- function() {
         flex = c(8, 4),
         tagList(
           dropZoneInput("selected-layers-row",
-            uiOutput("layers", inline = TRUE)
+                        div(
+                          class = "col geom-blank selected",
+                          div(id = "layer-blank",
+                              class = "layer-inner",
+                              `data-colnum` = 1
+                          )
+                        )
           ),
           plotOutput("scatterPlot",
                      height = "100%")

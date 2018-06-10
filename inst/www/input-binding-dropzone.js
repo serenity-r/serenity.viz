@@ -6,7 +6,7 @@ $(document).bind('DOMNodeInserted', function() {
 
   $(".col.geom").on("dragstart", function(ev) {
     ev.originalEvent.dataTransfer.dropEffect = "copy";
-    var i = document.getElementById("layers").childElementCount;
+    var i = document.getElementById("selected-layers-row").childElementCount;
     ev.originalEvent.dataTransfer.setData("text/plain", ev.target.id + '-' + i);
   });
 
@@ -17,8 +17,8 @@ $(document).bind('DOMNodeInserted', function() {
     geomid = data.split('-',2).join('-');
     layernum = data.split('-')[2];
     layerid = geomid + '-layer-' + layernum;
-    if (!document.getElementById(layerid)) { // Likes to add a bazillion elements
-      // https://stackoverflow.com/questions/13007582/html5-drag-and-copy
+    if (!document.getElementById(layerid)) { // Likes to add a bazillion elements, probably due to it being a shiny input and triggering based on rate policy
+      // Drag-and-copy:  https://stackoverflow.com/questions/13007582/html5-drag-and-copy
       var nodeCopy = document.getElementById(geomid).cloneNode(true);
 
       // Change attributes from geom to layer
@@ -26,8 +26,8 @@ $(document).bind('DOMNodeInserted', function() {
       nodeCopy.classList.add('layer');
       nodeCopy.id = layerid;
 
-      // prevent images from stacking on top of each other - FIX THIS LATER!  Probably need to search for proper nested child for dropping (i.e. do not drop into an individual layer!)
-      ev.target.appendChild(nodeCopy);
+      // Add to layers div (child of target - this is due to spec)
+      document.getElementById('selected-layers-row').appendChild(nodeCopy);
       var el = $(ev.target);
       el.trigger("change");
     }
