@@ -4,7 +4,7 @@
 #' @param output output
 #' @param session session
 #'
-#' @import shiny
+#' @import shiny magrittr
 server <- function(input, output, session) {
   values <- reactiveValues(
     selectedNum = 0

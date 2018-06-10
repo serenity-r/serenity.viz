@@ -2,5 +2,6 @@
 
 export(dropZoneInput)
 export(serenity.viz)
+import(magrittr)
 import(miniUI)
 import(shiny)

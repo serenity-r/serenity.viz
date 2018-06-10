@@ -6,17 +6,31 @@ $(document).bind('DOMNodeInserted', function() {
 
   $(".col.geom").on("dragstart", function(ev) {
     ev.originalEvent.dataTransfer.dropEffect = "copy";
-    ev.originalEvent.dataTransfer.setData("text/plain", ev.target.id);
+    var i = document.getElementById("layers").childElementCount;
+    ev.originalEvent.dataTransfer.setData("text/plain", ev.target.id + '-' + i);
   });
 
   $(".dropzone").on("drop", function(ev) {
     ev.preventDefault();
-    var data = ev.originalEvent.dataTransfer.getData("Text");
 
-    // prevent images from stacking on top of each other
-    ev.target.appendChild(document.getElementById(data));
-    var el = $(ev.target);
-    el.trigger("change");
+    var data = ev.originalEvent.dataTransfer.getData("Text");
+    geomid = data.split('-',2).join('-');
+    layernum = data.split('-')[2];
+    layerid = geomid + '-layer-' + layernum;
+    if (!document.getElementById(layerid)) { // Likes to add a bazillion elements
+      // https://stackoverflow.com/questions/13007582/html5-drag-and-copy
+      var nodeCopy = document.getElementById(geomid).cloneNode(true);
+
+      // Change attributes from geom to layer
+      nodeCopy.classList.remove('geom');
+      nodeCopy.classList.add('layer');
+      nodeCopy.id = layerid;
+
+      // prevent images from stacking on top of each other - FIX THIS LATER!  Probably need to search for proper nested child for dropping (i.e. do not drop into an individual layer!)
+      ev.target.appendChild(nodeCopy);
+      var el = $(ev.target);
+      el.trigger("change");
+    }
   });
 });
 

@@ -22,6 +22,8 @@ ui <- function() {
                    right = miniTitleBarButton("done", "Done", primary = TRUE)),
     fillRow(
       flex = c(1, 2, 1),
+
+      # Variables and geoms
       fillCol(
         miniContentPanel(
           wellPanel(
@@ -42,6 +44,8 @@ ui <- function() {
           )
         )
       ),
+
+      # Layers, plot, and code
       fillCol(
         flex = c(8, 4),
         tagList(
@@ -61,6 +65,8 @@ ui <- function() {
           scrollable = FALSE
         )
       ),
+
+      # Aesthetics
       miniContentPanel(
         id = "selected-aes-col",
         wellPanel(
