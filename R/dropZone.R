@@ -14,7 +14,9 @@ dropZoneInput <- function(inputId,..., class = "dropzone", style = NULL) {
     htmltools::htmlDependency(
       "dropzone-binding", "0.1.0", c(href = "dropzone-binding"),
       script = "input-binding-dropzone.js"
-    )
+    ),
+    htmltools::htmlDependency("jqueryui", "1.11.4", c(href="shared/jqueryui"),
+                   script = "jquery-ui.min.js")
   )
 
   inputTag <- div(

@@ -32,6 +32,13 @@ $(document).bind('DOMNodeInserted', function() {
       el.trigger("change");
     }
   });
+
+  $(".dropzone").on("sortupdate", function(ev) {
+    var el = $(ev.target);
+    el.trigger("change");
+  });
+
+  $("#selected-layers-row").sortable();
 });
 
 var dropZoneBinding = new Shiny.InputBinding();
