@@ -27,7 +27,7 @@ $(document).bind('DOMNodeInserted', function() {
   // Multiple dropzones:  https://stackoverflow.com/questions/11065803/determine-what-is-being-dragged-from-dragenter-dragover-events/11089592#11089592
   $(".dropzone").on("dragover", function(ev) {
     if (((ev.target.id == "selected-layers-row") && (ev.originalEvent.dataTransfer.types[1] == "geom")) ||
-        ((ev.target.closest('.dropzone').parentElement.id == "aesthetics") && (ev.originalEvent.dataTransfer.types[1] == "var")))
+        ((ev.target.closest('#acc') && (ev.target.closest('#acc').parentElement.id == "aesthetics") && (ev.originalEvent.dataTransfer.types[1] == "var"))))
          {
       ev.preventDefault();
     }

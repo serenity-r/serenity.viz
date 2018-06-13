@@ -42,18 +42,27 @@ server <- function(input, output, session) {
   output$aesthetics <- renderUI({
     geom_type <- ifelse(values$selectedNum == 0, "default", geoms_[input$jsColNum[1]])
     aes_names <- aesthetics[[geom_type]]
+    bsa <- bs_accordion(id = "acc") %>%
+      bs_set_opts(panel_type = "success", use_heading_link = TRUE)
     lapply(seq_along(aes_names), function(aesNum) {
-      cls <- "grid"
-      dropZoneInput(
-        inputId = paste0(aes_names[aesNum], '-dropzone'),
-        class = cls,
-        div(id = aes_names[aesNum],
-            class = "aesname",
-            `data-colnum` = aesNum,
-            aes_names[aesNum]
-        )
-      )
+      bsa <<- bs_append(bsa,
+                        title = dropZoneInput(
+                          inputId = paste0(aes_names[aesNum], '-dropzone'),
+                          class = "grid",
+                          div(id = aes_names[aesNum],
+                              class = "aesname",
+                              `data-colnum` = aesNum,
+                              aes_names[aesNum]
+                          )
+                        ),
+                        content = sliderInput(inputId = paste0(aes_names[aesNum], '-slider'),
+                                              label = "",
+                                              min = 0,
+                                              max = 1,
+                                              value = 0.5)
+                        )
     })
+    bsa
   })
 
   # Render geom icons
