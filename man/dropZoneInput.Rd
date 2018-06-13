@@ -4,7 +4,7 @@
 \alias{dropZoneInput}
 \title{Create a drop zone for drag-and-drop}
 \usage{
-dropZoneInput(inputId, ..., class = "dropzone", style = NULL)
+dropZoneInput(inputId, ..., class = "", style = NULL)
 }
 \arguments{
 \item{inputId}{The \code{input} slot that will be used to access the value.}

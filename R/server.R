@@ -25,9 +25,10 @@ server <- function(input, output, session) {
   output$dataVariables <- renderUI({
     var_names <- colnames(iris)
     lapply(seq_along(var_names), function(varNum) {
-      cls <- paste0("grid ", var_names[varNum])
+      cls <- paste0("grid var ", var_names[varNum])
       div(
         class = cls,
+        draggable = TRUE,
         div(id = var_names[varNum],
             class = "varname",
             `data-colnum` = varNum,
@@ -43,7 +44,8 @@ server <- function(input, output, session) {
     aes_names <- aesthetics[[geom_type]]
     lapply(seq_along(aes_names), function(aesNum) {
       cls <- "grid"
-      div(
+      dropZoneInput(
+        inputId = paste0(aes_names[aesNum], '-dropzone'),
         class = cls,
         div(id = aes_names[aesNum],
             class = "aesname",

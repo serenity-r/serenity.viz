@@ -51,7 +51,7 @@ ui <- function() {
         tagList(
           dropZoneInput("selected-layers-row",
                         div(
-                          class = "col geom-blank selected",
+                          class = "col geom-blank unsortable",
                           div(id = "layer-blank",
                               class = "layer-inner",
                               `data-colnum` = 1
