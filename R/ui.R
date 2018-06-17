@@ -51,14 +51,15 @@ ui <- function() {
         tagList(
           dropZoneInput("selected-layers-row",
                         div(
-                          class = "col geom-blank unsortable",
+                          id = "geom-blank-layer-0",
+                          class = "col geom-blank unsortable selected",
                           div(id = "layer-blank",
                               class = "layer-inner",
                               `data-colnum` = 1
                           )
                         )
           ),
-          plotOutput("scatterPlot",
+          plotOutput("viz",
                      height = "100%")
         ),
         miniContentPanel(

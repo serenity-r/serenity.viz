@@ -7,7 +7,9 @@
 #' @import shiny magrittr
 server <- function(input, output, session) {
   values <- reactiveValues(
-    selectedNum = 0
+    selectedGeomNum = 0,
+    selectedLayerId = "geom-blank-layer-0", # Defaults to main layer
+    gg = ggplot2::ggplot(data = iris)
   )
 
   # User is done - tried this, but didn't work
@@ -40,8 +42,13 @@ server <- function(input, output, session) {
 
   # Render aesthetics divs
   output$aesthetics <- renderUI({
-    geom_type <- ifelse(values$selectedNum == 0, "default", geoms_[input$jsColNum[1]])
-    aes_names <- aesthetics[[geom_type]]
+    # REFACTOR: Do some of this in global.R
+    geom_type <- paste(str_split(values$selectedLayerId, '-')[[1]][1:2], collapse="-")
+    if (geom_type == "geom-blank") {
+      aes_names <- aesthetics[["default"]]
+    } else {
+      aes_names <- eval(parse(text=paste0(str_replace(geom_type, "-", "_"), "()")))$geom$aesthetics()
+    }
     bsa <- bs_accordion(id = "acc") %>%
       bs_set_opts(panel_type = "success", use_heading_link = TRUE)
     lapply(seq_along(aes_names), function(aesNum) {
@@ -69,7 +76,7 @@ server <- function(input, output, session) {
   output$selectedGeoms <- renderUI({
     lapply(seq_along(geoms), function(colNum) {
       cls <- paste0("col geom ", geoms[colNum])
-      if (colNum == values$selectedNum) {
+      if (colNum == values$selectedGeomNum) {
         cls <- paste0(cls, " selected")
       }
       div(
@@ -84,18 +91,18 @@ server <- function(input, output, session) {
   })
 
   # Receive event from JS: a geom was selected/deselected
-  observeEvent(input$jsColNum, {
-    newNum <- input$jsColNum[1]
+  observeEvent(input$jsGeomNum, {
+    newNum <- input$jsGeomNum[1]
 
     # Deactivate help pane
-    if ((newNum == values$selectedNum) || (newNum < 1 || newNum > length(geoms))) {
-      values$selectedNum <- 0
+    if ((newNum == values$selectedGeomNum) || (newNum < 1 || newNum > length(geoms))) {
+      values$selectedGeomNum <- 0
       shinyjs::toggle(id = "help-pane", anim = FALSE)
       return()
     }
 
     # Activate help pane
-    if (values$selectedNum == 0) {
+    if (values$selectedGeomNum == 0) {
       shinyjs::toggle(id = "help-pane", anim = FALSE)
     }
 
@@ -104,11 +111,24 @@ server <- function(input, output, session) {
                   html = help_panes[[geoms_[newNum]]])
 
     # Select geom
-    values$selectedNum <- newNum
+    values$selectedGeomNum <- newNum
   })
 
-  output$scatterPlot <- renderPlot({
-    iris %>% ggplot2::ggplot()
+  # Receive event from JS: a layer was selected/deselected
+  observeEvent(input$jsLayerId, {
+    # Select layer
+    values$selectedLayerId <- input$jsLayerId[1]
+  })
+
+  output$viz <- renderPlot({
+    num_layers <- length(input$`selected-layers-row`)
+    if (length(gg$layers) < num_layers) {
+      # New layer added
+    } else {
+      # Just reordered - UNCOMMENT LATER
+      # gg$layers[input$`selected-layers-row`]
+    }
+    gg
   })
 
   output$code <- renderText({

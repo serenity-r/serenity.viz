@@ -8,11 +8,21 @@ help_panes <- lapply(geoms, function(x) {
 })
 names(help_panes) <- geoms_
 
+# GGPLOT
+# List of all geom aesthetics: geom_boxplot()$geom$aesthetics() (don't need group - will handle internally)
+# List of required aes: geom_boxplot()$geom$required_aes (some are calculated for you)
+# List of optional aes: geom_boxplot()$geom$optional_aes
+# List of default aes values: geom_boxplot()$geom$default_aes
+# List of assigned aes values: geom_boxplot()$aes_params
+
+# List of all geom parameters: geom_boxplot()$geom$parameters()
+# List of default parameter values: geom_boxplot()$geom_params
+
 aesthetics <- list(
   "default" = c("x",
                 "y",
                 "alpha",
-                "color",
+                "colour",
                 "fill",
                 "linetype",
                 "size",
@@ -23,7 +33,7 @@ aesthetics <- list(
                 "ymax"),
   "geom_bar" = c("x",
                  "alpha",
-                 "color",
+                 "colour",
                  "fill",
                  "linetype",
                  "size",
@@ -31,20 +41,20 @@ aesthetics <- list(
   "geom_point" = c("x",
                    "y",
                    "alpha",
-                   "color",
+                   "colour",
                    "fill",
                    "shape",
                    "size"),
   "geom_line" = c("x",
                   "y",
                   "alpha",
-                  "color",
+                  "colour",
                   "linetype",
                   "size"),
   "geom_dotplot" = c("x",
                      "y",
                      "alpha",
-                     "color",
+                     "colour",
                      "fill"),
   "geom_boxplot" = c("x",
                      "ymax",
@@ -53,7 +63,7 @@ aesthetics <- list(
                      "middle",
                      "upper",
                      "alpha",
-                     "color",
+                     "colour",
                      "fill",
                      "linetype",
                      "shape",

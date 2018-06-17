@@ -6,9 +6,18 @@ $(document).bind('DOMNodeInserted', function() {
 
   // Geoms -> Layers
   $(".col.geom").on("dragstart", function(ev) {
+    // This is a copy event
     ev.originalEvent.dataTransfer.dropEffect = "copy";
-    var i = document.getElementById("selected-layers-row").childElementCount;
-    ev.originalEvent.dataTransfer.setData("text/plain", ev.target.id + '-' + i);
+
+    // Set the id of the target layer
+    geomid = ev.target.id;
+    var m = 0;
+    $('#selected-layers-row .' + geomid).each(function() { m = Math.max(m, this.id.split('-')[3]); });
+    layernum = m + 1;
+    layerid = geomid + '-layer-' + layernum;
+    ev.originalEvent.dataTransfer.setData("text/plain", layerid);
+
+    // Set geom so layer dropzone can identify proper drop
     ev.originalEvent.dataTransfer.setData("geom", '');
   });
 
@@ -16,6 +25,8 @@ $(document).bind('DOMNodeInserted', function() {
   $(".grid.var").on("dragstart", function(ev) {
     ev.originalEvent.dataTransfer.dropEffect = "link";
     ev.originalEvent.dataTransfer.setData("text/plain", $(ev.target)[0].children[0].id); // id of child
+
+    // Set var so aesthetic dropzone can identify proper drop
     ev.originalEvent.dataTransfer.setData("var", '');
   });
 
@@ -41,16 +52,20 @@ $(document).bind('DOMNodeInserted', function() {
     if (dropid === "selected-layers-row") { // Geom -> Layer
       // data is geom information
       geomid = data.split('-',2).join('-');
-      layernum = data.split('-')[2];
-      layerid = geomid + '-layer-' + layernum;
-      if (!document.getElementById(layerid)) { // Likes to add a bazillion elements, probably due to it being a shiny input and triggering based on rate policy
+      if (!document.getElementById(data)) { // Likes to add a bazillion elements, probably due to it being a shiny input and triggering based on rate policy
+        // Toggle selected class - this is handled through Shiny with the geoms
+        var $selected = $("#selected-layers-row").children(".selected");
+        $selected.removeClass("selected");
+
         // Drag-and-copy:  https://stackoverflow.com/questions/13007582/html5-drag-and-copy
         var nodeCopy = document.getElementById(geomid).cloneNode(true);
 
         // Change attributes from geom to layer
         nodeCopy.classList.remove('geom');
         nodeCopy.classList.add('layer');
-        nodeCopy.id = layerid;
+        nodeCopy.classList.add('selected');
+        Shiny.onInputChange("jsLayerId", [data, Math.random()]); // Trigger update of attributes
+        nodeCopy.id = data;
 
         // Add to layers div (child of target - this is due to spec)
         document.getElementById('selected-layers-row').appendChild(nodeCopy);
@@ -90,7 +105,7 @@ $.extend(dropZoneBinding, {
   },
   getValue: function(el) {
     return $(el).children().map(function () {
-      return this.classList[1];
+      return this.id;
     }).get();
   },
   setValue: function(el, value) {
