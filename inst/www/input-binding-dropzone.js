@@ -92,8 +92,13 @@ $(document).bind('DOMNodeInserted', function() {
 
   // Make sure to trigger a change in the Shiny dropzone input when sorting occurs
   $(".dropzone").on("sortupdate", function(ev) {
+    // Needs to update array of layer id's
     var el = $(ev.target);
     el.trigger("change");
+
+    // Trigger layer update - needed due to observeEvent (not reactive right now!!)
+    var layerId = $(ev.target).children('.selected').attr('id');
+    Shiny.onInputChange("jsLayerId", [layerId, Math.random()]); // Trigger update of attributes
   });
 });
 

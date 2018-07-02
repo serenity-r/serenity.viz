@@ -4,7 +4,8 @@
 #' @param output output
 #' @param session session
 #'
-#' @import shiny magrittr
+#' @import shiny bsplus ggplot2
+#' @importFrom magrittr %>%
 server <- function(input, output, session) {
   values <- reactiveValues(
     selectedGeomNum = 0,
@@ -42,12 +43,12 @@ server <- function(input, output, session) {
 
   # Render aesthetics divs
   output$aesthetics <- renderUI({
-    # REFACTOR: Do some of this in global.R
-    geom_type <- paste(str_split(values$selectedLayerId, '-')[[1]][1:2], collapse="-")
+    # REFACTOR: Do some of this in global.R??  Probably faster...
+    geom_type <- paste(stringr::str_split(values$selectedLayerId, '-')[[1]][1:2], collapse="-")
     if (geom_type == "geom-blank") {
       aes_names <- aesthetics[["default"]]
     } else {
-      aes_names <- eval(parse(text=paste0(str_replace(geom_type, "-", "_"), "()")))$geom$aesthetics()
+      aes_names <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))$geom$aesthetics()
     }
     bsa <- bs_accordion(id = "acc") %>%
       bs_set_opts(panel_type = "success", use_heading_link = TRUE)
@@ -114,24 +115,31 @@ server <- function(input, output, session) {
     values$selectedGeomNum <- newNum
   })
 
-  # Receive event from JS: a layer was selected/deselected
+  # Receive event from JS: a layer was selected
   observeEvent(input$jsLayerId, {
     # Select layer
     values$selectedLayerId <- input$jsLayerId[1]
+
+    # Is layer new?
+    num_layers <- length(input$`selected-layers-row`) - 1 # Ignore blank layer
+    if (length(values$gg$layers) < num_layers) {
+      # New layer added - add to gg object (temporary until all required aesthetics are filled)
+
+      geom_type <- paste(stringr::str_split(values$selectedLayerId, '-')[[1]][1:2], collapse="-")
+      values$gg <- try(values$gg + eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()"))))
+      names(values$gg$layers) <- c(names(values$gg$layers[1:(num_layers-1)]), values$selectedLayerId)
+      # values$gg$layers[[values$selectedLayerId]] <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
+    } else {
+      # Just a reshuffling of layers - address accordingly
+      values$gg$layers <- values$gg$layers[input$`selected-layers-row`[1 + (1:num_layers)]]
+    }
   })
 
   output$viz <- renderPlot({
-    num_layers <- length(input$`selected-layers-row`)
-    if (length(gg$layers) < num_layers) {
-      # New layer added
-    } else {
-      # Just reordered - UNCOMMENT LATER
-      # gg$layers[input$`selected-layers-row`]
-    }
-    gg
+
   })
 
-  output$code <- renderText({
-    input$`selected-layers-row`
-    })
+  output$code <- renderPrint({
+    values$gg$layers
+  })
 }

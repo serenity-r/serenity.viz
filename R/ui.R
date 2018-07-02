@@ -66,7 +66,7 @@ ui <- function() {
           id = "cpanel-code",
           verbatimTextOutput("code"),
           padding = 0,
-          scrollable = FALSE
+          scrollable = TRUE
         )
       ),
 

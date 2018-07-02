@@ -12,6 +12,7 @@ Imports:
     miniUI (>= 0.1.1),
     ggplot2 (>= 2.2.1),
     bsplus (>= 0.1.1),
+    stringr,
     shinyjs
 URL: https://github.com/serenity-r/serenity
 License: AGPL-3

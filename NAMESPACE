@@ -2,6 +2,8 @@
 
 export(dropZoneInput)
 export(serenity.viz)
-import(magrittr)
+import(bsplus)
+import(ggplot2)
 import(miniUI)
 import(shiny)
+importFrom(magrittr,"%>%")

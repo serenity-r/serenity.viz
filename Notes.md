@@ -21,6 +21,8 @@ as.character(rlang::get_expr(gg$mapping$x))
 eval(parse(text=paste0(str_replace("geom-bar", "-", "_"), "()")))$geom$aesthetics()
 ```
 
+Note that there are proto ggplot objects.  So, can also use, for example, `GeomBar$aesthetics()`.
+
 # How to set a mapping component
 
 ```
