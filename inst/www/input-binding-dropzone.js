@@ -64,8 +64,21 @@ $(document).bind('DOMNodeInserted', function() {
         nodeCopy.classList.remove('geom');
         nodeCopy.classList.add('layer');
         nodeCopy.classList.add('selected');
+        nodeCopy.children[0].classList.remove('selected-geom-inner');
+        nodeCopy.children[0].classList.add('layer-inner');
         Shiny.onInputChange("jsLayerId", [data, Math.random()]); // Trigger update of attributes
         nodeCopy.id = data;
+
+        // Add visible icon
+        var visel = document.createElement("div");
+        visel.classList.add("visible");
+
+        var eyecon = document.createElement("i");
+        eyecon.classList.add("fa");
+        eyecon.classList.add("fa-eye");
+
+        visel.appendChild(eyecon);
+        nodeCopy.children[0].appendChild(visel);
 
         // Add to layers div (child of target - this is due to spec)
         document.getElementById('selected-layers-row').appendChild(nodeCopy);

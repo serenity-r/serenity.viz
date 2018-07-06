@@ -19,6 +19,12 @@ shinyjs.init = function() {
       Shiny.onInputChange("jsLayerId", [colId, Math.random()]);
     }
   });
+
+  // Trigger layer visibility
+  $("#selected-layers-row").on("click", ".visible > .fa", function(event) {
+    event.stopPropagation(); // Don't trigger a layer selection
+    console.log("Change!");
+  });
 };
 
 shinyjs.closeWindow = function() {

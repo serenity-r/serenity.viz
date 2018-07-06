@@ -43,7 +43,7 @@ body {
 #selected-layers-row {
   min-height: 50px;
   margin-top: 15px;
-  padding: 15px;
+  padding: 10px;
   background-color: #f5f5f5;
   border: 1px solid #e3e3e3;
   border-radius: 4px;
@@ -67,9 +67,9 @@ body {
   font-weight: bold;
   color: black;
   display: inline-block;
-  width: 25px;
-  height: 25px;
-  line-height: 25px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
   text-align: center;
   margin: 3px 2px 3px 0;
 }
@@ -91,6 +91,54 @@ body {
 .layer-inner {
   height: 100%;
   width: 100%;
+  position: relative;
+}
+
+.visible {
+  position: absolute;
+  color: #000;
+  z-index: 1;
+  bottom: 10px;
+}
+
+.layer-inner i {
+  visibility: hidden;
+}
+
+.layer-inner:hover i {
+  visibility: visible;
+}
+
+.col .noshow {
+  opacity: 0.3;
+}
+
+.visible > .fa {
+  cursor: pointer;
+}
+
+.fa-eye {
+  opacity: 1;
+}
+
+.fa-eye:hover {
+  opacity: 0.3;
+}
+
+.fa-eye:hover:before {
+    content: "\f070";
+}
+
+.fa-eye-slash {
+  opacity: 0.3;
+}
+
+.fa-eye-slash:hover {
+  opacity: 1.0;
+}
+
+.fa-eye-slash:hover:before {
+  content: "\f06e";
 }
 
 #selected-vars-col .grid,

@@ -86,7 +86,8 @@ server <- function(input, output, session) {
         draggable = TRUE,
         div(class = "selected-geom-inner",
             `data-colnum` = colNum
-        )
+        ),
+        rmarkdown::html_dependency_font_awesome() # This is really needed in the layers
       )
     })
   })
