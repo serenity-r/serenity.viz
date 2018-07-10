@@ -21,9 +21,11 @@ shinyjs.init = function() {
   });
 
   // Trigger layer visibility
-  $("#selected-layers-row").on("click", ".visible > .fa", function(event) {
+  $("#selected-layers-row").on("click", ".visible > .svg-inline--fa", function(event) {
     event.stopPropagation(); // Don't trigger a layer selection
-    console.log("Change!");
+
+    $(this).toggleClass("fa-eye fa-eye-slash");
+    $(this).closest(".col").toggleClass("noshow");
   });
 };
 

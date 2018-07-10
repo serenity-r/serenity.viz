@@ -97,24 +97,27 @@ body {
 .visible {
   position: absolute;
   color: #000;
-  z-index: 1;
-  bottom: 10px;
+  bottom: 7px;
 }
 
-.layer-inner i {
+.layer-inner svg {
   visibility: hidden;
 }
 
-.layer-inner:hover i {
+.layer-inner:hover svg {
   visibility: visible;
 }
 
-.col .noshow {
+/* LATER: Once opacity is decided, create base64 encoded images with correct opacity and
+create .geom-line.noshow, setting to lower alpha png background.  This will make sure the
+eye icon is not affected by the parent .noshow opacity value */
+.noshow {
   opacity: 0.3;
 }
 
-.visible > .fa {
+.visible > .svg-inline--fa {
   cursor: pointer;
+  z-index: 1;
 }
 
 .fa-eye {
