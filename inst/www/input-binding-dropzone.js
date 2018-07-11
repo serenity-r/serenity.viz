@@ -1,5 +1,6 @@
 // need to bind on inserted to work with insertUI; $(document).ready doesn't work!
 $(document).bind('DOMNodeInserted', function() {
+
   // ***
   // Drag-and-drop draggable elements
   // ***
@@ -23,8 +24,17 @@ $(document).bind('DOMNodeInserted', function() {
 
   // Variables -> Aesthetics
   $(".grid.var").on("dragstart", function(ev) {
-    ev.originalEvent.dataTransfer.dropEffect = "link";
-    ev.originalEvent.dataTransfer.setData("text/plain", $(ev.target)[0].children[0].id); // id of child
+    // This is a copy event
+    ev.originalEvent.dataTransfer.dropEffect = "copy";
+
+    // Set the id of the target mapping
+    varid = ev.target.id;
+    var m = 0;
+    $('#aesthetics .' + varid.split('.').join('-')).each(function() { m = Math.max(m, this.id.split('-')[2]); });
+    mapnum = m + 1;
+    mapid = varid + '-map-' + mapnum;
+
+    ev.originalEvent.dataTransfer.setData("text/plain", mapid); // id of child
 
     // Set var so aesthetic dropzone can identify proper drop
     ev.originalEvent.dataTransfer.setData("var", '');
@@ -84,8 +94,28 @@ $(document).bind('DOMNodeInserted', function() {
         document.getElementById('selected-layers-row').appendChild(nodeCopy);
       }
     } else { // Variable -> Aesthetic
-      console.log(data); // Variable
-      console.log(dropid); // Aesthetic
+      varid = data.split('-',1)[0];
+
+      // Get selector for element with possible Shiny inputs (or) mapping variables
+      var bs_id = '#' + $('#'+dropid).closest('.panel').attr('id');
+      if (!document.getElementById(data) && // Likes to add a bazillion elements, probably due to it being a shiny input and triggering based on rate policy
+          $(bs_id + ' .panel-body').find('.' + varid.split('.').join('-')).length === 0) {
+
+        // Unbind all inputs in container then remove
+        Shiny.unbindAll(bs_id + ' .panel-body');
+        $(bs_id + ' .panel-body' + ' .shiny-input-container').remove();
+
+        // Add mapping element
+        var varCopy = document.getElementById(varid).cloneNode(true);
+
+        // Change attributes from var to map
+        varCopy.classList.remove('var');
+        varCopy.classList.add('map');
+        varCopy.id = data;
+
+        // Add to aesthetics div (child of target - this is due to spec)
+        document.querySelector(bs_id + ' .panel-body').appendChild(varCopy);
+      }
     }
 
     // Trigger change in Shiny input
@@ -113,6 +143,23 @@ $(document).bind('DOMNodeInserted', function() {
     var layerId = $(ev.target).children('.selected').attr('id');
     Shiny.onInputChange("jsLayerId", [layerId, Math.random()]); // Trigger update of attributes
   });
+
+  // ***
+  // Sortable mapping variables
+  // ***
+
+  // We want mapping variables to be sortable (implementation of facet wrapping)
+  $(".panel-body").sortable({
+     items: ".map"
+  });
+  $(".panel-body").disableSelection();
+
+  // Make sure to trigger a change in the Shiny dropzone input when sorting occurs
+  $(".panel-body").on("sortupdate", function(ev) {
+    // Needs to update array of mapping variable id's
+    var el = $(ev.target).closest('.panel').find('.dropzone');
+    el.trigger("change");
+  });
 });
 
 var dropZoneBinding = new Shiny.InputBinding();
@@ -122,9 +169,17 @@ $.extend(dropZoneBinding, {
     return $(scope).find('.dropzone');
   },
   getValue: function(el) {
-    return $(el).children().map(function () {
-      return this.id;
-    }).get();
+    if (el.id == "selected-layers-row") {
+      // Return array of layer ids
+      return $(el).children().map(function () {
+        return this.id;
+      }).get();
+    } else {
+      // Return array of mapping variables
+      return $(el).closest('.panel').find('.panel-body').children().map(function () {
+        return this.id.split('-')[0];
+      }).get();
+    }
   },
   setValue: function(el, value) {
     $(el).text(value);

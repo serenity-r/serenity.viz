@@ -29,12 +29,12 @@ server <- function(input, output, session) {
   output$dataVariables <- renderUI({
     var_names <- colnames(iris)
     lapply(seq_along(var_names), function(varNum) {
-      cls <- paste0("grid var ", var_names[varNum])
+      cls <- paste0("grid var ", stringr::str_replace(var_names[varNum], '[.]', '-')) # var class name used to count # of elements for unique id creation
       div(
+        id = var_names[varNum],
         class = cls,
         draggable = TRUE,
-        div(id = var_names[varNum],
-            class = "varname",
+        div(class = "varname",
             `data-colnum` = varNum,
             var_names[varNum]
         )
@@ -60,7 +60,7 @@ server <- function(input, output, session) {
                           class = "grid",
                           div(id = aes_names[aesNum],
                               class = "aesname",
-                              `data-colnum` = aesNum,
+                              `data-mapping` = paste0('["Steve"]'),
                               aes_names[aesNum]
                           )
                         ),
@@ -179,6 +179,7 @@ server <- function(input, output, session) {
   })
 
   output$code <- renderPrint({
-    values$gg$layers
+    # values$gg$layers
+    input$`x-dropzone`
   })
 }
