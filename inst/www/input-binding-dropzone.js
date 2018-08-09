@@ -3,6 +3,7 @@ $(document).bind('DOMNodeInserted', function() {
 
   // ***
   // Drag-and-drop draggable elements
+  // http://apress.jensimmons.com/v5/pro-html5-programming/ch9.html
   // ***
 
   // Geoms -> Layers

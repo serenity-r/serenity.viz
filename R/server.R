@@ -60,15 +60,10 @@ server <- function(input, output, session) {
                           class = "grid",
                           div(id = aes_names[aesNum],
                               class = "aesname",
-                              `data-mapping` = paste0('["Steve"]'),
                               aes_names[aesNum]
                           )
                         ),
-                        content = sliderInput(inputId = paste0(aes_names[aesNum], '-slider'),
-                                              label = "",
-                                              min = 0,
-                                              max = 1,
-                                              value = 0.5)
+                        content = getAestheticUI(aes_names[aesNum])
                         )
     })
     bsa
@@ -179,7 +174,46 @@ server <- function(input, output, session) {
   })
 
   output$code <- renderPrint({
-    # values$gg$layers
-    input$`x-dropzone`
+    values$gg$layers
   })
+
+  getAestheticUI <- function(aes) {
+    # Need to check if is_quosure(gg$mapping$alpha) first (i.e. is mapping set?).  If so,
+    # create mapping variable.  If not, create input control and use information from
+    # values$gg and values$layers to set values.
+    ui <- ""
+
+    cat(paste(aes,'\n'))
+    if (aes == 'x') {
+      if (rlang::is_quosure(values$gg$mapping[['x']])) {
+      }
+    } else
+      if (aes == 'alpha') {
+        ui <- sliderInput(inputId = paste0(aes, '-slider'),
+                          label = "",
+                          min = 0,
+                          max = 1,
+                          value = 1)
+      } else
+        if (aes == 'size') {
+          ui <- sliderInput(inputId = paste0(aes, '-slider'),
+                            label = "",
+                            min = 0.1,
+                            max = 10,
+                            step = 0.1,
+                            value = 0.5)
+        } else
+          if (aes == 'colour') {
+            ui <- colourpicker::colourInput(inputId = paste0(aes, '-colourpicker'),
+                                            label = "",
+                                            value = "black")
+          } else
+            if (aes == 'fill') {
+              ui <- colourpicker::colourInput(inputId = paste0(aes, '-colourpicker'),
+                                              label = "",
+                                              value = "black")
+            }
+
+    return(ui)
+  }
 }
