@@ -8,8 +8,7 @@
 #' @importFrom magrittr %>%
 server <- function(input, output, session) {
   values <- reactiveValues(
-    selectedGeomNum = 0,
-    selectedLayerId = "geom-blank-layer-0", # Defaults to main layer
+    geom_num = 0,
     gg = ggplot2::ggplot(data = iris),
     layers = list()
   )
@@ -17,26 +16,26 @@ server <- function(input, output, session) {
   # User is done - tried this, but didn't work
   #   https://stackoverflow.com/questions/34731975/how-to-listen-for-more-than-one-event-expression-within-a-shiny-eventreactive-ha
   observeEvent(input$done, {
-    shinyjs::js$closeWindow()
+    shinyjs::js$close_window()
     stopApp()
   })
   observeEvent(input$cancel, {
-    shinyjs::js$closeWindow()
+    shinyjs::js$close_window()
     stopApp()
   })
 
   # Render variable divs
-  output$dataVariables <- renderUI({
+  output$data_variables <- renderUI({
     var_names <- colnames(iris)
-    lapply(seq_along(var_names), function(varNum) {
-      cls <- paste0("grid var ", stringr::str_replace(var_names[varNum], '[.]', '-')) # var class name used to count # of elements for unique id creation
+    lapply(seq_along(var_names), function(var_num) {
+      cls <- paste0("grid var ", stringr::str_replace(var_names[var_num], '[.]', '-')) # var class name used to count # of elements for unique id creation
       div(
-        id = var_names[varNum],
+        id = var_names[var_num],
         class = cls,
         draggable = TRUE,
         div(class = "varname",
-            `data-colnum` = varNum,
-            var_names[varNum]
+            `data-colnum` = var_num,
+            var_names[var_num]
         )
       )
     })
@@ -45,43 +44,42 @@ server <- function(input, output, session) {
   # Render aesthetics divs
   output$aesthetics <- renderUI({
     # REFACTOR: Do some of this in global.R??  Probably faster...
-    geom_type <- paste(stringr::str_split(values$selectedLayerId, '-')[[1]][1:2], collapse="-")
-    if (geom_type == "geom-blank") {
+    if (geom_type() == "geom-blank") {
       aes_names <- aesthetics[["default"]]
     } else {
-      aes_names <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))$geom$aesthetics()
+      aes_names <- eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))$geom$aesthetics()
     }
     bsa <- bs_accordion(id = "acc") %>%
       bs_set_opts(panel_type = "success", use_heading_link = TRUE)
-    lapply(seq_along(aes_names), function(aesNum) {
+    lapply(seq_along(aes_names), function(aes_num) {
       bsa <<- bs_append(bsa,
                         title = dropZoneInput(
-                          inputId = paste0(aes_names[aesNum], '-dropzone'),
+                          inputId = paste0(aes_names[aes_num], '-dropzone'),
                           class = "grid",
-                          div(id = aes_names[aesNum],
+                          div(id = aes_names[aes_num],
                               class = "aesname",
-                              aes_names[aesNum]
+                              aes_names[aes_num]
                           )
                         ),
-                        content = getAestheticUI(aes_names[aesNum])
+                        content = uiOutput(aes_names[aes_num], inline = FALSE)
                         )
     })
     bsa
   })
 
   # Render geom icons
-  output$selectedGeoms <- renderUI({
-    lapply(seq_along(geoms), function(colNum) {
-      cls <- paste0("col geom ", geoms[colNum])
-      if (colNum == values$selectedGeomNum) {
+  output$geoms <- renderUI({
+    lapply(seq_along(geoms), function(col_num) {
+      cls <- paste0("col geom ", geoms[col_num])
+      if (col_num == values$geom_num) {
         cls <- paste0(cls, " selected")
       }
       div(
-        id = geoms[colNum],
+        id = geoms[col_num],
         class = cls,
         draggable = TRUE,
         div(class = "selected-geom-inner",
-            `data-colnum` = colNum
+            `data-colnum` = col_num
         ),
         rmarkdown::html_dependency_font_awesome() # This is really needed in the layers
       )
@@ -89,80 +87,44 @@ server <- function(input, output, session) {
   })
 
   # Receive event from JS: a geom was selected/deselected
-  observeEvent(input$jsGeomNum, {
-    newNum <- input$jsGeomNum[1]
+  observeEvent(input$js_geom_num, {
+    new_geom_num <- input$js_geom_num[1]
 
     # Deactivate help pane
-    if ((newNum == values$selectedGeomNum) || (newNum < 1 || newNum > length(geoms))) {
-      values$selectedGeomNum <- 0
+    if ((new_geom_num == values$geom_num) || (new_geom_num < 1 || new_geom_num > length(geoms))) {
+      values$geom_num <- 0
       shinyjs::toggle(id = "help-pane", anim = FALSE)
       return()
     }
 
     # Activate help pane
-    if (values$selectedGeomNum == 0) {
+    if (values$geom_num == 0) {
       shinyjs::toggle(id = "help-pane", anim = FALSE)
     }
 
     # Update help text
     shinyjs::html(id = "help-pane",
-                  html = help_panes[[geoms_[newNum]]])
+                  html = help_panes[[geoms_[new_geom_num]]])
 
     # Select geom
-    values$selectedGeomNum <- newNum
+    values$geom_num <- new_geom_num
   })
 
   # Receive event from JS: a layer was selected
-  observeEvent(input$jsLayerId, {
-    # Select layer
-    values$selectedLayerId <- input$jsLayerId[1]
-
+  observeEvent(input$js_layer_id, {
     # Is layer new?
     num_layers <- length(input$`selected-layers-row`) - 1 # Ignore blank layer
     if (length(values$gg$layers) < num_layers) {
       # New layer added - add to gg object (temporary until all required aesthetics are filled)
 
-      geom_type <- paste(stringr::str_split(values$selectedLayerId, '-')[[1]][1:2], collapse="-")
-      values$gg <- values$gg + eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
-      names(values$gg$layers) <- c(names(values$gg$layers[1:(num_layers-1)]), values$selectedLayerId)
-      # values$gg$layers[[values$selectedLayerId]] <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
+      # geom_type <- paste(stringr::str_split(layer_id(), '-')[[1]][1:2], collapse="-")
+      values$gg <- values$gg + eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))
+      names(values$gg$layers) <- c(names(values$gg$layers[1:(num_layers-1)]), layer_id())
+      # values$gg$layers[[layer_id()]] <- eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))
     } else {
       # Just a reshuffling of layers - address accordingly
       values$gg$layers <- values$gg$layers[input$`selected-layers-row`[1 + (1:num_layers)]]
     }
-  })
-
-  # Check to make sure layer is ready to render
-  readyLayerOne <- reactive({
-  })
-
-  # Check to make sure plot is ready to render
-  readyPlotOne <- reactive({
-    # Grabbed from ggplot2::ggplot_build in plot_build.r
-    plot <- values$gg
-    layers <- plot$layers
-    data <- plot$data
-    facet <- plot$facet
-    coord <- plot$coordinates
-    plot_env <- plot$plot_env
-
-    layer_data <- lapply(layers, function(y) y$layer_data(data))
-    layout <- ggproto(NULL, Layout, facet = facet, coord = coord)
-
-    # Apply function to layer and matching data
-    by_layer <- function(f) {
-      out <- vector("list", length(data))
-      for (i in seq_along(data)) {
-        out[[i]] <- f(l = layers[[i]], d = data[[i]])
-      }
-      out
-    }
-    data <- layout$setup(layer_data, data, plot_env)
-    data <- by_layer(function(l, d) l$compute_aesthetics(d, plot))
-    data <- by_layer(function(l, d) l$compute_statistic(d, layout))
-    data <- by_layer(function(l, d) l$map_statistic(d, plot))
-
-    all(unlist(by_layer(function(l, d) length(setdiff(l$geom$required_aes, names(d))) == 0)))
   })
 
   output$viz <- renderPlot({
@@ -174,19 +136,36 @@ server <- function(input, output, session) {
   })
 
   output$code <- renderPrint({
-    values$gg$layers
+    # values$gg$layers
+    layer_id()
   })
 
-  getAestheticUI <- function(aes) {
-    # Need to check if is_quosure(gg$mapping$alpha) first (i.e. is mapping set?).  If so,
-    # create mapping variable.  If not, create input control and use information from
-    # values$gg and values$layers to set values.
+  ## State reactives
+
+  # Important to use eventReactive here as we want layer_id set on start of program, which is
+  #   why ignoreNULL and ignoreInit are both FALSE.  NULL corresponds to the main (blank) layer
+  layer_id <- eventReactive(input$js_layer_id, {
+    return(ifelse(is.null(input$js_layer_id), 'geom-blank-layer-0', input$js_layer_id[1]))
+  }, ignoreNULL = FALSE, ignoreInit = FALSE)
+
+  # The selected geom type responds only to the layer_id
+  geom_type <- reactive({
+    paste(stringr::str_split(layer_id(), '-')[[1]][1:2], collapse="-")
+  })
+
+  # What is the current mapping?  State determined by selected layer
+  mapping <- reactive({
+    ifelse(geom_type() == "geom-blank", values$gg$mapping, values$gg$layers[[layer_id()]]$mapping)
+  })
+
+  #
+  # Layers need to be a reactive value
+  #
+
+  purrr::walk(unique(unlist(aesthetics)), function(aes) {
     ui <- ""
 
-    cat(paste(aes,'\n'))
     if (aes == 'x') {
-      if (rlang::is_quosure(values$gg$mapping[['x']])) {
-      }
     } else
       if (aes == 'alpha') {
         ui <- sliderInput(inputId = paste0(aes, '-slider'),
@@ -214,6 +193,6 @@ server <- function(input, output, session) {
                                               value = "black")
             }
 
-    return(ui)
-  }
+    output[[aes]] <<- renderUI({ui})
+  })
 }

@@ -14,7 +14,7 @@ ui <- function() {
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(
       script = file.path(resourcePath, "js", "shinyjs-funcs.js"),
-      functions = c("closeWindow")
+      functions = c("close_window")
     ),
     tags$head(includeCSS(file.path(resourcePath, "css", "app.css"))),
     gadgetTitleBar("Serenity Viz",
@@ -29,7 +29,7 @@ ui <- function() {
           wellPanel(
             div(
               id = "selected-vars-col",
-              uiOutput("dataVariables", inline = FALSE)
+              uiOutput("data_variables", inline = FALSE)
             )
           )
         ),
@@ -37,7 +37,7 @@ ui <- function() {
           wellPanel(
             div(
               id = "selected-geoms-row",
-              uiOutput("selectedGeoms", inline = TRUE)
+              uiOutput("geoms", inline = TRUE)
             ),
             height = "100%",
             padding = 5

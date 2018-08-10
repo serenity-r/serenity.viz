@@ -12,12 +12,12 @@ $(document).bind('DOMNodeInserted', function() {
     ev.originalEvent.dataTransfer.dropEffect = "copy";
 
     // Set the id of the target layer
-    geomid = ev.target.id;
+    geom_id = ev.target.id;
     var m = 0;
-    $('#selected-layers-row .' + geomid).each(function() { m = Math.max(m, this.id.split('-')[3]); });
-    layernum = m + 1;
-    layerid = geomid + '-layer-' + layernum;
-    ev.originalEvent.dataTransfer.setData("text/plain", layerid);
+    $('#selected-layers-row .' + geom_id).each(function() { m = Math.max(m, this.id.split('-')[3]); });
+    layer_num = m + 1;
+    layer_id = geom_id + '-layer-' + layer_num;
+    ev.originalEvent.dataTransfer.setData("text/plain", layer_id);
 
     // Set geom so layer dropzone can identify proper drop
     ev.originalEvent.dataTransfer.setData("geom", '');
@@ -62,14 +62,14 @@ $(document).bind('DOMNodeInserted', function() {
     var dropid = ev.target.id;
     if (dropid === "selected-layers-row") { // Geom -> Layer
       // data is geom information
-      geomid = data.split('-',2).join('-');
+      geom_id = data.split('-',2).join('-');
       if (!document.getElementById(data)) { // Likes to add a bazillion elements, probably due to it being a shiny input and triggering based on rate policy
         // Toggle selected class - this is handled through Shiny with the geoms
         var $selected = $("#selected-layers-row").children(".selected");
         $selected.removeClass("selected");
 
         // Drag-and-copy:  https://stackoverflow.com/questions/13007582/html5-drag-and-copy
-        var nodeCopy = document.getElementById(geomid).cloneNode(true);
+        var nodeCopy = document.getElementById(geom_id).cloneNode(true);
 
         // Change attributes from geom to layer
         nodeCopy.classList.remove('geom');
@@ -77,7 +77,7 @@ $(document).bind('DOMNodeInserted', function() {
         nodeCopy.classList.add('selected');
         nodeCopy.children[0].classList.remove('selected-geom-inner');
         nodeCopy.children[0].classList.add('layer-inner');
-        Shiny.onInputChange("jsLayerId", [data, Math.random()]); // Trigger update of attributes
+        Shiny.onInputChange("js_layer_id", [data, Math.random()]); // Trigger update of attributes
         nodeCopy.id = data;
 
         // Add visible icon
@@ -141,8 +141,8 @@ $(document).bind('DOMNodeInserted', function() {
     el.trigger("change");
 
     // Trigger layer update - needed due to observeEvent (not reactive right now!!)
-    var layerId = $(ev.target).children('.selected').attr('id');
-    Shiny.onInputChange("jsLayerId", [layerId, Math.random()]); // Trigger update of attributes
+    var layer_id = $(ev.target).children('.selected').attr('id');
+    Shiny.onInputChange("js_layer_id", [layer_id, Math.random()]); // Trigger update of attributes
   });
 
   // ***

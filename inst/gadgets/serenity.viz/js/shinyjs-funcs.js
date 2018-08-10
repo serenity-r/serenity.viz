@@ -2,7 +2,7 @@ shinyjs.init = function() {
   // Trigger geom click
   $("#selected-geoms-row").on("click", ".col", function(event) {
     var colnum = $(event.target).data("colnum");
-    Shiny.onInputChange("jsGeomNum", [colnum, Math.random()]);
+    Shiny.onInputChange("js_geom_num", [colnum, Math.random()]);
   });
 
   // Trigger layer click
@@ -16,7 +16,7 @@ shinyjs.init = function() {
       $selected.removeClass("selected");
       $layer.addClass("selected");
 
-      Shiny.onInputChange("jsLayerId", [colId, Math.random()]);
+      Shiny.onInputChange("js_layer_id", [colId, Math.random()]);
     }
   });
 
@@ -29,6 +29,6 @@ shinyjs.init = function() {
   });
 };
 
-shinyjs.closeWindow = function() {
+shinyjs.close_window = function() {
   window.close();
 };
