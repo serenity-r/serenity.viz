@@ -141,8 +141,8 @@ $(document).bind('DOMNodeInserted', function() {
     el.trigger("change");
 
     // Trigger layer update - needed due to observeEvent (not reactive right now!!)
-    var layer_id = $(ev.target).children('.selected').attr('id');
-    Shiny.onInputChange("js_layer_id", [layer_id, Math.random()]); // Trigger update of attributes
+    // var layer_id = $(ev.target).children('.selected').attr('id');
+    // Shiny.onInputChange("js_layer_id", [layer_id, Math.random()]); // Trigger update of attributes
   });
 
   // ***
