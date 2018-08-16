@@ -26,6 +26,9 @@ shinyjs.init = function() {
 
     $(this).toggleClass("fa-eye fa-eye-slash");
     $(this).closest(".col").toggleClass("noshow");
+
+    // Grrrrr - same code in receiveMessage function in input-binding-dropzone.js
+    Shiny.onInputChange('active_layers', $('#selected-layers-row').children().map(function () { if ($(this).is('.layer:not(.noshow)')) { return this.id } }).get());
   });
 };
 

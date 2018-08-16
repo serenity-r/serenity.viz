@@ -3,6 +3,19 @@ body {
   background: #fcfcfc;
 }
 
+.inherited::after {
+  content: 'inherited';
+  float: right;
+  font-size: 0.8em;
+  color: red;
+}
+.default::after {
+  content: 'default';
+  float: right;
+  font-size: 0.8em;
+  color: red;
+}
+
 #help-pane {
   opacity: 0.7;
   background: #000000;

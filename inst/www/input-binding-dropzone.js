@@ -104,7 +104,8 @@ $(document).bind('DOMNodeInserted', function() {
 
         // Unbind all inputs in container then remove
         Shiny.unbindAll(bs_id + ' .panel-body');
-        $(bs_id + ' .panel-body' + ' .shiny-input-container').remove();
+        // $(bs_id + ' .panel-body' + ' .shiny-input-container').remove();
+        $(bs_id + ' .panel-body').empty();  // Remove everything now - change later to allow for facetting
 
         // Add mapping element
         var varCopy = document.getElementById(varid).cloneNode(true);
@@ -163,6 +164,11 @@ $(document).bind('DOMNodeInserted', function() {
   });
 });
 
+
+// Update viz layers
+// Shiny.onInputChange('viz_layers',
+//   $(el).children().map(function () { if ($(this).is('.layer:not(.noshow)')) { return this.id } }).get());
+
 var dropZoneBinding = new Shiny.InputBinding();
 
 $.extend(dropZoneBinding, {
@@ -177,7 +183,7 @@ $.extend(dropZoneBinding, {
       }).get();
     } else {
       // Return array of mapping variables
-      return $(el).closest('.panel').find('.panel-body').children().map(function () {
+      return $(el).closest('.panel').find('.panel-body').children('.map').map(function () {
         return this.id.split('-')[0];
       }).get();
     }
@@ -192,6 +198,21 @@ $.extend(dropZoneBinding, {
   },
   unsubscribe: function(el) {
     $(el).off(".dropZoneBinding");
+  },
+  receiveMessage: function(el, data) {
+    if (data.hasOwnProperty('action')) {
+      if (data.action == 'get_active') {
+        // Careful:  This only works for layer dropzone
+        Shiny.onInputChange('active_layers', $(el).children().map(function () { if ($(this).is('.layer:not(.noshow)')) { return this.id } }).get());
+      } else if (data.action == 'check_default_status') {
+        // Careful:  This only works for aesthetic dropzone
+        console.log(el);
+        console.log($(el).closest('.panel').find('.panel-body').children('.aes-wrap'));
+        Shiny.setInputValue('default_aes', $(el).closest('.panel').find('.panel-body').children('.aes-wrap').hasClass('default'), {priority: "event"});
+      } else if (data.action == 'change_status') {
+        $(el).closest('.panel').find('.panel-body').children('.aes-wrap').removeClass('default');
+      }
+    }
   },
   getRatePolicy : function() {
     return {

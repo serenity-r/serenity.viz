@@ -25,7 +25,7 @@ server <- function(input, output, session) {
         class = cls,
         draggable = TRUE,
         div(class = "varname",
-            `data-colnum` = var_num,
+            `data-colnum` = var_num, # Do we need the data-colnum attribute?
             var_names[var_num]
         )
       )
@@ -33,115 +33,142 @@ server <- function(input, output, session) {
   })
 
   # _ Aesthetic divs ====
+  #
+  # Depends:
+  #   geom_type()
+  #
   output$aesthetics <- renderUI({
-    # REFACTOR: Do some of this in global.R??  Probably faster...
-    if (geom_type() == "geom-blank") {
-      aes_names <- aesthetics[["default"]]
-    } else {
-      aes_names <- eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))$geom$aesthetics()
-    }
-    bsa <- bs_accordion(id = "acc") %>%
-      bs_set_opts(panel_type = "success", use_heading_link = TRUE)
-    lapply(aes_names, function(aes) {
-      # Main ggplot2 object -> Mapping only!
-      if (geom_type() == "geom-blank") {
-        # Is aesthetic already set to a mapping?
-        if (rlang::is_quosure(mapping()[[aes]])) {
-          # Use gg$mapping rather than mapping() reactive, as we know what this is
-          var_name <- as.character(rlang::get_expr(mapping()[[aes]]))
-          content <- div(id = paste0(var_name,'-map-1'), # Only 1 for now until facet wrap added
-                         class = paste0('grid map ', var_name),
-                         draggable = TRUE,
-                         div(class = 'varname',
-                             `data-colnum` = 1,
-                             var_name
-                         )
-                      )
+    layer_id()
+
+    # Only want aesthetics UI dependent on layer changes
+    # Individual outputs have their own updating functions
+    isolate({
+      bsa <- bs_accordion(id = "acc") %>%
+        bs_set_opts(panel_type = "success", use_heading_link = TRUE)
+      lapply(aesthetics(), function(aes) {
+        # Main ggplot2 object -> Mapping only!
+        if (geom_type() == "geom-blank") {
+          # Is aesthetic already set to a mapping?
+          if (rlang::is_quosure(mapping()[[aes]])) {
+            var_name <- as.character(rlang::get_expr(mapping()[[aes]]))
+            content <- div(id = paste0(var_name,'-map-1'), # Only 1 for now until facet wrap added
+                           class = paste0('grid map ', var_name),
+                           draggable = TRUE,
+                           div(class = 'varname',
+                               `data-colnum` = 1,
+                               var_name
+                           )
+            )
+          } else {
+            content <- span(
+              'Not set'
+            )
+          }
         } else {
-          content <- span(
-            'Not set'
-          )
-        }
-      } else {
-        var_name <- NULL
+          var_name <- NULL
 
-        # Check layer mapping first
-        if (!is.null(mapping()) && rlang::is_quosure(mapping()[[aes]])) {
-          # We've got an aesthetic mapping
-          var_name <- as.character(rlang::get_expr(mapping()[[aes]]))
-        } else if (layers()[[layer_id()]]$inherit.aes && rlang::is_quosure(values$gg$mapping[[aes]])) {
-          # Inherit mapping
-          var_name <- as.character(rlang::get_expr(values$gg$mapping[[aes]]))
-        }
-
-        # This assumes mapping are ONLY variable names - can be more general
-        if (!is.null(var_name)) {
-          content <- div(id = paste0(var_name,'-map-1'), # Only 1 for now until facet wrap added
-                         class = paste0('grid map ', var_name),
-                         draggable = TRUE,
-                         div(class = 'varname',
-                             `data-colnum` = 1,
-                             var_name
-                         )
-          )
-        } else {
-          # No mapping, so going to check settings and create input
-          layer <- layers()[[layer_id()]]
-
-          # Manually set by user if this is not NULL
-          aes_val <- layer$aes_params[[aes]]
-
-          # If NULL, set to default value if specified
-          if (is.null(aes_val)) {
-            aes_val <- layer$geom$default_aes[[aes]]
+          # Check layer mapping first
+          if ((length(mapping()) > 0)  && rlang::is_quosure(mapping()[[aes]])) {
+            # We've got an aesthetic mapping
+            var_name <- as.character(rlang::get_expr(mapping()[[aes]]))
+            inherited <- ''
+          } else if (layers()[[layer_id()]]$inherit.aes && rlang::is_quosure(values$gg$mapping[[aes]])) {
+            # Inherit mapping
+            var_name <- as.character(rlang::get_expr(values$gg$mapping[[aes]]))
+            inherited <- 'inherited'
           }
 
-          # _ Set aesthetic inputs ####
-          inputId <- paste0(aes, '-input')
-          content <- switch(aes,
-            'shape' = sliderInput(inputId = inputId,
-                                         label = "",
-                                         min = 0,
-                                         max = 25,
-                                         step = 1,
-                                         value = aes_val),
-            'colour' = ,
-            'fill' = colourpicker::colourInput(inputId = inputId,
-                                               label = "",
-                                               value = ifelse(!is.na(aes_val), aes_val, 'black')),
-            'size' = ,
-            'stroke' = sliderInput(inputId = inputId,
-                                   label = "",
-                                   min = 0.1,
-                                   max = 10,
-                                   step = 0.1,
-                                   value = aes_val),
-            'alpha' = sliderInput(inputId = inputId,
-                                  label = "",
-                                  min = 0,
-                                  max = 1,
-                                  value = ifelse(!is.na(aes_val), aes_val, 1)),
-            'linetype' = sliderInput(inputId = inputId,
-                                     label = "",
-                                     min = 0,
-                                     max = 6,
-                                     value = aes_val),
-            ''
+          # This assumes mappings are ONLY variable names - can be more general
+          if (!is.null(var_name)) {
+            content <- div(id = paste0(var_name,'-map-1'), # Only 1 for now until facet wrap added
+                           class = paste0('grid map ', var_name),
+                           draggable = TRUE,
+                           div(class = paste0('varname ', inherited),
+                               `data-colnum` = 1,
+                               var_name
+                           )
             )
-        }
-      }
+          } else {
+            # No mapping, so going to check settings and create input
+            layer <- layers()[[layer_id()]]
 
-      bsa <<- bs_append(bsa,
-                        title = dropZoneInput(
-                          inputId = paste0(aes, '-dropzone'),
-                          class = "grid",
-                          div(id = aes,
-                              class = "aesname",
-                              aes
-                          )
-                        ),
-                        content = content
-                        )
+            # Manually set by user if this is not NULL
+            aes_val <- layer$aes_params[[aes]]
+            default <- ''
+
+            # If NULL, set to default value if specified (which might be NA!!!)
+            if (is.null(aes_val) && !is.null(layer$geom$default_aes[[aes]])) {
+              aes_val <- layer$geom$default_aes[[aes]]
+              default <- 'default'
+            }
+
+            # If NULL (e.g. GROUP) or NA (e.g. fill), not set yet and required or not necessary
+            if (is.null(aes_val)) {
+              content <- span(
+                'Not set'
+              )
+            } else {
+              # _ Set aesthetic inputs ####
+              inputId <- paste0(aes, '-input')
+              if (is.na(aes_val)) {
+                content <- span(
+                  'Not set'
+                )
+              } else {
+                content <- switch(aes,
+                                  'shape' = sliderInput(inputId = inputId,
+                                                        label = "",
+                                                        min = 0,
+                                                        max = 25,
+                                                        step = 1,
+                                                        value = aes_val),
+                                  'colour' = ,
+                                  'fill' = colourpicker::colourInput(inputId = inputId,
+                                                                     label = "",
+                                                                     value = ifelse(!is.na(aes_val), aes_val, 'black')),
+                                  'size' = ,
+                                  'stroke' = sliderInput(inputId = inputId,
+                                                         label = "",
+                                                         min = 0.1,
+                                                         max = 10,
+                                                         step = 0.1,
+                                                         value = aes_val),
+                                  'alpha' = sliderInput(inputId = inputId,
+                                                        label = "",
+                                                        min = 0,
+                                                        max = 1,
+                                                        value = ifelse(!is.na(aes_val), aes_val, 1)),
+                                  'linetype' = sliderInput(inputId = inputId,
+                                                           label = "",
+                                                           min = 0,
+                                                           max = 6,
+                                                           value = aes_val),
+                                  ''
+                )
+              }
+
+              # Surrounding div for buttons and labels
+              content <- div(
+                id = paste0(aes, '-wrap'),
+                class = paste0('aes-wrap ', default),
+                content
+              )
+            }
+          }
+        }
+
+        bsa <<- bs_append(bsa,
+                          title = dropZoneInput(
+                            inputId = paste0(aes, '-dropzone'),
+                            class = "grid",
+                            div(id = aes,
+                                class = "aesname",
+                                aes
+                            )
+                          ),
+                          content = content
+        )
+      })
     })
     bsa
   })
@@ -167,17 +194,26 @@ server <- function(input, output, session) {
 
   # _ Plot ====
   output$viz <- renderPlot({
+    # Print only active layers
+    values$gg$layers <- active_layers()
+
+    failure <- FALSE
+    # Try to plot.  If unsuccessful, pass error message to help pane.
     tryCatch(print(values$gg),
              error = function(e) {
                shinyjs::show(id = "help-pane", anim = FALSE)
                shinyjs::html(id = "help-pane", html = e$message)
+               failure <<- TRUE
              })
+    if (!failure) {
+      shinyjs::hide(id = "help-pane", anim = FALSE)
+    }
   })
 
   # _ Code ====
   output$code <- renderPrint({
-    # values$gg$layers
-    layers()
+    # values$layers[[layer_id()]]$mapping
+    values$layers[[layer_id()]]$aes_params
   })
 
   # Events ----------------------
@@ -197,6 +233,10 @@ server <- function(input, output, session) {
   })
 
   # _ A geom was selected/deselected ====
+  #
+  # Depends:
+  #   input$js_geom_num
+  #
   observeEvent(input$js_geom_num, {
     new_geom_num <- input$js_geom_num[1]
 
@@ -220,45 +260,144 @@ server <- function(input, output, session) {
     values$geom_num <- new_geom_num
   })
 
+  ## _ Ready layer one ====
+  #
+  # Comments:
+  #   Need to isolate changes to reactive variable to avoid infinite loop
+  #   Add inherited and default to make this work right!!!
+  observe({
+    lapply(isolate(aesthetics()), function(aes) {
+      # First, set mapping if present
+      var <- input[[paste0(aes, '-dropzone')]]
+      if (!is.null(var) && var != '') {
+        isolate({
+          if (geom_type() == "geom-blank") {
+            values$gg$mapping[[aes]] <- quo(!!sym(var))
+          } else {
+            # TODO: Sets layer mapping even if inherited!!!!
+            values$layers[[layer_id()]]$mapping[[aes]] <- quo(!!sym(var))
+          }
+          values$gg$labels[[aes]] <- var
+        })
+      } else {
+        # No mapping - set by input if present (has to be layer for now!!!)
+        aes_input <- input[[paste0(aes, '-input')]]
+        # Get default status of parameter.  Response stored in input$default_aes.
+        # session$sendInputMessage(paste0(aes, '-dropzone'), message = list(action = 'check_default_status'))
+        isolate({
+          if ((geom_type() != "geom-blank") && !is.null(aes_input)) {
+
+            # NOTE:  Default values can be NA!!!!!  Create a button for setting a value...
+            # if (!is.null(values$layers[[layer_id()]]$geom$default_aes[[aes]]) && (values$layers[[layer_id()]]$geom$default_aes[[aes]] != aes_input)) {
+            #   values$layers[[layer_id()]]$aes_params[[aes]] <- aes_input
+            #   session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_status'))
+            # }
+
+            # Input is not set to default OR it is set to default, but input value is NOT the default value
+            # if (!input$default_aes[1] ||
+            #     (input$default_aes[1] && (layer$geom$default_aes[[aes]] != aes_input))) {
+            #   values$layers[[layer_id()]]$aes_params[[aes]] <- aes_input
+            #   if (input$default_aes[1]) {
+            #     # Update input by removing default status
+            #     session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_status'))
+            #   }
+            # }
+          }
+        })
+      }
+    })
+  })
+
   ## Reactives ----------------------
 
-  # _ Get Layer Id ====
-  # Important to use eventReactive here as we want layer_id set on start of program, which is
+  # _ Get Current Layer Id ====
+  #
+  # Depends:
+  #   input$js_layer_id
+  #
+  # Comments:
+  #   Important to use eventReactive here as we want layer_id set on start of program, which is
   #   why ignoreNULL and ignoreInit are both FALSE.  NULL corresponds to the main (blank) layer
+  #
   layer_id <- eventReactive(input$js_layer_id, {
     ifelse(is.null(input$js_layer_id), 'geom-blank-layer-0', input$js_layer_id[1])
   }, ignoreNULL = FALSE, ignoreInit = FALSE)
 
-  # _ Get Geom ====
-  # The selected geom type responds only to the layer_id
+
+  # _ Get Current Geom ====
+  #
+  # Depends:
+  #   layer_id()
+  #
+  # Comments:
+  #   The selected geom type responds only to the layer_id
+  #
   geom_type <- reactive({
     paste(stringr::str_split(layer_id(), '-')[[1]][1:2], collapse="-")
   })
 
-  # _ Get layers ====
-  # Triggered when a new layer is selected
+  # _ Get All Layers ====
+  #
+  # Depends:
+  #   input$`selected-layers-row`
+  #
+  # Comments:
+  #   Only triggered via new layer or reshuffling (i.e. `selected-layers-row` dropzone changes)
+  #
   layers <- reactive({
     # Is layer new?
     num_layers <- length(input$`selected-layers-row`) - 1 # Ignore blank layer
-    if (num_layers > 0) {
-      if (length(values$gg$layers) < num_layers) {
-        # New layer added - add to gg object (temporary until all required aesthetics are filled)
 
-        # geom_type <- paste(stringr::str_split(layer_id(), '-')[[1]][1:2], collapse="-")
-        values$gg <- values$gg + eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))
-        names(values$gg$layers) <- c(names(values$gg$layers[1:(num_layers-1)]), layer_id())
-        # values$gg$layers[[layer_id()]] <- eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))
+    if (num_layers > 0) {
+      if (length(values$layers) < num_layers) {
+        # New layer added - add to gg object (temporary until all required aesthetics are filled)
+        isolate({
+          values$layers[[layer_id()]] <- eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))
+
+          # Geom mapping starts as NULL - set to aes()
+          values$layers[[layer_id()]]$mapping <- aes()
+        })
       } else {
         # Just a reshuffling of layers - address accordingly
-        values$gg$layers <- values$gg$layers[input$`selected-layers-row`[1 + (1:num_layers)]]
+        isolate(values$layers <- values$layers[input$`selected-layers-row`[1 + (1:num_layers)]])
       }
     }
-    values$gg$layers
+    values$layers
   })
 
-  # _ Get mapping ====
-  # What is the current mapping?  State determined by selected layer
-  # Note: ifelse didn't work here
+  # _ Get Active Layers ====
+  #
+  # Depends:
+  #   layers()
+  #
+  # Comments:
+  #   Triggered via change in layers() as well as layer show/hide event in shinyjs-funcs.js
+  #   Send message to selected-layers-row dropzone input asking for active layers.  Response goes
+  #     to input$active_layers.
+  #
+  active_layers <- reactive({
+    message <- list(action = 'get_active')
+    session$sendInputMessage('selected-layers-row', message)
+
+    if (length(layers()) > 0) {
+      return(layers()[input$active_layers])
+    } else {
+      return(list())
+    }
+  })
+
+  # _ Get Current Mapping ====
+  #
+  # Depends:
+  #   layer_id()
+  #   geom_type()
+  #   layers()
+  #   values$gg$mapping
+  #
+  # Comments:
+  #   What is the current mapping?  State determined by selected layer
+  #   Note: ifelse didn't work here
+  #
   mapping <- reactive({
     if (geom_type() == "geom-blank") {
       return(values$gg$mapping)
@@ -266,4 +405,21 @@ server <- function(input, output, session) {
       return(layers()[[layer_id()]]$mapping)
     }
   })
+
+  # _ Get Current Aesthetics ====
+  #
+  # Depends:
+  #   geom_type()
+  #
+  # Comments:
+  #   May not need this.
+  #
+  aesthetics <- reactive({
+    if (geom_type() == "geom-blank") {
+      return(gg_aesthetics[["default"]])
+    } else {
+      return(eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))$geom$aesthetics())
+    }
+  })
+
 }

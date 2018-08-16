@@ -18,7 +18,7 @@ names(help_panes) <- geoms_
 # List of all geom parameters: geom_boxplot()$geom$parameters()
 # List of default parameter values: geom_boxplot()$geom_params
 
-aesthetics <- list(
+gg_aesthetics <- list(
   "default" = c("x",
                 "y",
                 "alpha",
