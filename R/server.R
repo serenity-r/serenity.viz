@@ -213,7 +213,7 @@ server <- function(input, output, session) {
   # _ Code ====
   output$code <- renderPrint({
     # values$layers[[layer_id()]]$mapping
-    active_layers()
+    # active_layers()
   })
 
   # Events ----------------------
@@ -368,18 +368,23 @@ server <- function(input, output, session) {
   #
   # Depends:
   #   layers()
+  #   input$js_active_layers
   #
   # Comments:
   #   Triggered via change in layers() as well as layer show/hide event in shinyjs-funcs.js
   #   Send message to selected-layers-row dropzone input asking for active layers.  Response goes
-  #     to input$active_layers.
+  #     to input$js_active_layers.
   #
   active_layers <- reactive({
-    message <- list(action = 'get_active')
-    session$sendInputMessage('selected-layers-row', message)
-
     if (length(layers()) > 0) {
-      return(layers()[input$active_layers])
+      # Has a hide/show layer button been pressed yet?
+      # Note: Need to check if named input in names of the input reactiveVariables object
+      #   is.null(input$js_active_layers) won't work when the value of the input is NULL!!!
+      if (!('js_active_layers' %in% names(input))) {
+        return(layers())
+      } else {
+        return(layers()[input$js_active_layers])
+      }
     } else {
       return(list())
     }

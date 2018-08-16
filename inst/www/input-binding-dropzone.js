@@ -201,10 +201,7 @@ $.extend(dropZoneBinding, {
   },
   receiveMessage: function(el, data) {
     if (data.hasOwnProperty('action')) {
-      if (data.action == 'get_active') {
-        // Careful:  This only works for layer dropzone
-        Shiny.onInputChange('active_layers', $(el).children().map(function () { if ($(this).is('.layer:not(.noshow)')) { return this.id } }).get());
-      } else if (data.action == 'check_default_status') {
+      if (data.action == 'check_default_status') {
         // Careful:  This only works for aesthetic dropzone
         console.log(el);
         console.log($(el).closest('.panel').find('.panel-body').children('.aes-wrap'));
