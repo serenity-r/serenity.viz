@@ -213,7 +213,7 @@ server <- function(input, output, session) {
   # _ Code ====
   output$code <- renderPrint({
     # values$layers[[layer_id()]]$mapping
-    values$layers[[layer_id()]]$aes_params
+    active_layers()
   })
 
   # Events ----------------------
@@ -286,12 +286,11 @@ server <- function(input, output, session) {
         # session$sendInputMessage(paste0(aes, '-dropzone'), message = list(action = 'check_default_status'))
         isolate({
           if ((geom_type() != "geom-blank") && !is.null(aes_input)) {
-
             # NOTE:  Default values can be NA!!!!!  Create a button for setting a value...
-            # if (!is.null(values$layers[[layer_id()]]$geom$default_aes[[aes]]) && (values$layers[[layer_id()]]$geom$default_aes[[aes]] != aes_input)) {
-            #   values$layers[[layer_id()]]$aes_params[[aes]] <- aes_input
-            #   session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_status'))
-            # }
+            if (!is.null(values$layers[[layer_id()]]$geom$default_aes[[aes]]) && (values$layers[[layer_id()]]$geom$default_aes[[aes]] != aes_input)) {
+              values$layers[[layer_id()]]$aes_params[[aes]] <- aes_input
+              session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_status'))
+            }
 
             # Input is not set to default OR it is set to default, but input value is NOT the default value
             # if (!input$default_aes[1] ||
