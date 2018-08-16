@@ -72,7 +72,7 @@ server <- function(input, output, session) {
             # We've got an aesthetic mapping
             var_name <- as.character(rlang::get_expr(mapping()[[aes]]))
             inherited <- ''
-          } else if (layers()[[layer_id()]]$inherit.aes && rlang::is_quosure(values$gg$mapping[[aes]])) {
+          } else if (values$layers[[layer_id()]]$inherit.aes && rlang::is_quosure(values$gg$mapping[[aes]])) {
             # Inherit mapping
             var_name <- as.character(rlang::get_expr(values$gg$mapping[[aes]]))
             inherited <- 'inherited'
@@ -90,7 +90,7 @@ server <- function(input, output, session) {
             )
           } else {
             # No mapping, so going to check settings and create input
-            layer <- layers()[[layer_id()]]
+            layer <- values$layers[[layer_id()]]
 
             # Manually set by user if this is not NULL
             aes_val <- layer$aes_params[[aes]]
@@ -194,9 +194,6 @@ server <- function(input, output, session) {
 
   # _ Plot ====
   output$viz <- renderPlot({
-    # Print only active layers
-    values$gg$layers <- active_layers()
-
     failure <- FALSE
     # Try to plot.  If unsuccessful, pass error message to help pane.
     tryCatch(print(values$gg),
@@ -260,6 +257,29 @@ server <- function(input, output, session) {
     values$geom_num <- new_geom_num
   })
 
+  # _ Update Layers ====
+  #
+  # Comments:
+  #   Only triggered via new layer or reshuffling (i.e. `selected-layers-row` dropzone changes)
+  #
+  observeEvent(input$`selected-layers-row`, {
+    # Is layer new?
+    num_layers <- length(input$`selected-layers-row`) - 1 # Ignore blank layer
+
+    if (num_layers > 0) {
+      if (length(values$layers) < num_layers) {
+        # New layer added - add to gg object (temporary until all required aesthetics are filled)
+        values$layers[[layer_id()]] <- eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))
+
+        # Geom mapping starts as NULL - set to aes()
+        values$layers[[layer_id()]]$mapping <- aes()
+      } else {
+        # Just a reshuffling of layers - address accordingly
+        values$layers <- values$layers[input$`selected-layers-row`[1 + (1:num_layers)]]
+      }
+    }
+  }, priority = 2)
+
   ## _ Ready layer one ====
   #
   # Comments:
@@ -274,38 +294,36 @@ server <- function(input, output, session) {
           if (geom_type() == "geom-blank") {
             values$gg$mapping[[aes]] <- quo(!!sym(var))
           } else {
-            # TODO: Sets layer mapping even if inherited!!!!
-            values$layers[[layer_id()]]$mapping[[aes]] <- quo(!!sym(var))
+            # Only set layer mapping if (1) does not inherit from base, or (2) does and base not set
+            # TODO: Allow for override of inherited mapping in the future
+            if (!values$layers[[layer_id()]]$inherit.aes ||
+                (values$layers[[layer_id()]]$inherit.aes && !rlang::is_quosure(values$gg$mapping[[aes]]))) {
+              values$layers[[layer_id()]]$mapping[[aes]] <- quo(!!sym(var))
+              session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_inherited_status'))
+            }
           }
           values$gg$labels[[aes]] <- var
         })
       } else {
         # No mapping - set by input if present (has to be layer for now!!!)
         aes_input <- input[[paste0(aes, '-input')]]
-        # Get default status of parameter.  Response stored in input$default_aes.
-        # session$sendInputMessage(paste0(aes, '-dropzone'), message = list(action = 'check_default_status'))
         isolate({
           if ((geom_type() != "geom-blank") && !is.null(aes_input)) {
             # NOTE:  Default values can be NA!!!!!  Create a button for setting a value...
             if (!is.null(values$layers[[layer_id()]]$geom$default_aes[[aes]]) && (values$layers[[layer_id()]]$geom$default_aes[[aes]] != aes_input)) {
               values$layers[[layer_id()]]$aes_params[[aes]] <- aes_input
-              session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_status'))
+              session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_default_status'))
             }
-
-            # Input is not set to default OR it is set to default, but input value is NOT the default value
-            # if (!input$default_aes[1] ||
-            #     (input$default_aes[1] && (layer$geom$default_aes[[aes]] != aes_input))) {
-            #   values$layers[[layer_id()]]$aes_params[[aes]] <- aes_input
-            #   if (input$default_aes[1]) {
-            #     # Update input by removing default status
-            #     session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_status'))
-            #   }
-            # }
           }
         })
       }
     })
-  })
+  }, priority = 1)
+
+  # Print only active layers
+  observe({
+    values$gg$layers <- active_layers()
+  }, priority = 0)
 
   ## Reactives ----------------------
 
@@ -335,55 +353,26 @@ server <- function(input, output, session) {
     paste(stringr::str_split(layer_id(), '-')[[1]][1:2], collapse="-")
   })
 
-  # _ Get All Layers ====
-  #
-  # Depends:
-  #   input$`selected-layers-row`
-  #
-  # Comments:
-  #   Only triggered via new layer or reshuffling (i.e. `selected-layers-row` dropzone changes)
-  #
-  layers <- reactive({
-    # Is layer new?
-    num_layers <- length(input$`selected-layers-row`) - 1 # Ignore blank layer
-
-    if (num_layers > 0) {
-      if (length(values$layers) < num_layers) {
-        # New layer added - add to gg object (temporary until all required aesthetics are filled)
-        isolate({
-          values$layers[[layer_id()]] <- eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))
-
-          # Geom mapping starts as NULL - set to aes()
-          values$layers[[layer_id()]]$mapping <- aes()
-        })
-      } else {
-        # Just a reshuffling of layers - address accordingly
-        isolate(values$layers <- values$layers[input$`selected-layers-row`[1 + (1:num_layers)]])
-      }
-    }
-    values$layers
-  })
-
   # _ Get Active Layers ====
   #
   # Depends:
-  #   layers()
+  #   values$layers
   #   input$js_active_layers
   #
   # Comments:
-  #   Triggered via change in layers() as well as layer show/hide event in shinyjs-funcs.js
+  #   Triggered via change in values$layers as well as layer show/hide event in shinyjs-funcs.js
   #   Send message to selected-layers-row dropzone input asking for active layers.  Response goes
   #     to input$js_active_layers.
   #
   active_layers <- reactive({
-    if (length(layers()) > 0) {
+    if (length(values$layers) > 0) {
       # Has a hide/show layer button been pressed yet?
       # Note: Need to check if named input in names of the input reactiveVariables object
       #   is.null(input$js_active_layers) won't work when the value of the input is NULL!!!
       if (!('js_active_layers' %in% names(input))) {
-        return(layers())
+        return(values$layers)
       } else {
-        return(layers()[input$js_active_layers])
+        return(values$layers[input$js_active_layers])
       }
     } else {
       return(list())
@@ -395,7 +384,7 @@ server <- function(input, output, session) {
   # Depends:
   #   layer_id()
   #   geom_type()
-  #   layers()
+  #   values$layers
   #   values$gg$mapping
   #
   # Comments:
@@ -406,7 +395,7 @@ server <- function(input, output, session) {
     if (geom_type() == "geom-blank") {
       return(values$gg$mapping)
     } else {
-      return(layers()[[layer_id()]]$mapping)
+      return(values$layers[[layer_id()]]$mapping)
     }
   })
 

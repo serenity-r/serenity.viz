@@ -201,12 +201,9 @@ $.extend(dropZoneBinding, {
   },
   receiveMessage: function(el, data) {
     if (data.hasOwnProperty('action')) {
-      if (data.action == 'check_default_status') {
-        // Careful:  This only works for aesthetic dropzone
-        console.log(el);
-        console.log($(el).closest('.panel').find('.panel-body').children('.aes-wrap'));
-        Shiny.setInputValue('default_aes', $(el).closest('.panel').find('.panel-body').children('.aes-wrap').hasClass('default'), {priority: "event"});
-      } else if (data.action == 'change_status') {
+      if (data.action == 'change_inherited_status') {
+        $(el).closest('.panel').find('.panel-body').children('.aes-wrap').removeClass('inherited');
+      } else if (data.action == 'change_default_status') {
         $(el).closest('.panel').find('.panel-body').children('.aes-wrap').removeClass('default');
       }
     }
