@@ -203,8 +203,10 @@ $.extend(dropZoneBinding, {
     if (data.hasOwnProperty('action')) {
       if (data.action == 'change_inherited_status') {
         $(el).closest('.panel').find('.panel-body').children('.aes-wrap').removeClass('inherited');
-      } else if (data.action == 'change_default_status') {
+      } else if (data.action == 'default_off') {
         $(el).closest('.panel').find('.panel-body').children('.aes-wrap').removeClass('default');
+      } else if (data.action == 'default_on') {
+        $(el).closest('.panel').find('.panel-body').children('.aes-wrap').addClass('default');
       }
     }
   },

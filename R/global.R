@@ -60,3 +60,11 @@ gg_aesthetics <- list(
                      "weight")
   )
 
+# Set color palette rosetta stone
+# http://www.melissaclarkson.com/resources/R_guides/documents/colors_Ver2.pdf
+crgb <- col2rgb(cc <- colors())
+colnames(crgb) <- cc
+colours_tbl <- dplyr::tbl_df(t(crgb)) %>%
+  dplyr::mutate(name = cc,
+                hex = rgb(red, green, blue, maxColorValue = 255)) %>%
+  dplyr::select(name, hex, red, green, blue)

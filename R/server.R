@@ -9,7 +9,7 @@
 server <- function(input, output, session) {
   values <- reactiveValues(
     geom_num = 0,
-    gg = ggplot2::ggplot(data = iris),
+    gg = ggplot2::ggplot(data = iris, aes(x = Sepal.Width, y = Sepal.Length)),
     layers = list()
   )
 
@@ -46,6 +46,9 @@ server <- function(input, output, session) {
       bsa <- bs_accordion(id = "acc") %>%
         bs_set_opts(panel_type = "success", use_heading_link = TRUE)
       lapply(aesthetics(), function(aes) {
+        if ((layer_id() == 'geom-point-layer-1') && (aes == 'colour')) {
+          # browser()
+        }
         # Main ggplot2 object -> Mapping only!
         if (geom_type() == "geom-blank") {
           # Is aesthetic already set to a mapping?
@@ -110,6 +113,10 @@ server <- function(input, output, session) {
             } else {
               # _ Set aesthetic inputs ####
               inputId <- paste0(aes, '-input')
+
+              # Remove old UI to make sure input is reset
+              # removeUI(inputId, immediate=TRUE)
+
               if (is.na(aes_val)) {
                 content <- span(
                   'Not set'
@@ -125,7 +132,7 @@ server <- function(input, output, session) {
                                   'colour' = ,
                                   'fill' = colourpicker::colourInput(inputId = inputId,
                                                                      label = "",
-                                                                     value = ifelse(!is.na(aes_val), aes_val, 'black')),
+                                                                     value = aes_val),
                                   'size' = ,
                                   'stroke' = sliderInput(inputId = inputId,
                                                          label = "",
@@ -137,7 +144,7 @@ server <- function(input, output, session) {
                                                         label = "",
                                                         min = 0,
                                                         max = 1,
-                                                        value = ifelse(!is.na(aes_val), aes_val, 1)),
+                                                        value = aes_val),
                                   'linetype' = sliderInput(inputId = inputId,
                                                            label = "",
                                                            min = 0,
@@ -211,6 +218,8 @@ server <- function(input, output, session) {
   output$code <- renderPrint({
     # values$layers[[layer_id()]]$mapping
     # active_layers()
+    values$layers
+    print(values$layers[[layer_id()]]$mapping)
   })
 
   # Events ----------------------
@@ -278,7 +287,7 @@ server <- function(input, output, session) {
         values$layers <- values$layers[input$`selected-layers-row`[1 + (1:num_layers)]]
       }
     }
-  }, priority = 2)
+  }, priority = 1)
 
   ## _ Ready layer one ====
   #
@@ -298,7 +307,13 @@ server <- function(input, output, session) {
             # TODO: Allow for override of inherited mapping in the future
             if (!values$layers[[layer_id()]]$inherit.aes ||
                 (values$layers[[layer_id()]]$inherit.aes && !rlang::is_quosure(values$gg$mapping[[aes]]))) {
+              # Set mapping aesthetic
               values$layers[[layer_id()]]$mapping[[aes]] <- quo(!!sym(var))
+
+              # Remove from aes_params (seems to prioritize over mapping if set)
+              values$layers[[layer_id()]]$aes_params[[aes]] <- NULL
+
+              # Change inherited status
               session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_inherited_status'))
             }
           }
@@ -307,23 +322,43 @@ server <- function(input, output, session) {
       } else {
         # No mapping - set by input if present (has to be layer for now!!!)
         aes_input <- input[[paste0(aes, '-input')]]
+        if ((isolate(layer_id()) == 'geom-point-layer-1') && (aes == 'colour')) {
+          # browser()
+        }
         isolate({
           if ((geom_type() != "geom-blank") && !is.null(aes_input)) {
-            # NOTE:  Default values can be NA!!!!!  Create a button for setting a value...
-            if (!is.null(values$layers[[layer_id()]]$geom$default_aes[[aes]]) && (values$layers[[layer_id()]]$geom$default_aes[[aes]] != aes_input)) {
+            # TODO:  Default values can be NA!!!!!Create a button for setting a value...
+            default_value <- values$layers[[layer_id()]]$geom$default_aes[[aes]]
+
+            # Convert default colour values to hex
+            if (aes %in% c('colour', 'fill')) {
+              default_value <- colours_tbl %>%
+                filter(name == default_value) %$%
+                hex
+            }
+
+            if (is.null(default_value) || (default_value != aes_input)) {
+              # No default - set parameter
               values$layers[[layer_id()]]$aes_params[[aes]] <- aes_input
-              session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_default_status'))
+              session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'default_off'))
+            } else {
+              # Gonna use default value by, er, default
+              values$layers[[layer_id()]]$aes_params[[aes]] <- NULL
+              session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'default_on'))
             }
           }
+
+          # Force update of plot
+          values$gg$dummy <- runif(1)
         })
       }
     })
-  }, priority = 1)
+  })
 
   # Print only active layers
   observe({
     values$gg$layers <- active_layers()
-  }, priority = 0)
+  })
 
   ## Reactives ----------------------
 
@@ -369,10 +404,10 @@ server <- function(input, output, session) {
       # Has a hide/show layer button been pressed yet?
       # Note: Need to check if named input in names of the input reactiveVariables object
       #   is.null(input$js_active_layers) won't work when the value of the input is NULL!!!
-      if (!('js_active_layers' %in% names(input))) {
-        return(values$layers)
-      } else {
+      if ('js_active_layers' %in% names(input)) {
         return(values$layers[input$js_active_layers])
+      } else {
+        return(values$layers)
       }
     } else {
       return(list())
