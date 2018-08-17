@@ -114,9 +114,6 @@ server <- function(input, output, session) {
             } else {
               # _ Set aesthetic inputs ####
 
-              # Remove old UI to make sure input is reset
-              # removeUI(inputId, immediate=TRUE)
-
               if (is.na(aes_val)) {
                 session$sendCustomMessage('resetValue', inputId);
                 content <- span(
@@ -202,6 +199,7 @@ server <- function(input, output, session) {
 
   # _ Plot ====
   output$viz <- renderPlot({
+    isolate(values$gg$nonce <- NULL)
     failure <- FALSE
     # Try to plot.  If unsuccessful, pass error message to help pane.
     tryCatch(print(values$gg),
@@ -344,7 +342,7 @@ server <- function(input, output, session) {
             }
 
             # Force update of plot
-            values$gg$dummy <- runif(1)
+            values$gg$nonce <- runif(1)
           }
         })
       }
