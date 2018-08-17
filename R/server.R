@@ -46,9 +46,6 @@ server <- function(input, output, session) {
       bsa <- bs_accordion(id = "acc") %>%
         bs_set_opts(panel_type = "success", use_heading_link = TRUE)
       lapply(aesthetics(), function(aes) {
-        if ((layer_id() == 'geom-point-layer-1') && (aes == 'colour')) {
-          # browser()
-        }
         # Main ggplot2 object -> Mapping only!
         if (geom_type() == "geom-blank") {
           # Is aesthetic already set to a mapping?
@@ -106,18 +103,22 @@ server <- function(input, output, session) {
             }
 
             # If NULL (e.g. GROUP) or NA (e.g. fill), not set yet and required or not necessary
+            inputId <- paste0(aes, '-input')
             if (is.null(aes_val)) {
+
+              # For some reason, inputs persist even after removal
+              session$sendCustomMessage('resetValue', inputId);
               content <- span(
                 'Not set'
               )
             } else {
               # _ Set aesthetic inputs ####
-              inputId <- paste0(aes, '-input')
 
               # Remove old UI to make sure input is reset
               # removeUI(inputId, immediate=TRUE)
 
               if (is.na(aes_val)) {
+                session$sendCustomMessage('resetValue', inputId);
                 content <- span(
                   'Not set'
                 )
@@ -322,22 +323,17 @@ server <- function(input, output, session) {
       } else {
         # No mapping - set by input if present (has to be layer for now!!!)
         aes_input <- input[[paste0(aes, '-input')]]
-        if ((isolate(layer_id()) == 'geom-point-layer-1') && (aes == 'colour')) {
-          # browser()
-        }
         isolate({
           if ((geom_type() != "geom-blank") && !is.null(aes_input)) {
             # TODO:  Default values can be NA!!!!!Create a button for setting a value...
             default_value <- values$layers[[layer_id()]]$geom$default_aes[[aes]]
 
             # Convert default colour values to hex
-            if (aes %in% c('colour', 'fill')) {
-              default_value <- colours_tbl %>%
-                filter(name == default_value) %$%
-                hex
+            if ((aes %in% c('colour', 'fill')) && !is.na(default_value)) {
+              default_value <- dplyr::filter(colours_tbl, name == default_value)$hex
             }
 
-            if (is.null(default_value) || (default_value != aes_input)) {
+            if (is.null(default_value) || (!is.na(default_value) && (default_value != aes_input))) {
               # No default - set parameter
               values$layers[[layer_id()]]$aes_params[[aes]] <- aes_input
               session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'default_off'))
@@ -346,10 +342,10 @@ server <- function(input, output, session) {
               values$layers[[layer_id()]]$aes_params[[aes]] <- NULL
               session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'default_on'))
             }
-          }
 
-          # Force update of plot
-          values$gg$dummy <- runif(1)
+            # Force update of plot
+            values$gg$dummy <- runif(1)
+          }
         })
       }
     })

@@ -30,6 +30,12 @@ shinyjs.init = function() {
     // ALWAYS invalidate, even if doesn't change (priority = event)
     Shiny.onInputChange('js_active_layers', $('#selected-layers-row').children().map(function () { if ($(this).is('.layer:not(.noshow)')) { return this.id } }).get(), {priority: 'event'});
   });
+
+  // Set an input value to null
+  // https://stackoverflow.com/a/38348876
+  Shiny.addCustomMessageHandler('resetValue', function(var_name) {
+    Shiny.onInputChange(var_name, null);
+  });
 };
 
 shinyjs.close_window = function() {
