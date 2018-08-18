@@ -9,7 +9,7 @@
 server <- function(input, output, session) {
   values <- reactiveValues(
     geom_num = 0,
-    gg = ggplot2::ggplot(data = iris, aes(x = Sepal.Width, y = Sepal.Length)),
+    gg = ggplot2::ggplot(data = iris), # , aes(x = Sepal.Width, y = Sepal.Length)),
     layers = list()
   )
 
@@ -126,7 +126,8 @@ server <- function(input, output, session) {
                                   'colour' = ,
                                   'fill' = colourpicker::colourInput(inputId = inputId,
                                                                      label = "",
-                                                                     value = aes_val),
+                                                                     value = dplyr::filter(colours_tbl, name == aes_val)$hex), # Assumes colour always R name not hex
+                                  'weight' = ,
                                   'size' = ,
                                   'stroke' = sliderInput(inputId = inputId,
                                                          label = "",
