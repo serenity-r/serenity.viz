@@ -301,7 +301,9 @@ server <- function(input, output, session) {
             # Only set layer mapping if (1) does not inherit from base, or (2) does and base not set
             # TODO: Allow for override of inherited mapping in the future
             if (!values$layers[[layer_id()]]$inherit.aes ||
-                (values$layers[[layer_id()]]$inherit.aes && !rlang::is_quosure(values$gg$mapping[[aes]]))) {
+                (values$layers[[layer_id()]]$inherit.aes &&
+                 (!rlang::is_quosure(values$gg$mapping[[aes]]) ||
+                  (values$gg$mapping[[aes]] != var)))) {
               # Set mapping aesthetic
               values$layers[[layer_id()]]$mapping[[aes]] <- quo(!!sym(var))
 
@@ -309,7 +311,7 @@ server <- function(input, output, session) {
               values$layers[[layer_id()]]$aes_params[[aes]] <- NULL
 
               # Change inherited status
-              session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'change_inherited_status'))
+              session$sendInputMessage(paste0(aes, '-dropzone-', layer_id()), list(action = 'change_inherited_status'))
             }
           }
           values$gg$labels[[aes]] <- var
@@ -330,11 +332,11 @@ server <- function(input, output, session) {
             if (is.null(default_value) || (!is.na(default_value) && (default_value != aes_input))) {
               # No default - set parameter
               values$layers[[layer_id()]]$aes_params[[aes]] <- aes_input
-              session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'default_off'))
+              session$sendInputMessage(paste0(aes, '-dropzone-', layer_id()), list(action = 'default_off'))
             } else {
               # Gonna use default value by, er, default
               values$layers[[layer_id()]]$aes_params[[aes]] <- NULL
-              session$sendInputMessage(paste0(aes, '-dropzone'), list(action = 'default_on'))
+              session$sendInputMessage(paste0(aes, '-dropzone-', layer_id()), list(action = 'default_on'))
             }
 
             # Force update of plot
