@@ -103,11 +103,8 @@ server <- function(input, output, session) {
             }
 
             # If NULL (e.g. GROUP) or NA (e.g. fill), not set yet and required or not necessary
-            inputId <- paste0(aes, '-input')
+            inputId <- paste0(aes, '-input-', layer_id())
             if (is.null(aes_val)) {
-
-              # For some reason, inputs persist even after removal
-              session$sendCustomMessage('resetValue', inputId);
               content <- span(
                 'Not set'
               )
@@ -115,7 +112,6 @@ server <- function(input, output, session) {
               # _ Set aesthetic inputs ####
 
               if (is.na(aes_val)) {
-                session$sendCustomMessage('resetValue', inputId);
                 content <- span(
                   'Not set'
                 )
@@ -164,7 +160,7 @@ server <- function(input, output, session) {
 
         bsa <<- bs_append(bsa,
                           title = dropZoneInput(
-                            inputId = paste0(aes, '-dropzone'),
+                            inputId = paste0(aes, '-dropzone-', layer_id()),
                             class = "grid",
                             div(id = aes,
                                 class = "aesname",
@@ -296,7 +292,7 @@ server <- function(input, output, session) {
   observe({
     lapply(isolate(aesthetics()), function(aes) {
       # First, set mapping if present
-      var <- input[[paste0(aes, '-dropzone')]]
+      var <- input[[paste0(aes, '-dropzone-', layer_id())]]
       if (!is.null(var) && var != '') {
         isolate({
           if (geom_type() == "geom-blank") {
@@ -320,7 +316,7 @@ server <- function(input, output, session) {
         })
       } else {
         # No mapping - set by input if present (has to be layer for now!!!)
-        aes_input <- input[[paste0(aes, '-input')]]
+        aes_input <- input[[paste0(aes, '-input-', layer_id())]]
         isolate({
           if ((geom_type() != "geom-blank") && !is.null(aes_input)) {
             # TODO:  Default values can be NA!!!!!Create a button for setting a value...
