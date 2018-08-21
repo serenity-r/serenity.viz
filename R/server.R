@@ -13,6 +13,22 @@ server <- function(input, output, session) {
     layers = list()
   )
 
+  # https://github.com/daattali/advanced-shiny/tree/master/reactive-trigger
+  makeReactiveTrigger <- function() {
+    rv <- reactiveValues(a = 0)
+    list(
+      depend = function() {
+        rv$a
+        invisible()
+      },
+      trigger = function() {
+        rv$a <- isolate(rv$a + 1)
+      }
+    )
+  }
+
+  forcePlot <- makeReactiveTrigger()
+
   # Render ----------------------
 
   # _ Variable divs ====
@@ -196,7 +212,8 @@ server <- function(input, output, session) {
 
   # _ Plot ====
   output$viz <- renderPlot({
-    isolate(values$gg$nonce <- NULL)
+    forcePlot$depend()
+
     failure <- FALSE
     # Try to plot.  If unsuccessful, pass error message to help pane.
     tryCatch(print(values$gg),
@@ -285,7 +302,7 @@ server <- function(input, output, session) {
     }
   }, priority = 1)
 
-  ## _ Ready layer one ====
+  ## _ Ready Layer One ====
   #
   # Comments:
   #   Need to isolate changes to reactive variable to avoid infinite loop
@@ -341,7 +358,11 @@ server <- function(input, output, session) {
             }
 
             # Force update of plot
-            values$gg$nonce <- runif(1)
+            forcePlot$trigger()
+          } else {
+            # Condition: No mapping set and geom_blank
+            # ind <- which(aesthetics() == aes) - 1
+            # span('Not set')
           }
         })
       }
