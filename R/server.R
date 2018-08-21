@@ -7,6 +7,10 @@
 #' @import shiny bsplus ggplot2
 #' @importFrom magrittr %>%
 server <- function(input, output, session) {
+  # Stop app on close of browser tab
+  # https://github.com/daattali/advanced-shiny/tree/master/auto-kill-app
+  session$onSessionEnded(stopApp)
+
   values <- reactiveValues(
     geom_num = 0,
     gg = ggplot2::ggplot(data = iris), # , aes(x = Sepal.Width, y = Sepal.Length)),
