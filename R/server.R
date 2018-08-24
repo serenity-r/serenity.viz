@@ -13,10 +13,14 @@ server <- function(input, output, session) {
 
   values <- reactiveValues(
     geom_num = 0,
-    gg = ggplot2::ggplot(data = iris), # , aes(x = Sepal.Width, y = Sepal.Length)),
+    gg = ggplot2::ggplot(data = iris, aes(x = Sepal.Width, y = Sepal.Length)),
     layers = list()
   )
 
+  # This piece of code creates a reactive trigger so we can force a reactive to execute
+  #   Our use case is to sometimes force a replot
+  #   @TODO make sure this is really necessary.  I feel like this might just be some
+  #     not-so-smart reactive programming.
   # https://github.com/daattali/advanced-shiny/tree/master/reactive-trigger
   makeReactiveTrigger <- function() {
     rv <- reactiveValues(a = 0)
@@ -32,6 +36,16 @@ server <- function(input, output, session) {
   }
 
   forcePlot <- makeReactiveTrigger()
+
+  # Colour translator
+  #   Right now assume col is an R colour
+  colour_to_hex <- function(col) {
+    if (!regexpr("^#[0-9a-fA-F]{6}", col)) {
+      return(dplyr::filter(colours_tbl, name == col)$hex)
+    } else {
+      return(col)
+    }
+  }
 
   # Render ----------------------
 
@@ -146,7 +160,7 @@ server <- function(input, output, session) {
                                   'colour' = ,
                                   'fill' = colourpicker::colourInput(inputId = inputId,
                                                                      label = "",
-                                                                     value = dplyr::filter(colours_tbl, name == aes_val)$hex), # Assumes colour always R name not hex
+                                                                     value = colour_to_hex(aes_val)),
                                   'weight' = ,
                                   'size' = ,
                                   'stroke' = sliderInput(inputId = inputId,
@@ -313,6 +327,9 @@ server <- function(input, output, session) {
   #   Add inherited and default to make this work right!!!
   observe({
     lapply(isolate(aesthetics()), function(aes) {
+      # Only run once aesthetic inputs are present
+      # req((paste0(aes, '-dropzone-', layer_id()) %in% names(reactiveValuesToList(input))))
+
       # First, set mapping if present
       var <- input[[paste0(aes, '-dropzone-', layer_id())]]
       if (!is.null(var) && var != '') {
@@ -348,7 +365,7 @@ server <- function(input, output, session) {
 
             # Convert default colour values to hex
             if ((aes %in% c('colour', 'fill')) && !is.na(default_value)) {
-              default_value <- dplyr::filter(colours_tbl, name == default_value)$hex
+              default_value <- colour_to_hex(default_value)
             }
 
             if (is.null(default_value) || (!is.na(default_value) && (default_value != aes_input))) {

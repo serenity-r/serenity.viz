@@ -183,8 +183,8 @@ $.extend(dropZoneBinding, {
       }).get();
     } else {
       // Return array of mapping variables
-      return $(el).closest('.panel').find('.panel-body').children('.map').map(function () {
-        return this.id.split('-')[0];
+      return $(el).closest('.panel').find('.varname:not(.inherited)').map(function () {
+        return this.parentElement.id.split('-')[0];
       }).get();
     }
   },
