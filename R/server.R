@@ -66,6 +66,65 @@ server <- function(input, output, session) {
     })
   })
 
+  # Surrounding div for buttons and labels
+  aes_wrap <- function(content, aes, default='') {
+    tagList(
+      div(
+        id = paste0(aes, '-wrap'),
+        class = paste0('aes-wrap ', default),
+        content
+      )
+    )
+  }
+
+  create_aes_empty <- function(aes, default='') {
+    tagList(
+      span(
+        'Not set'
+      ) %>%
+        aes_wrap(aes, default)
+    )
+  }
+
+  # Create aesthetic input control
+  # aes_val is assumed to be truthy
+  create_aes_input <- function(inputId, aes, aes_val, default='') {
+    tagList(
+      switch(aes,
+             'shape' = sliderInput(inputId = inputId,
+                                   label = "",
+                                   min = 0,
+                                   max = 25,
+                                   step = 1,
+                                   value = aes_val),
+             'colour' = ,
+             'fill' = colourpicker::colourInput(inputId = inputId,
+                                                label = "",
+                                                value = colour_to_hex(aes_val)),
+             'weight' = ,
+             'size' = ,
+             'stroke' = sliderInput(inputId = inputId,
+                                    label = "",
+                                    min = 0.1,
+                                    max = 10,
+                                    step = 0.1,
+                                    value = aes_val),
+             'alpha' = sliderInput(inputId = inputId,
+                                   label = "",
+                                   min = 0,
+                                   max = 1,
+                                   value = aes_val),
+             'linetype' = sliderInput(inputId = inputId,
+                                      label = "",
+                                      min = 0,
+                                      max = 6,
+                                      value = aes_val),
+             ''
+      ) %>%
+        aes_wrap(aes, default)
+    )
+  }
+
   # _ Aesthetic divs ====
   #
   # Depends:
@@ -138,58 +197,17 @@ server <- function(input, output, session) {
 
             # If NULL (e.g. GROUP) or NA (e.g. fill), not set yet and required or not necessary
             inputId <- paste0(aes, '-input-', layer_id())
-            if (is.null(aes_val)) {
-              content <- span(
-                'Not set'
-              )
-            } else {
-              # _ Set aesthetic inputs ####
 
-              if (is.na(aes_val)) {
-                content <- span(
-                  'Not set'
-                )
-              } else {
-                content <- switch(aes,
-                                  'shape' = sliderInput(inputId = inputId,
-                                                        label = "",
-                                                        min = 0,
-                                                        max = 25,
-                                                        step = 1,
-                                                        value = aes_val),
-                                  'colour' = ,
-                                  'fill' = colourpicker::colourInput(inputId = inputId,
-                                                                     label = "",
-                                                                     value = colour_to_hex(aes_val)),
-                                  'weight' = ,
-                                  'size' = ,
-                                  'stroke' = sliderInput(inputId = inputId,
-                                                         label = "",
-                                                         min = 0.1,
-                                                         max = 10,
-                                                         step = 0.1,
-                                                         value = aes_val),
-                                  'alpha' = sliderInput(inputId = inputId,
-                                                        label = "",
-                                                        min = 0,
-                                                        max = 1,
-                                                        value = aes_val),
-                                  'linetype' = sliderInput(inputId = inputId,
-                                                           label = "",
-                                                           min = 0,
-                                                           max = 6,
-                                                           value = aes_val),
-                                  ''
-                )
-              }
+            # _ Set aesthetic inputs ####
+            content <- ifelse(is.null(aes_val) || is.na(aes_val),
+                              create_aes_empty(aes, default),
+                              create_aes_input(inputId, aes, aes_val, default))
 
-              # Surrounding div for buttons and labels
-              content <- div(
-                id = paste0(aes, '-wrap'),
-                class = paste0('aes-wrap ', default),
-                content
-              )
-            }
+            # if (is.na(aes_val)) {
+            #   content <- create_aes_empty(aes, default)
+            # } else {
+            #   content <- create_aes_input(inputId, aes, aes_val)
+            # }
           }
         }
 
