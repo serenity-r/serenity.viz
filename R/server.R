@@ -40,7 +40,7 @@ server <- function(input, output, session) {
   # Colour translator
   #   Right now assume col is an R colour
   colour_to_hex <- function(col) {
-    if (!regexpr("^#[0-9a-fA-F]{6}", col)) {
+    if (!grepl("^#[0-9a-fA-F]{6}", col)) {
       return(dplyr::filter(colours_tbl, name == col)$hex)
     } else {
       return(col)
@@ -188,7 +188,6 @@ server <- function(input, output, session) {
             # Manually set by user if this is not NULL
             aes_val <- layer$aes_params[[aes]]
             default <- ''
-
             # If NULL, set to default value if specified (which might be NA!!!)
             if (is.null(aes_val) && !is.null(layer$geom$default_aes[[aes]])) {
               aes_val <- layer$geom$default_aes[[aes]]
@@ -202,12 +201,6 @@ server <- function(input, output, session) {
             content <- ifelse(is.null(aes_val) || is.na(aes_val),
                               create_aes_empty(aes, default),
                               create_aes_input(inputId, aes, aes_val, default))
-
-            # if (is.na(aes_val)) {
-            #   content <- create_aes_empty(aes, default)
-            # } else {
-            #   content <- create_aes_input(inputId, aes, aes_val)
-            # }
           }
         }
 
