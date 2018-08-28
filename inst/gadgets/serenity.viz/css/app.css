@@ -15,6 +15,13 @@ body {
   font-size: 0.8em;
   color: red;
 }
+.aes-wrap:not(.default)::after {
+  content: 'reset';
+  float: right;
+  font-size: 0.8em;
+  color: blue;
+  cursor: pointer;
+}
 
 #help-pane {
   opacity: 0.7;
