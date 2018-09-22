@@ -24,11 +24,5 @@ serenity.viz <- function() {
       stop("Calling serenity.viz start function but serenity.viz is not installed.")
   }
 
-  # resourcePath <- system.file("gadgets", "serenity.viz",
-  #                             package = "serenity.viz")
-
-  # viewer <- shiny::dialogViewer("Serenity Viz", width = 1000, height = 600)
-  viewer <- shiny::browserViewer()
-  shiny::runGadget(shiny::shinyApp(ui = ui(), server), viewer = viewer,
-                   stopOnCancel = TRUE)
+  runApp(system.file("serenity.viz", package = "serenity.viz"), launch.browser = TRUE)
 }

@@ -1,11 +1,5 @@
-#' Server for Serenity Viz.
-#'
-#' @param input input
-#' @param output output
-#' @param session session
-#'
-#' @import shiny bsplus ggplot2
-#' @importFrom magrittr %>%
+library(ggplot2)
+
 server <- function(input, output, session) {
   # Stop app on close of browser tab
   # https://github.com/daattali/advanced-shiny/tree/master/auto-kill-app
@@ -13,7 +7,7 @@ server <- function(input, output, session) {
 
   values <- reactiveValues(
     geom_num = 0,
-    gg = ggplot2::ggplot(data = iris, aes(x = Sepal.Width, y = Sepal.Length)),
+    gg = ggplot2::ggplot(data = iris, ggplot2::aes(x = Sepal.Width, y = Sepal.Length)),
     layers = list()
   )
 
@@ -136,8 +130,8 @@ server <- function(input, output, session) {
     # Only want aesthetics UI dependent on layer changes
     # Individual outputs have their own updating functions
     isolate({
-      bsa <- bs_accordion(id = "acc") %>%
-        bs_set_opts(panel_type = "success", use_heading_link = TRUE)
+      bsa <- bsplus::bs_accordion(id = "acc") %>%
+        bsplus::bs_set_opts(panel_type = "success", use_heading_link = TRUE)
       lapply(aesthetics(), function(aes) {
         # Main ggplot2 object -> Mapping only!
         if (geom_type() == "geom-blank") {
@@ -204,7 +198,7 @@ server <- function(input, output, session) {
           }
         }
 
-        bsa <<- bs_append(bsa,
+        bsa <<- bsplus::bs_append(bsa,
                           title = dropZoneInput(
                             inputId = paste0(aes, '-dropzone-', layer_id()),
                             class = "grid",
@@ -346,7 +340,7 @@ server <- function(input, output, session) {
       if (!is.null(var) && var != '') {
         isolate({
           if (geom_type() == "geom-blank") {
-            values$gg$mapping[[aes]] <- quo(!!sym(var))
+            values$gg$mapping[[aes]] <- rlang::quo(!!rlang::sym(var))
           } else {
             # Only set layer mapping if (1) does not inherit from base, or (2) does and base not set
             # TODO: Allow for override of inherited mapping in the future
@@ -355,7 +349,7 @@ server <- function(input, output, session) {
                  (!rlang::is_quosure(values$gg$mapping[[aes]]) ||
                   (values$gg$mapping[[aes]] != var)))) {
               # Set mapping aesthetic
-              values$layers[[layer_id()]]$mapping[[aes]] <- quo(!!sym(var))
+              values$layers[[layer_id()]]$mapping[[aes]] <- rlang::quo(!!rlang::sym(var))
 
               # Remove from aes_params (seems to prioritize over mapping if set)
               values$layers[[layer_id()]]$aes_params[[aes]] <- NULL
