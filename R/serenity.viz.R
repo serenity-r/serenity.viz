@@ -17,7 +17,15 @@ NULL
 #' serenity.viz::serenity.viz()
 #' }
 #' @export
-serenity.viz <- function() {
+serenity.viz <- function(data = NULL) {
+  # Process incoming data
+  # @TODO Error check this
+  if (!is.null(data)) {
+    serenity.viz.data <<- data
+  } else {
+    serenity.viz.data <<- iris
+  }
+
   message("Starting Serenity Viz...")
   if (!"package:serenity.viz" %in% search()) {
     if (!suppressMessages(require(serenity.viz)))

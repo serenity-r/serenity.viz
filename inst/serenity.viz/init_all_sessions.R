@@ -70,3 +70,31 @@ colours_tbl <- dplyr::tbl_df(t(crgb)) %>%
   dplyr::mutate(name = cc,
                 hex = rgb(red, green, blue, maxColorValue = 255)) %>%
   dplyr::select(name, hex, red, green, blue)
+
+# Colour translator
+#   Right now assume col is an R colour
+colour_to_hex <- function(col) {
+  if (!grepl("^#[0-9a-fA-F]{6}", col)) {
+    return(dplyr::filter(colours_tbl, name == col)$hex)
+  } else {
+    return(col)
+  }
+}
+
+# This piece of code creates a reactive trigger so we can force a reactive to execute
+#   Our use case is to sometimes force a replot
+#   @TODO make sure this is really necessary.  I feel like this might just be some
+#     not-so-smart reactive programming.
+# https://github.com/daattali/advanced-shiny/tree/master/reactive-trigger
+makeReactiveTrigger <- function() {
+  rv <- reactiveValues(a = 0)
+  list(
+    depend = function() {
+      rv$a
+      invisible()
+    },
+    trigger = function() {
+      rv$a <- isolate(rv$a + 1)
+    }
+  )
+}

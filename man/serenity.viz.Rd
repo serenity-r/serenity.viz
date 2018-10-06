@@ -7,7 +7,7 @@
 \alias{serenity.viz}
 \title{Serenity Viz}
 \usage{
-serenity.viz()
+serenity.viz(data = NULL)
 }
 \description{
 Serenity Viz
