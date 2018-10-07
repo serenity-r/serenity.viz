@@ -25,65 +25,6 @@ output$data_variables <- renderUI({
   })
 })
 
-# Surrounding div for buttons and labels
-aes_wrap <- function(content, aes, default='') {
-  tagList(
-    div(
-      id = paste0(aes, '-wrap'),
-      class = paste0('aes-wrap ', default),
-      content
-    )
-  )
-}
-
-create_aes_empty <- function(aes, default='') {
-  tagList(
-    span(
-      'Not set'
-    ) %>%
-      aes_wrap(aes, default)
-  )
-}
-
-# Create aesthetic input control
-# aes_val is assumed to be truthy
-create_aes_input <- function(inputId, aes, aes_val, default='') {
-  tagList(
-    switch(aes,
-           'shape' = sliderInput(inputId = inputId,
-                                 label = "",
-                                 min = 0,
-                                 max = 25,
-                                 step = 1,
-                                 value = aes_val),
-           'colour' = ,
-           'fill' = colourpicker::colourInput(inputId = inputId,
-                                              label = "",
-                                              value = colour_to_hex(aes_val)),
-           'weight' = ,
-           'size' = ,
-           'stroke' = sliderInput(inputId = inputId,
-                                  label = "",
-                                  min = 0.1,
-                                  max = 10,
-                                  step = 0.1,
-                                  value = aes_val),
-           'alpha' = sliderInput(inputId = inputId,
-                                 label = "",
-                                 min = 0,
-                                 max = 1,
-                                 value = aes_val),
-           'linetype' = sliderInput(inputId = inputId,
-                                    label = "",
-                                    min = 0,
-                                    max = 6,
-                                    value = aes_val),
-           ''
-    ) %>%
-      aes_wrap(aes, default)
-  )
-}
-
 # _ Aesthetic divs ====
 #
 # Depends:

@@ -1,4 +1,5 @@
 library(ggplot2)
+library(magrittr)
 
 source("init_all_sessions.R", local=TRUE)
 
