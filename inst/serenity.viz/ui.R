@@ -19,7 +19,8 @@ miniPage(
 
     # Variables and geoms
     fillCol(
-      miniContentPanel(
+      flex = c(7, 5),
+      miniContentPanel( # Variables
         wellPanel(
           div(
             id = "selected-vars-col",
@@ -27,7 +28,7 @@ miniPage(
           )
         )
       ),
-      miniContentPanel(
+      miniContentPanel( # Geoms
         wellPanel(
           div(
             id = "selected-geoms-row",

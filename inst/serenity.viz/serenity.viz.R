@@ -11,9 +11,11 @@ forcePlot <- makeReactiveTrigger()
 # _ Variable divs ====
 output$data_variables <- renderUI({
   var_names <- colnames(serenity.viz.data)
+  bsa <- bsplus::bs_accordion(id = "vars") %>%
+    bsplus::bs_set_opts(panel_type = "warning", use_heading_link = TRUE)
   lapply(seq_along(var_names), function(var_num) {
     cls <- paste0("grid var ", stringr::str_replace(var_names[var_num], '[.]', '-')) # var class name used to count # of elements for unique id creation
-    div(
+    title <- div(
       id = var_names[var_num],
       class = cls,
       draggable = TRUE,
@@ -22,7 +24,14 @@ output$data_variables <- renderUI({
           var_names[var_num]
       )
     )
+    inputId <- paste0(var_names[var_num], '-input')
+    content <- create_var_input(inputId, serenity.viz.data[[var_names[var_num]]])
+    bsa <<- bsplus::bs_append(bsa,
+                              title = title,
+                              content = content
+    )
   })
+  bsa
 })
 
 # _ Aesthetic divs ====
@@ -395,4 +404,3 @@ aesthetics <- reactive({
     return(eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))$geom$aesthetics())
   }
 })
-

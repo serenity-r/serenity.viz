@@ -73,6 +73,17 @@ aes_wrap <- function(content, aes, default='') {
   )
 }
 
+# Surrounding div for buttons and labels
+var_wrap <- function(content, var, default='') {
+  tagList(
+    div(
+      id = paste0(var, '-wrap'),
+      class = paste0('var-wrap ', default),
+      content
+    )
+  )
+}
+
 create_aes_empty <- function(aes, default='') {
   tagList(
     span(
@@ -137,5 +148,40 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
            ''
     ) %>%
       aes_wrap(aes, default)
+  )
+}
+
+# Create variable input control
+create_var_input <- function(inputId, var, default='') {
+  # Prep
+  if (class(var) %in% c("numeric","integer")) {
+    min_var <- min(var, na.rm = TRUE)
+    max_var <- max(var, na.rm = TRUE)
+  }
+
+  tagList(
+    switch(class(var),
+           'integer' = ,
+           'numeric' = sliderInput(inputId = inputId,
+                                 label = "",
+                                 min = min_var,
+                                 max = max_var,
+                                 step = (max_var - min_var)/100,
+                                 value = c(min_var, max_var)),
+           'factor' = selectizeInput(inputId = inputId,
+                                     label = "",
+                                     choices = levels(var),
+                                     selected = levels(var),
+                                     multiple = TRUE,
+                                     options = list(
+                                       'plugins' = list('remove_button',
+                                                        'drag_drop'),
+                                       'create' = TRUE,
+                                       'persist' = FALSE
+                                       )
+                                     ),
+           ''
+    ) %>%
+      var_wrap(var, default)
   )
 }
