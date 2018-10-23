@@ -8,5 +8,12 @@ server <- function(input, output, session) {
   # https://github.com/daattali/advanced-shiny/tree/master/auto-kill-app
   session$onSessionEnded(stopApp)
 
+  # "Globals" for server
+  var_names <- colnames(serenity.viz.data)
+
+  # Main
   source("serenity.viz.R", local=TRUE)
+
+  # UI to code
+  source("ggcode.R", local=TRUE)
 }

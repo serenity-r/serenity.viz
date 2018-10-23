@@ -10,7 +10,6 @@ forcePlot <- makeReactiveTrigger()
 
 # _ Variable divs ====
 output$data_variables <- renderUI({
-  var_names <- colnames(serenity.viz.data)
   bsa <- bsplus::bs_accordion(id = "vars") %>%
     bsplus::bs_set_opts(panel_type = "warning", use_heading_link = TRUE)
   lapply(seq_along(var_names), function(var_num) {
@@ -24,14 +23,19 @@ output$data_variables <- renderUI({
           var_names[var_num]
       )
     )
-    inputId <- paste0(var_names[var_num], '-input')
-    content <- create_var_input(inputId, serenity.viz.data[[var_names[var_num]]])
+    id <- var_names[var_num]
+    content <- dataVarInput(id, serenity.viz.data[[id]])
     bsa <<- bsplus::bs_append(bsa,
                               title = title,
                               content = content
     )
   })
   bsa
+})
+
+# _ load variable modules
+lapply(seq_along(var_names), function(var_num) {
+  callModule(dataVar, var_names[var_num], reactive(values$gg))
 })
 
 # _ Aesthetic divs ====
