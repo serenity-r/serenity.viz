@@ -19,11 +19,13 @@ NULL
 #' @export
 serenity.viz <- function(data = NULL) {
   # Process incoming data
-  # @TODO Error check this
+  # Make sure assignment to serenity.viz.data occurs in global namespace
   if (!is.null(data)) {
     serenity.viz.data <<- data
+    attr(serenity.viz.data, "df_name") <<- deparse(substitute(data))
   } else {
     serenity.viz.data <<- iris
+    attr(serenity.viz.data, "df_name") <<- "iris"
   }
 
   message("Starting Serenity Viz...")

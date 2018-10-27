@@ -8,35 +8,10 @@ forcePlot <- makeReactiveTrigger()
 
 # Render ----------------------
 
-# _ Variable divs ====
-output$data_variables <- renderUI({
-  bsa <- bsplus::bs_accordion(id = "vars") %>%
-    bsplus::bs_set_opts(panel_type = "warning", use_heading_link = TRUE)
-  lapply(seq_along(var_names), function(var_num) {
-    cls <- paste0("grid var ", stringr::str_replace(var_names[var_num], '[.]', '-')) # var class name used to count # of elements for unique id creation
-    title <- div(
-      id = var_names[var_num],
-      class = cls,
-      draggable = TRUE,
-      div(class = "varname",
-          `data-colnum` = var_num, # Do we need the data-colnum attribute?
-          var_names[var_num]
-      )
-    )
-    id <- var_names[var_num]
-    content <- dataVarInput(id, serenity.viz.data[[id]])
-    bsa <<- bsplus::bs_append(bsa,
-                              title = title,
-                              content = content
-    )
-  })
-  bsa
-})
-
-# _ load variable modules
-lapply(seq_along(var_names), function(var_num) {
-  callModule(dataVar, var_names[var_num], reactive(values$gg))
-})
+# _ Data variable divs ====
+callModule(module = dataSet,
+           id = attributes(serenity.viz.data)$df_name,
+           reactive(values$gg))
 
 # _ Aesthetic divs ====
 #
@@ -173,8 +148,9 @@ output$viz <- renderPlot({
 output$code <- renderPrint({
   # values$layers[[layer_id()]]$mapping
   # active_layers()
-  values$layers
-  print(values$layers[[layer_id()]]$mapping)
+  # values$layers
+  # print(values$layers[[layer_id()]]$mapping)
+  print(ggcode())
 })
 
 # Events ----------------------

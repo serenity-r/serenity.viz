@@ -58,9 +58,18 @@ $(document).bind('DOMNodeInserted', function() {
   $(".dropzone").on("drop", function(ev) {
     ev.preventDefault();
 
+    // Get id for new element
+    // If variable -> aesthetic:
+    //   data = <dataset-variable-map-#> (e.g. iris-Sepal.Length-map-1)
     var data = ev.originalEvent.dataTransfer.getData("Text");
-    var dropid = ev.target.id;
-    if (dropid === "selected-layers-row") { // Geom -> Layer
+
+    // Get id of target
+    // If variable -> aesthetic:
+    //   drop_id = aesthetic (e.g. x)
+    var drop_id = ev.target.id;
+
+    // Which drag-and-drop type is it?
+    if (drop_id === "selected-layers-row") { // Geom -> Layer
       // data is geom information
       geom_id = data.split('-',2).join('-');
       if (!document.getElementById(data)) { // Likes to add a bazillion elements, probably due to it being a shiny input and triggering based on rate policy
@@ -95,12 +104,19 @@ $(document).bind('DOMNodeInserted', function() {
         document.getElementById('selected-layers-row').appendChild(nodeCopy);
       }
     } else { // Variable -> Aesthetic
-      varid = data.split('-',1)[0];
+      // Pull out dataset-variable information (e.g. iris-Sepal.Length)
+      dataset_var_id = data.split('-',2).join('-');
 
-      // Get selector for element with possible Shiny inputs (or) mapping variables
-      var bs_id = '#' + $('#'+dropid).closest('.panel').attr('id');
-      if (!document.getElementById(data) && // Likes to add a bazillion elements, probably due to it being a shiny input and triggering based on rate policy
-          $(bs_id + ' .panel-body').find('.' + varid.split('.').join('-')).length === 0) {
+      // drop_id is the aesthetic id
+      aes_id = drop_id;
+
+      // Get selector for BS accordian element corresponding to aesthetic given in aes_id (e.g. #acc-0)
+      var bs_id = '#' + $('#'+aes_id).closest('.panel').attr('id');
+
+      // Likes to add a bazillion elements, probably due to it being a shiny input and triggering based on rate policy
+      // @TODO Why are we checking both the id and the class in the condition here?
+      if (!document.getElementById(data) &&
+          $(bs_id + ' .panel-body').find('.' + dataset_var_id.split('-')[1].split('.').join('-')).length === 0) {
 
         // Unbind all inputs in container then remove
         Shiny.unbindAll(bs_id + ' .panel-body');
@@ -108,9 +124,9 @@ $(document).bind('DOMNodeInserted', function() {
         $(bs_id + ' .panel-body').empty();  // Remove everything now - change later to allow for facetting
 
         // Add mapping element
-        var varCopy = document.getElementById(varid).cloneNode(true);
+        var varCopy = document.getElementById(dataset_var_id).cloneNode(true);
 
-        // Change attributes from var to map
+        // Change attributes from var to map and include unique id
         varCopy.classList.remove('var');
         varCopy.classList.add('map');
         varCopy.id = data;
@@ -184,7 +200,7 @@ $.extend(dropZoneBinding, {
     } else {
       // Return array of mapping variables
       return $(el).closest('.panel').find('.varname:not(.inherited)').map(function () {
-        return this.parentElement.id.split('-')[0];
+        return this.parentElement.id.split('-')[1]; // 2nd element; 1st is dataset
       }).get();
     }
   },

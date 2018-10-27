@@ -144,4 +144,5 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
 
 ## Data variables
 
-source("modules/dataVarModule.R", local=TRUE)
+source("modules/dataSetModule/dataSetModule.R", local=TRUE)
+source("modules/dataSetModule/dataVarModule.R", local=TRUE)
