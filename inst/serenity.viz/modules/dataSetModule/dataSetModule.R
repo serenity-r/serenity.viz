@@ -5,8 +5,9 @@ dataSetUI <- function(id) {
   ns <- NS(id)
 
   div(
-    id = ns("selected-vars-col"),
-    uiOutput(ns("data_variables"), inline = FALSE)
+    id = ns("dataset-vars-wrap"),
+    class = "dataset-vars",
+    uiOutput(ns("dataset_vars"), inline = FALSE)
   )
 }
 
@@ -16,7 +17,7 @@ dataSet <- function(input, output, session, gg) {
   var_names <- names(serenity.viz.data)
 
   # _ Variable divs ====
-  output$data_variables <- renderUI({
+  output$dataset_vars <- renderUI({
     ns <- session$ns
 
     bsa <- bsplus::bs_accordion(id = ns("vars")) %>%
@@ -43,10 +44,18 @@ dataSet <- function(input, output, session, gg) {
     bsa
   })
 
-  # _ load variable modules
-  lapply(seq_along(var_names), function(var_num) {
-    callModule(module = dataVar,
-               id = var_names[var_num],
-               gg)
+  # _ load variable modules ====
+  filter_args <- sapply(var_names, function(var_num) {
+    return(callModule(module = dataVar,
+                      id = var_names[var_num]))
+    }, simplify = FALSE, USE.NAMES = TRUE)
+
+  # _ process filter arguments
+  processed <- reactive({
+    lapply(filter_args, function(filter_var) {
+      return(filter_var())
+    })
   })
+
+  return(processed)
 }

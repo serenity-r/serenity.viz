@@ -142,7 +142,7 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
 
 # Pull in modules ----
 
-## Data variables
-
-source("modules/dataSetModule/dataSetModule.R", local=TRUE)
-source("modules/dataSetModule/dataVarModule.R", local=TRUE)
+lapply(list.files("modules", recursive=TRUE),
+       function (module) {
+         source(paste("modules", module, sep="/"), local=TRUE)
+       })
