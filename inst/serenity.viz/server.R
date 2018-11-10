@@ -1,5 +1,4 @@
 library(ggplot2)
-library(magrittr)
 
 source("init_all_sessions.R", local=TRUE)
 
@@ -15,5 +14,5 @@ server <- function(input, output, session) {
   source("serenity.viz.R", local=TRUE)
 
   # UI to code
-  source("ggcode.R", local=TRUE)
+  # source("ggcode.R", local=TRUE)
 }

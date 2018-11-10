@@ -1,3 +1,5 @@
+library(magrittr)
+
 ## Available for all R processes and UI
 
 geoms <- c("geom-bar", "geom-point", "geom-line", "geom-dotplot", "geom-boxplot")
