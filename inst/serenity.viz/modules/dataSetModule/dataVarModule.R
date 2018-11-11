@@ -11,59 +11,84 @@ var_wrap <- function(content, id, default='') {
   )
 }
 
+init_vals <- function(var) {
+  init <- list()
+
+  if (class(var) %in% c("numeric","integer")) {
+    init$min <- min(var, na.rm = TRUE)
+    init$max <- max(var, na.rm = TRUE)
+  } else if (class(var) %in% c("factor")) {
+    init$levels <- levels(var)
+  }
+
+  return(init)
+}
+
 # Module UI function
 dataVarInput <- function(id, var, default='') {
   # Create a namespace function using the provided id
   ns <- NS(id)
   inputId <- ns("filter")
 
-  # Prep
-  if (class(var) %in% c("numeric","integer")) {
-    min_var <- min(var, na.rm = TRUE)
-    max_var <- max(var, na.rm = TRUE)
-  }
+  init <- init_vals(var)
 
   tagList(
-    switch(class(var),
+    tagList(
+      switch(class(var),
            'integer' = ,
            'numeric' = sliderInput(inputId = inputId,
                                    label = "",
-                                   min = min_var,
-                                   max = max_var,
-                                   step = (max_var - min_var)/100,
-                                   value = c(min_var, max_var)),
+                                   min = init$min,
+                                   max = init$max,
+                                   step = (init$max - init$min)/100,
+                                   value = c(init$min, init$max)),
            'factor' = selectizeInput(inputId = inputId,
                                      label = "",
-                                     choices = levels(var),
-                                     selected = levels(var),
+                                     choices = init$levels,
+                                     selected = init$levels,
                                      multiple = TRUE,
                                      options = list(
                                        'plugins' = list('remove_button',
                                                         'drag_drop'),
                                        'create' = TRUE,
                                        'persist' = FALSE
-                                     )
-           ),
-           ''
+                                     )),
+           ''),
+      verbatimTextOutput(ns("placeholder"))
     ) %>%
       var_wrap(id, default)
   )
 }
 
 # SERVER ----
-dataVar <- function(input, output, session) {
-  return(
-    reactive({
-      browser()
-      if (!is.null(input$filter)) {
-        # Get name
-        ns <- session$ns
-        return(str_split_fixed(ns(''), '-', n=3)[2])
-        # if (class(input$filter[1]) %in% c('integer', 'numeric')) {
-        # } else if (class(input$filter[1]) == 'factor') {
-        # }
+dataVar <- function(input, output, session, var) {
+
+  output$placeholder <- renderPrint({ input$filter })
+
+  varToCode <- reactive({
+    init <- init_vals(var)
+    arg <- c()
+    if (!is.null(input$filter)) {
+      ns <- session$ns
+      var_name <- stringr::str_split(ns(''), '-')[[1]][2]
+      if (class(input$filter[1]) %in% c('integer', 'numeric')) {
+        if (init$min < input$filter[1]) {
+          arg <- paste(input$filter[1], "<", var_name)
+        }
+
+        if (input$filter[2] < init$max) {
+          arg <- c(arg,
+                   paste(var_name, "<", input$filter[2]))
+        }
+
+        if (length(arg) > 0) {
+          arg <- paste(arg, collapse = ", ")
+        }
+      } else {
       }
-      return(NULL)
-    })
-  )
+    }
+    arg
+  })
+
+  return(varToCode)
 }

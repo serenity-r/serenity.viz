@@ -142,6 +142,8 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
 
 # Pull in modules ----
 
+# Does local=TRUE affect debugging?? Was having issues with having to source
+#  the module files previously with local=TRUE
 lapply(list.files("modules", recursive=TRUE),
        function (module) {
          source(paste("modules", module, sep="/"), local=TRUE)

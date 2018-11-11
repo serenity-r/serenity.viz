@@ -13,7 +13,7 @@ dataSetUI <- function(id) {
 
 # SERVER ----
 
-dataSet <- function(input, output, session, gg) {
+dataSet <- function(input, output, session) {
   var_names <- names(serenity.viz.data)
 
   # _ Variable divs ====
@@ -45,17 +45,27 @@ dataSet <- function(input, output, session, gg) {
   })
 
   # _ load variable modules ====
-  filter_args <- sapply(var_names, function(var_num) {
+  filter_args <- sapply(var_names, function(var_name) {
     return(callModule(module = dataVar,
-                      id = var_names[var_num]))
+                      id = var_name,
+                      var = serenity.viz.data[[var_name]]))
     }, simplify = FALSE, USE.NAMES = TRUE)
 
   # _ process filter arguments
-  processed <- reactive({
-    lapply(filter_args, function(filter_var) {
+  processed_args <- reactive({
+    # Create list of filter arguments
+    # Not sure why sapply with simplify = "array" isn't working
+    args <- unlist(sapply(filter_args, function(filter_var) {
       return(filter_var())
-    })
+    }))
+
+    # Return filter argument
+    if (length(args)) {
+      return(paste0("filter(", paste(args, collapse = ", \n"), ")"))
+    } else {
+      return(NULL)
+    }
   })
 
-  return(processed)
+  return(processed_args)
 }

@@ -9,12 +9,8 @@ forcePlot <- makeReactiveTrigger()
 # Render ----------------------
 
 # _ Data variable divs ====
-processed <- callModule(module = dataSet,
-                        id = attributes(serenity.viz.data)$df_name)
-
-observe({
-  showNotification(paste(processed(), collapse = ', '))
-})
+filtered_data <- callModule(module = dataSet,
+                            id = attributes(serenity.viz.data)$df_name)
 
 # _ Aesthetic divs ====
 #
