@@ -67,24 +67,34 @@ dataVar <- function(input, output, session, var) {
 
   varToCode <- reactive({
     init <- init_vals(var)
-    arg <- c()
+    arg <- list(filter = c(), mutate = c())
     if (!is.null(input$filter)) {
       ns <- session$ns
       var_name <- stringr::str_split(ns(''), '-')[[1]][2]
       if (class(input$filter[1]) %in% c('integer', 'numeric')) {
         if (init$min < input$filter[1]) {
-          arg <- paste(input$filter[1], "<", var_name)
+          arg$filter <- paste(input$filter[1], "<", var_name)
         }
 
         if (input$filter[2] < init$max) {
-          arg <- c(arg,
-                   paste(var_name, "<", input$filter[2]))
-        }
-
-        if (length(arg) > 0) {
-          arg <- paste(arg, collapse = ", ")
+          arg$filter <- c(arg$filter,
+                          paste(var_name, "<", input$filter[2]))
         }
       } else {
+        # iris %>%
+        #   filter(!(Species %in% c("versicolor", "virginica"))) %>%
+        #   mutate(Species = fct_drop(Species, only = c("versicolor", "virginica")))
+
+        # First, drop levels
+        dropme <- setdiff(init, input$filter)
+        if (length(dropme) > 0) {
+          # arg$filter <- paste0("!(", var_name, " %in% c(",
+          #                      paste(dropme, collapse = ", "),
+          #                      "))")
+        }
+
+        if (!all(input$filter == levels(var))) {
+        }
       }
     }
     arg

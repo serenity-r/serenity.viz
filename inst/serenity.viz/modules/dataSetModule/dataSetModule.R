@@ -45,26 +45,41 @@ dataSet <- function(input, output, session) {
   })
 
   # _ load variable modules ====
-  filter_args <- sapply(var_names, function(var_name) {
-    return(callModule(module = dataVar,
-                      id = var_name,
-                      var = serenity.viz.data[[var_name]]))
-    }, simplify = FALSE, USE.NAMES = TRUE)
+  subset_args <- purrr::map(var_names, ~ callModule(module = dataVar,
+                                                    id = .,
+                                                    var = serenity.viz.data[[.]]))
 
-  # _ process filter arguments
+  # _ process subset arguments
   processed_args <- reactive({
-    # Create list of filter arguments
-    # Not sure why sapply with simplify = "array" isn't working
-    args <- unlist(sapply(filter_args, function(filter_var) {
-      return(filter_var())
-    }))
+    # Evaluate reactives
+    args <- purrr::map(subset_args, ~ .())
+
+    # Pull out the filter and mutate elements
+    filter_args <- unlist(map(args, "filter"))
+    mutate_args <- unlist(map(args, "mutate"))
+
+    subset_data_code <- NULL
+
+    # Build filter code
+    if (length(filter_args)) {
+      subset_data_code <- paste0("filter(", paste(filter_args, collapse = ", \n"), ")")
+    }
+
+    return(subset_data_code)
+
+    if (length(mutate_args)) {
+      # Guaranteed to have a filter first, so add pipe
+      # subset_data_code <- paste(subset_data_code,
+      #                           "%>%",
+      #                           paste0("mutate(", , ")"))
+    }
 
     # Return filter argument
-    if (length(args)) {
-      return(paste0("filter(", paste(args, collapse = ", \n"), ")"))
-    } else {
-      return(NULL)
-    }
+    # if (length(args)) {
+    #   return(paste0("filter(", paste(args, collapse = ", \n"), ")"))
+    # } else {
+    #   return(NULL)
+    # }
   })
 
   return(processed_args)
