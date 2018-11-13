@@ -53,8 +53,7 @@ dataVarInput <- function(id, var, default='') {
                                        'create' = TRUE,
                                        'persist' = FALSE
                                      )),
-           ''),
-      verbatimTextOutput(ns("placeholder"))
+           '')
     ) %>%
       var_wrap(id, default)
   )
@@ -62,8 +61,6 @@ dataVarInput <- function(id, var, default='') {
 
 # SERVER ----
 dataVar <- function(input, output, session, var) {
-
-  output$placeholder <- renderPrint({ input$filter })
 
   varToCode <- reactive({
     init <- init_vals(var)
@@ -81,19 +78,33 @@ dataVar <- function(input, output, session, var) {
                           paste(var_name, "<", input$filter[2]))
         }
       } else {
-        # iris %>%
-        #   filter(!(Species %in% c("versicolor", "virginica"))) %>%
-        #   mutate(Species = fct_drop(Species, only = c("versicolor", "virginica")))
-
         # First, drop levels
-        dropme <- setdiff(init, input$filter)
+        dropme <- setdiff(init$levels, input$filter)
         if (length(dropme) > 0) {
-          # arg$filter <- paste0("!(", var_name, " %in% c(",
-          #                      paste(dropme, collapse = ", "),
-          #                      "))")
+          arg$filter <- paste0("!(",
+                               var_name,
+                               " %in% c(",
+                               paste0("\"", dropme, "\"", collapse = ", "),
+                               "))")
+          arg$mutate <- paste0(var_name,
+                               " = fct_drop(",
+                               var_name,
+                               ", only = c(",
+                               paste0("\"", dropme, "\"", collapse = ", "),
+                               "))")
         }
 
-        if (!all(input$filter == levels(var))) {
+        # Check if reordered
+        if (!all(intersect(init$levels, input$filter) ==
+                 intersect(input$filter, init$levels))) {
+          arg$mutate <- c(arg$mutate,
+                          paste0(var_name,
+                                 " = fct_relevel(",
+                                 var_name,
+                                 ", c(",
+                                 paste0("\"", input$filter, "\"", collapse = ", "),
+                                 "))")
+          )
         }
       }
     }

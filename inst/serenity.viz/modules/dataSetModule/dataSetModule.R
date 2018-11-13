@@ -62,24 +62,21 @@ dataSet <- function(input, output, session) {
 
     # Build filter code
     if (length(filter_args)) {
-      subset_data_code <- paste0("filter(", paste(filter_args, collapse = ", \n"), ")")
+      subset_data_code <- paste0("filter(",
+                                 paste(filter_args, collapse = ", \n"),
+                                 ")")
+    }
+
+    # Build mutate code
+    if (length(mutate_args)) {
+      subset_data_code <- paste(subset_data_code,
+                                ifelse(length(filter_args), "%>%\n", ""),
+                                paste0("mutate(",
+                                       paste(mutate_args, collapse = ", \n"),
+                                       ")"))
     }
 
     return(subset_data_code)
-
-    if (length(mutate_args)) {
-      # Guaranteed to have a filter first, so add pipe
-      # subset_data_code <- paste(subset_data_code,
-      #                           "%>%",
-      #                           paste0("mutate(", , ")"))
-    }
-
-    # Return filter argument
-    # if (length(args)) {
-    #   return(paste0("filter(", paste(args, collapse = ", \n"), ")"))
-    # } else {
-    #   return(NULL)
-    # }
   })
 
   return(processed_args)
