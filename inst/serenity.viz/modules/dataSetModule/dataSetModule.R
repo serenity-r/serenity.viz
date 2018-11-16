@@ -44,19 +44,19 @@ dataSet <- function(input, output, session) {
     bsa
   })
 
-  # _ load variable modules ====
+  # _ load variable subset modules ====
   subset_args <- purrr::map(var_names, ~ callModule(module = dataVar,
                                                     id = .,
                                                     var = serenity.viz.data[[.]]))
 
-  # _ process subset arguments
+  # _ process subset arguments ====
   processed_args <- reactive({
     # Evaluate reactives
     args <- purrr::map(subset_args, ~ .())
 
     # Pull out the filter and mutate elements
-    filter_args <- unlist(map(args, "filter"))
-    mutate_args <- unlist(map(args, "mutate"))
+    filter_args <- unlist(purrr::map(args, "filter"))
+    mutate_args <- unlist(purrr::map(args, "mutate"))
 
     subset_data_code <- NULL
 

@@ -1,3 +1,9 @@
+library(magrittr)
+library(dplyr)
+library(forcats)
+library(ggplot2)
+library(miniUI)
+
 ## Available for all R processes and UI
 
 geoms <- c("geom-bar", "geom-point", "geom-line", "geom-dotplot", "geom-boxplot")
@@ -42,11 +48,7 @@ gg_aesthetics <- list(
                  "weight"),
   "geom_point" = ggplot2::GeomPoint$aesthetics(),
   "geom_line" = ggplot2::GeomLine$aesthetics(),
-  "geom_dotplot" = c("x",
-                     "y",
-                     "alpha",
-                     "colour",
-                     "fill"),
+  "geom_dotplot" = ggplot2::GeomDotplot$aesthetics(),
   "geom_boxplot" = c("x",
                      "ymax",
                      "ymin",
@@ -142,9 +144,9 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
 
 # Pull in modules ----
 
-# Does local=TRUE affect debugging?? Was having issues with having to source
+# Do not add local=TRUE!! Was having issues with having to source
 #  the module files previously with local=TRUE
 lapply(list.files("modules", recursive=TRUE),
        function (module) {
-         source(paste("modules", module, sep="/"), local=TRUE)
+         source(paste("modules", module, sep="/"))
        })

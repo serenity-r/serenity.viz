@@ -1,9 +1,9 @@
 ggcode <- reactive({
   code <- attributes(serenity.viz.data)$df_name
-  if (isTruthy(filtered_data())) {
+  if (isTruthy(subsetted_data())) {
     code <- paste(code,
                   "%>%\n",
-                  filtered_data()
+                  subsetted_data()
     )
   }
 

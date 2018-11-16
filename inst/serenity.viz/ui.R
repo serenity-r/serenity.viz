@@ -1,5 +1,3 @@
-library(miniUI)
-
 resourcePath <- system.file("serenity.viz", "www", package = "serenity.viz")
 
 resetButtonUI <- miniButtonBlock(actionButton("refresh", "Refresh"))

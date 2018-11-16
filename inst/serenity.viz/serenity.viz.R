@@ -9,8 +9,8 @@ forcePlot <- makeReactiveTrigger()
 # Render ----------------------
 
 # _ Data variable divs ====
-filtered_data <- callModule(module = dataSet,
-                            id = attributes(serenity.viz.data)$df_name)
+subsetted_data <- callModule(module = dataSet,
+                             id = attributes(serenity.viz.data)$df_name)
 
 # _ Aesthetic divs ====
 #
@@ -145,10 +145,6 @@ output$viz <- renderPlot({
 
 # _ Code ====
 output$code <- renderPrint({
-  # values$layers[[layer_id()]]$mapping
-  # active_layers()
-  # values$layers
-  # print(values$layers[[layer_id()]]$mapping)
   print(ggcode())
 })
 
