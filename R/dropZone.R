@@ -10,17 +10,14 @@ dropZoneInput <- function(inputId,..., class = "", style = NULL) {
   # declare dependencies
   shiny::addResourcePath("dropzone-binding",
                          system.file("www", package = "serenity.viz"))
-  shiny::addResourcePath("underscore-lib",
-                         system.file("www", "shared", "underscore", package = "serenity.viz"))
   deps <- list(
     htmltools::htmlDependency(
       "dropzone-binding", "0.1.0", c(href = "dropzone-binding"),
       script = "input-binding-dropzone.js"
     ),
+    # For some reason can't add resource path above for jqueryui
     htmltools::htmlDependency("jqueryui", "1.11.4", c(href="shared/jqueryui"),
-                   script = "jquery-ui.min.js"), # For some reason can't add resource path above for jqueryui
-    htmltools::htmlDependency("underscore", "1.9.1", c(href="underscore-lib"),
-                              script = "underscore-min.js")
+                   script = "jquery-ui.min.js")
   )
 
   inputTag <- div(

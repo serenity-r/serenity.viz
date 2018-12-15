@@ -96,7 +96,7 @@ body {
 
 #selected-geoms-row .col:hover,
 #selected-layers-row .col:hover,
-#selected-vars-col .grid:hover,
+.dataset-vars .grid:hover,
 #selected-aes-col .grid:hover {
   box-shadow: 0 0 0 1px #fafafa, 0 0 0 3px #AAA;
 }
@@ -164,22 +164,20 @@ eye icon is not affected by the parent .noshow opacity value */
   content: "\f06e";
 }
 
-#selected-vars-col .grid,
+.dataset-vars .grid,
 #selected-aes-col .grid {
   cursor: pointer;
   border: 1px solid #eee;
   font-size: 15px;
   font-weight: bold;
   color: black;
-  /* display: inline-block; */
   width: 100%;
   height: 30px;
   line-height: 30px;
-  /* text-align: center; */
   margin: 1px 0;
 }
 
-#selected-vars-col .grid .varname,
+.dataset-vars .grid .varname,
 #selected-aes-col .grid .aesname {
   margin-left: 15px;
 }

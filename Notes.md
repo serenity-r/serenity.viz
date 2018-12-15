@@ -135,3 +135,29 @@ readyPlotOne <- reactive({
   #   output[[aes]] <<- renderUI({ui})
   # })
 ```
+
+# Grabbed from ggplot2::ggplot_build in plot_build.r
+plot <- gg
+layers <- plot$layers
+data <- plot$data
+facet <- plot$facet
+coord <- plot$coordinates
+plot_env <- plot$plot_env
+
+layer_data <- lapply(layers, function(y) y$layer_data(data))
+layout <- ggproto(NULL, Layout, facet = facet, coord = coord)
+
+# Apply function to layer and matching data
+by_layer <- function(f) {
+  out <- vector("list", length(data))
+  for (i in seq_along(data)) {
+    out[[i]] <- f(l = layers[[i]], d = data[[i]])
+  }
+  out
+}
+data <- layout$setup(layer_data, data, plot_env)
+data <- by_layer(function(l, d) l$compute_aesthetics(d, plot))
+data <- by_layer(function(l, d) l$compute_statistic(d, layout))
+data <- by_layer(function(l, d) l$map_statistic(d, plot))
+
+all(unlist(by_layer(function(l, d) length(setdiff(l$geom$required_aes, names(d))) == 0)))

@@ -1,5 +1,3 @@
-library(miniUI)
-
 resourcePath <- system.file("serenity.viz", "www", package = "serenity.viz")
 
 resetButtonUI <- miniButtonBlock(actionButton("refresh", "Refresh"))
@@ -22,10 +20,7 @@ miniPage(
       flex = c(7, 5),
       miniContentPanel( # Variables
         wellPanel(
-          div(
-            id = "selected-vars-col",
-            uiOutput("data_variables", inline = FALSE)
-          )
+          dataSetUI(id = attributes(serenity.viz.data)$df_name)
         )
       ),
       miniContentPanel( # Geoms

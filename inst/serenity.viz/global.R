@@ -1,4 +1,8 @@
 library(magrittr)
+library(dplyr)
+library(forcats)
+library(ggplot2)
+library(miniUI)
 
 ## Available for all R processes and UI
 
@@ -44,11 +48,7 @@ gg_aesthetics <- list(
                  "weight"),
   "geom_point" = ggplot2::GeomPoint$aesthetics(),
   "geom_line" = ggplot2::GeomLine$aesthetics(),
-  "geom_dotplot" = c("x",
-                     "y",
-                     "alpha",
-                     "colour",
-                     "fill"),
+  "geom_dotplot" = ggplot2::GeomDotplot$aesthetics(),
   "geom_boxplot" = c("x",
                      "ymax",
                      "ymin",
@@ -144,6 +144,9 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
 
 # Pull in modules ----
 
-## Data variables
-
-source("modules/dataVarModule.R", local=TRUE)
+# Do not add local=TRUE!! Was having issues with having to source
+#  the module files previously with local=TRUE
+lapply(list.files("modules", recursive=TRUE),
+       function (module) {
+         source(paste("modules", module, sep="/"))
+       })
