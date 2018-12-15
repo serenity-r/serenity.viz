@@ -209,7 +209,7 @@ $.extend(dropZoneBinding, {
   },
   subscribe: function(el, callback) {
     $(el).on("change.dropZoneBinding", function(e) {
-      callback();
+      callback(false);
     });
   },
   unsubscribe: function(el) {
