@@ -16,7 +16,7 @@ dataSetUI <- function(id) {
 dataSet <- function(input, output, session) {
   var_names <- names(serenity.viz.data)
 
-  # _ Variable divs ====
+  # Variable divs ====
   output$dataset_vars <- renderUI({
     ns <- session$ns
 
@@ -24,15 +24,12 @@ dataSet <- function(input, output, session) {
       bsplus::bs_set_opts(panel_type = "warning", use_heading_link = TRUE)
     lapply(seq_along(var_names), function(var_num) {
       cls <- paste0("grid var ", stringr::str_replace(var_names[var_num], '[.]', '-')) # var class name used to count # of elements for unique id creation
-      title <- div(
+      title <- dragZone(
         id = ns(var_names[var_num]),
-        class = cls,
-        draggable = TRUE,
-        div(class = "varname",
-            `data-colnum` = var_num, # Do we need the data-colnum attribute?
-            var_names[var_num]
+        choices = setNames(list(
+          div(class = "varname", var_names[var_num])
+          ), var_names[var_num])
         )
-      )
       id <- var_names[var_num]
       content <- dataVarInput(id = ns(id),
                               var = serenity.viz.data[[id]])
@@ -44,12 +41,12 @@ dataSet <- function(input, output, session) {
     bsa
   })
 
-  # _ load variable subset modules ====
+  # load variable subset modules ====
   subset_args <- purrr::map(var_names, ~ callModule(module = dataVar,
                                                     id = .,
                                                     var = serenity.viz.data[[.]]))
 
-  # _ process subset arguments ====
+  # process subset arguments ====
   processed_args <- reactive({
     # Evaluate reactives
     args <- purrr::map(subset_args, ~ .())

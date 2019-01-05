@@ -9,6 +9,7 @@ body {
   font-size: 0.8em;
   color: red;
 }
+
 .default::after {
   content: 'default';
   float: right;
@@ -57,10 +58,10 @@ body {
 }
 
 #cpanel-code {
-  margin-top: 78px; /* min-height + margin-top + <extra> of #selected-layers-row.  No JS for now... */
+  margin-top: 78px; /* min-height + margin-top + <extra> of #layers.  No JS for now... */
 }
 
-#selected-layers-row {
+#layers {
   min-height: 50px;
   margin-top: 15px;
   padding: 10px;
@@ -70,7 +71,7 @@ body {
   box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
 }
 
-#selected-geoms-row {
+#geoms {
   position: relative;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -78,11 +79,11 @@ body {
   -ms-user-select: none;
 }
 
-#selected-geoms-row .col,
-#selected-layers-row .col {
+#geoms .ds-dragitem,
+#layers .ds-dropoption {
   cursor: pointer;
   vertical-align: middle;
-  border: 1px solid #eee;
+  border: 1px solid #999;
   font-size: 15px;
   font-weight: bold;
   color: black;
@@ -91,18 +92,18 @@ body {
   height: 30px;
   line-height: 30px;
   text-align: center;
-  margin: 3px 2px 3px 0;
+  margin: 3px;
 }
 
-#selected-geoms-row .col:hover,
-#selected-layers-row .col:hover,
+#geoms .ds-dragitem:hover,
+#layers .ds-dropoption:hover,
 .dataset-vars .grid:hover,
 #selected-aes-col .grid:hover {
   box-shadow: 0 0 0 1px #fafafa, 0 0 0 3px #AAA;
 }
 
-#selected-geoms-row .col.selected,
-#selected-layers-row .col.selected {
+#geoms .ds-dragitem.ds-selected,
+#layers .ds-dropoption.ds-selected {
   cursor: default;
   box-shadow: 0 0 0 1px #fafafa, 0 0 0 3px #666;
 }
@@ -128,42 +129,6 @@ body {
   visibility: visible;
 }
 
-/* LATER: Once opacity is decided, create base64 encoded images with correct opacity and
-create .geom-line.noshow, setting to lower alpha png background.  This will make sure the
-eye icon is not affected by the parent .noshow opacity value */
-.noshow {
-  opacity: 0.3;
-}
-
-.visible > .svg-inline--fa {
-  cursor: pointer;
-  z-index: 1;
-}
-
-.fa-eye {
-  opacity: 1;
-}
-
-.fa-eye:hover {
-  opacity: 0.3;
-}
-
-.fa-eye:hover:before {
-    content: "\f070";
-}
-
-.fa-eye-slash {
-  opacity: 0.3;
-}
-
-.fa-eye-slash:hover {
-  opacity: 1.0;
-}
-
-.fa-eye-slash:hover:before {
-  content: "\f06e";
-}
-
 .dataset-vars .grid,
 #selected-aes-col .grid {
   cursor: pointer;
@@ -182,27 +147,38 @@ eye icon is not affected by the parent .noshow opacity value */
   margin-left: 15px;
 }
 
-.geom-blank {
+.ds-toggle-visible {
+  margin: -3px 0 0 -3px;
+  line-height: 0;
+  float: left;
+}
+
+.ds-dropoption[data-value="geom-blank"] {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8AgMAAABHkjHhAAAADFBMVEUAAADDw8Pf39////8rOwR2AAAAIUlEQVR4AWNAB1KrkMESBv3/yOAH/fij/FH+KB8jP6IBAPMiKJ7xlAlRAAAAAElFTkSuQmCC) no-repeat;
   background-size: 100%;
 }
-.geom-bar {
+.ds-dragitem[data-value="geom-bar"],
+.ds-dropoption[data-value="geom-bar"] {
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8AQMAAAAAMksxAAAABlBMVEX///8mJiZ40e/1AAAAFUlEQVR4AWOgN6j//2CYMSDkMGQAAG9VqnFBc2JcAAAAAElFTkSuQmCC) no-repeat;
     background-size: 100%;
 }
-.geom-point {
+.ds-dragitem[data-value="geom-point"],
+.ds-dropoption[data-value="geom-point"] {
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAAAAAAfl4auAAABdElEQVR4AbzWIWzCQBTG8RegaxOSTUCzBVJCS9BsArEpmsnNb0HMbqJy04S0fg6vWm9ANymuFl3ZBAclTXowth6I89+S+/ufea+5Pvr9R9Jx5o5GLsMwMzUixcwg7ClUprkQtunUSD72NG4VF8KZqRBpJsNWxTzb9jKJH8khiVMU569d4+brCOF9p8pn/A3hsEk8K0WwrxLPiBG80InXThC8GXJbuTtA015TQ209FeCetws/LCQ+Q3ngTCIQs8ElEc0wPK5SmR5BuEenJhA2z9iB8CPx6gGEl9zWDIatavVg9t938v9VEN599K37FYaZUaOyJYSDOvFsCDt0yoLw9Ix7EI50bqtjbNozIroaMHDP0dQJcokfSRH68y2Ii+eW2qA1hH9uK1Q23CA4aRNPnyM4Noin+ghOLeI1Q2hgnxf8u+rsIXx8uza6Lzn6GKRxcpD1DIn7GcDifgawuJ8BLE5g2VjczwAW9zOExf38NzrXVRQAABGP9aJh/UzGAAAAAElFTkSuQmCC) no-repeat;
     background-size: 100%;
 }
-.geom-line {
+.ds-dragitem[data-value="geom-line"],
+.ds-dropoption[data-value="geom-line"] {
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAAAAAAfl4auAAABOElEQVR4Ae3WMU4CURRGYXs7N+F2ABWXoc4awAp6rdQ9qKVsAHETo42RchoJ12QKHvkSH5OhsHBu86qTnP9kijmIPe4fwB3cwR282AMuju7WbeGy93l1uWwJ39zG+r6/aAV/98uIeBuo3gh+KepnqXojuJjVT1Y9weZa1W9ePcHm2hzqO+FVr6xf1PMwuUL1PEwu1fOwubbVX3fD5HoebdRPVA9hc32cJvXi4msXTK5hmdQfVBc21/Vj/aAuTC5Gqy5MLkYn9RA2l6PTVcdzYXM5Ot10EsLm+nX0fFgBZ7+u9+3R1fmc2ubizkqlt2FzceM0GmnhWRHe0whpYHMxWmlgczFaaWBzMVppYHMxWmlgczFaaWCO0dUQ6SzM6Mk0GsOMVjoPM1rpPMzo8TRaw4PD6u9/pTr4B9LfsdEdAfdTAAAAAElFTkSuQmCC) no-repeat;
     background-size: 100%;
 }
-.geom-dotplot {
+.ds-dragitem[data-value="geom-dotplot"],
+.ds-dropoption[data-value="geom-dotplot"]{
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAAFVBMVEX////Ozs5qampiYmLa2toYGBgAAACh6dWXAAAAgUlEQVR42u2QMQrAMAwDGzvJ/5/cBk+mCGFvpdJwCIEhuUtRFEVRlB9lmM/u7Vx7r9E89v3Emsd2jr375fPs/qfdRtkw69ww7tww7tww7tww7tww7txwEO3McBDtxHAQ7cRwEO3EcBDtxHAQ7W/bVWbbVSbbVSbbVSbbVSaTVX43NyZjCc3Zq3CYAAAAAElFTkSuQmCC) no-repeat;
     background-size: 100%;
 }
-.geom-boxplot {
+.ds-dragitem[data-value="geom-boxplot"],
+.ds-dropoption[data-value="geom-boxplot"] {
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8BAMAAADI0sRBAAAAIVBMVEX////c3NygoKCfn59jY2NAQEBBQUGKiopkZGSJiYk/Pz89z7m5AAAAdUlEQVR4AWOgPmAUwCvNpDDypJmNjY1NnIGEAVZpVSUoSMYqrQxn0E+aUQCvNJPCIJPGDOcSWKB2YglnNGlMAxFs+kgjnEOONEJoYKW1jKEgGKs0E9ADGk1AQgGrNCJy8UuPSiPCGYs0ZjgzCgyNghLu2qEFABDhJYXCskOWAAAAAElFTkSuQmCC) no-repeat;
     background-size: 100%;
 }

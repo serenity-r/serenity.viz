@@ -16,7 +16,8 @@ Imports:
     forcats,
     stringr,
     shinyjs,
-    DragulaSelectR (>= 0.0.0.9000)
+    dragulaSelectR
+Remotes: serenity-r/dragulaSelectR
 URL: https://github.com/serenity-r/serenity
 BugReports: https://github.com/serenity-r/dragulaSelectR/issues
 License: GPL-3

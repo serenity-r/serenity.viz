@@ -7,13 +7,13 @@ ggcode <- reactive({
     )
   }
 
-  code <- paste(code,
-                "%>%\n",
-                "ggplot()"
-                )
-
-  # code <- do.call('paste', c(code, as.list(input$`selected-layers-row`), sep = '+'))
-  # code <- paste(code, input$`selected-layers-row`, sep='+')
+  tmp <- layer_code()
+  # if (isTruthy(layer_code())) {
+  #   code <- paste(code,
+  #                 "%>%\n",
+  #                 layer_code()
+  #   )
+  # }
 
   return(styler::style_text(code))
 })

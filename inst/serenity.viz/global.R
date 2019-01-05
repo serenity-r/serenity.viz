@@ -3,6 +3,7 @@ library(dplyr)
 library(forcats)
 library(ggplot2)
 library(miniUI)
+library(dragulaSelectR)
 
 ## Available for all R processes and UI
 

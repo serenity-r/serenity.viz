@@ -16,6 +16,7 @@ NULL
 #' \dontrun{
 #' serenity.viz::serenity.viz()
 #' }
+#' @import shiny
 #' @export
 serenity.viz <- function(data = NULL) {
   # Process incoming data

@@ -1,7 +1,5 @@
 resourcePath <- system.file("serenity.viz", "www", package = "serenity.viz")
 
-resetButtonUI <- miniButtonBlock(actionButton("refresh", "Refresh"))
-
 miniPage(
   shinyjs::useShinyjs(),
   shinyjs::extendShinyjs(
@@ -27,7 +25,8 @@ miniPage(
         wellPanel(
           div(
             id = "selected-geoms-row",
-            uiOutput("geoms", inline = TRUE)
+            dragZone("geoms",
+                     choices = sapply(geoms, function(geom) { "" }, simplify = FALSE, USE.NAMES = TRUE))
           ),
           height = "100%",
           padding = 5
@@ -39,15 +38,20 @@ miniPage(
     fillCol(
       flex = c(8, 4),
       tagList(
-        dropZoneInput("selected-layers-row",
-                      div(
-                        id = "geom-blank-layer-0",
-                        class = "col geom-blank unsortable selected",
-                        div(id = "layer-blank",
-                            class = "layer-inner",
-                            `data-colnum` = 1
-                        )
-                      )
+        dropZoneInput("layers",
+                      choices = c("geom-blank" = "",
+                                  sapply(geoms, function(geom) { "" }, simplify = FALSE, USE.NAMES = TRUE)),
+                      presets = list(
+                        values = "geom-blank",
+                        selected = "geom-blank",
+                        locked = "geom-blank",
+                        freeze = "geom-blank")
+                      ,
+                      multivalued = TRUE,
+                      selectable = TRUE,
+                      togglevis = TRUE,
+                      direction = "horizontal",
+                      removeOnSpill = FALSE
         ),
         plotOutput("viz",
                    height = "100%")
