@@ -6,16 +6,9 @@ layerAesUI <- function(id, bsa) {
   ns <- NS(id)
 
   # Hidden dropzone input
-  title <- dropZoneInput(ns('dropzone'),
-                         choices = names(serenity.viz.data),
-                         hidden = TRUE,
-                         placeholder = id,
-                         highlight = TRUE)
+  title <- uiOutput(ns('aes_dropzone'), inline = FALSE)
 
-  # This can be
-  #   (1) a dropzone for mapping variables,
-  #   (2) a placeholder (if inherited), or
-  #   (3) a shiny input when no mapping set
+  # Visible aesthetic input
   content <- uiOutput(ns('aes_input'), inline = FALSE)
 
   bsplus::bs_append(bsa, title = title, content = content)
@@ -23,15 +16,32 @@ layerAesUI <- function(id, bsa) {
 
 # SERVER ----
 layerAes <- function(input, output, session) {
-  # This contains the layer and aes id
-  ns <- session$ns
-
-  output$aes_input <- renderUI({
-    aes_input <- dropZoneInput(ns('mapping'),
-                               choices = names(serenity.viz.data))
-    entangle(session, ns('dropzone'), ns('mapping'))
-    aes_input
+  output$aes_dropzone <- renderUI({
+    ns <- session$ns
+    dropZoneInput(ns('dropzone'),
+                  choices = names(serenity.viz.data),
+                  presets = list(values = input$dropzone),
+                  hidden = TRUE,
+                  placeholder = stringr::str_split(ns(''),'-')[[1]][5],
+                  highlight = TRUE)
   })
 
-  return(NULL)
+  # This can be
+  #   (1) a dropzone for mapping variables,
+  #   (2) a placeholder (if inherited), or
+  #   (3) a shiny input when no mapping set
+  output$aes_input <- renderUI({
+    ns <- session$ns
+    dropZoneInput(ns('mapping'),
+                  choices = names(serenity.viz.data),
+                  presets = list(values = input$mapping))
+  })
+
+  entangle(session, 'dropzone', 'mapping')
+
+  aesToCode <- reactive({
+    NULL
+  })
+
+  return(aesToCode)
 }

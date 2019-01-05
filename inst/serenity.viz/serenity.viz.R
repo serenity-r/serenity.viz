@@ -1,5 +1,3 @@
-forcePlot <- makeReactiveTrigger()
-
 # Render ----------------------
 
 # _ Subsetted data ====
@@ -7,12 +5,18 @@ subsetted_data <- callModule(module = dataSet,
                              id = attributes(serenity.viz.data)$df_name)
 
 # _ ggplot code ====
-layer_code <- reactive({
-  paste(purrr::map(input$layers, ~ callModule(module = layerMod, id = .)), collapse = "%>%\n")
-})
-
 output$aesthetics <- renderUI({
   layerUI(id = input$layers_selected)
+})
+
+# Run the modules upon layer changes
+layer_modules <- reactive({
+  purrr::map(setdiff(input$layers, input$layers_invisible), ~ callModule(module = layerMod, id = .))
+})
+
+# Evaluate modules
+layer_code <- reactive({
+  paste(purrr::map(layer_modules(), ~ .()), collapse = "%>%\n")
 })
 
 # _ Aesthetic divs ====
@@ -112,8 +116,6 @@ output$aesthetics <- renderUI({
 
 # _ Plot ====
 output$viz <- renderPlot({
-  forcePlot$depend()
-
   failure <- FALSE
   # Try to plot.  If unsuccessful, pass error message to help pane.
   tryCatch(eval(parse(text=ggcode())),
@@ -125,7 +127,7 @@ output$viz <- renderPlot({
   if (!failure) {
     shinyjs::hide(id = "help-pane", anim = FALSE)
   }
-  eval(parse(text=ggcode()))
+  # eval(parse(text=ggcode()))
 })
 
 # _ Code ====
@@ -259,7 +261,7 @@ observeEvent(input$cancel, {
 #   why ignoreNULL and ignoreInit are both FALSE.  NULL corresponds to the main (blank) layer
 #
 layer_id <- eventReactive(input$layers_selected, {
-  ifelse(is.null(input$layers_selected), 'geom-blank-1', input$layers_selected)
+  ifelse(is.null(input$layers_selected), 'geom-blank-ds-1', input$layers_selected)
 }, ignoreNULL = FALSE, ignoreInit = FALSE)
 
 

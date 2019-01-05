@@ -7,13 +7,12 @@ ggcode <- reactive({
     )
   }
 
-  tmp <- layer_code()
-  # if (isTruthy(layer_code())) {
-  #   code <- paste(code,
-  #                 "%>%\n",
-  #                 layer_code()
-  #   )
-  # }
+  if (isTruthy(layer_code())) {
+    code <- paste(code,
+                  "%>%\n",
+                  layer_code()
+    )
+  }
 
   return(styler::style_text(code))
 })

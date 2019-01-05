@@ -20,10 +20,15 @@ layerMod <- function(input, output, session) {
   # Get layer, geom, and aesthetics information
   layer_id <- gsub("-$", "", ns(''))
   geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
-  aesthetics <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))$geom$aesthetics()
+  if (geom_type == "geom-blank") {
+    aesthetics <- gg_aesthetics[["default"]]
+  } else {
+    aesthetics <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))$geom$aesthetics()
+  }
 
   # _ Aesthetic divs ====
   output$layer_aes <- renderUI({
+    ns <- session$ns
     bsa <- bsplus::bs_accordion(id = ns("aes")) %>%
       bsplus::bs_set_opts(panel_type = "success", use_heading_link = TRUE)
     lapply(aesthetics, function(aes) {
@@ -33,7 +38,7 @@ layerMod <- function(input, output, session) {
   })
 
   # _ load variable subset modules ====
-  layer_args <- purrr::map(aesthetics, ~ callModule(module = layerAes, id = ns(.)))
+  layer_args <- purrr::map(aesthetics, ~ callModule(module = layerAes, id = .))
 
   # _ process subset arguments ====
   layer_code <- reactive({
