@@ -22,7 +22,7 @@ geom_blank_inputs_to_reactives <- function() {
   geom_blank_inputs <- paste0('geom-blank-ds-1-', gg_aesthetics[["default"]], '-dropzone')
   if (any(geom_blank_inputs %in% names(input))) {
     return(reactiveValuesToList(isolate(input))[paste0('geom-blank-ds-1-', gg_aesthetics[["default"]], '-dropzone')] %>%
-             map(~ reactive({ quote(.) }, quoted = TRUE)))
+             purrr::map(~ reactive({ quote(.) }, quoted = TRUE)))
   } else {
     return(NULL)
   }
@@ -274,32 +274,6 @@ observeEvent(input$cancel, {
 
 ## Reactives ----------------------
 
-# _ Get Current Layer Id ====
-#
-# Depends:
-#   input$js_layer_id
-#
-# Comments:
-#   Important to use eventReactive here as we want layer_id set on start of program, which is
-#   why ignoreNULL and ignoreInit are both FALSE.  NULL corresponds to the main (blank) layer
-#
-layer_id <- eventReactive(input$layers_selected, {
-  ifelse(is.null(input$layers_selected), 'geom-blank-ds-1', input$layers_selected)
-}, ignoreNULL = FALSE, ignoreInit = FALSE)
-
-
-# _ Get Current Geom ====
-#
-# Depends:
-#   layer_id()
-#
-# Comments:
-#   The selected geom type responds only to the layer_id
-#
-geom_type <- reactive({
-  paste(stringr::str_split(layer_id(), '-')[[1]][1:2], collapse="-")
-})
-
 # _ Get Active Layers ====
 #
 # Depends:
@@ -345,19 +319,3 @@ geom_type <- reactive({
 #     return(values$layers[[layer_id()]]$mapping)
 #   }
 # })
-
-# _ Get Current Aesthetics ====
-#
-# Depends:
-#   geom_type()
-#
-# Comments:
-#   May not need this.
-#
-aesthetics <- reactive({
-  if (geom_type() == "geom-blank") {
-    return(gg_aesthetics[["default"]])
-  } else {
-    return(eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))$geom$aesthetics())
-  }
-})

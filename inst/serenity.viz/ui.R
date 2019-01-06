@@ -49,6 +49,7 @@ miniPage(
                       ,
                       multivalued = TRUE,
                       selectable = TRUE,
+                      selectOnDrop = TRUE,
                       togglevis = TRUE,
                       direction = "horizontal",
                       removeOnSpill = FALSE

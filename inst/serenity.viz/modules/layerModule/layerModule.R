@@ -13,18 +13,23 @@ layerUI <- function(id) {
 
 # SERVER ----
 
-layerMod <- function(input, output, session, geom_blank) {
+layerMod <- function(input, output, session, geom_blank_input) {
+  # UTILS ----
+
   # This contains the layer id
   ns <- session$ns
 
   # Get layer, geom, and aesthetics information
   layer_id <- gsub("-$", "", ns(''))
   geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
+  geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   if (geom_type == "geom-blank") {
     aesthetics <- gg_aesthetics[["default"]]
   } else {
-    aesthetics <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))$geom$aesthetics()
+    aesthetics <- geom_proto$geom$aesthetics()
   }
+
+  # MAIN ----
 
   # _ Aesthetic divs ====
   output$layer_aes <- renderUI({
@@ -38,7 +43,10 @@ layerMod <- function(input, output, session, geom_blank) {
   })
 
   # _ load variable subset modules ====
-  layer_args <- purrr::map(aesthetics, ~ callModule(module = layerAes, id = .))
+  layer_args <- purrr::map(aesthetics, ~ callModule(module = layerAes, id = .,
+                                                    geom_blank_input,
+                                                    inherit.aes = geom_proto$inherit.aes,
+                                                    default_aes = geom_proto$geom$default_aes[[.]]))
 
   # _ process subset arguments ====
   layer_code <- reactive({
