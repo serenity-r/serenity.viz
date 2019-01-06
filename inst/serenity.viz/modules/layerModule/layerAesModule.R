@@ -20,7 +20,7 @@ layerAes <- function(input, output, session) {
     ns <- session$ns
     dropZoneInput(ns('dropzone'),
                   choices = names(serenity.viz.data),
-                  presets = list(values = input$dropzone),
+                  presets = input$dropzone,
                   hidden = TRUE,
                   placeholder = stringr::str_split(ns(''),'-')[[1]][5],
                   highlight = TRUE)
@@ -34,7 +34,7 @@ layerAes <- function(input, output, session) {
     ns <- session$ns
     dropZoneInput(ns('mapping'),
                   choices = names(serenity.viz.data),
-                  presets = list(values = input$mapping))
+                  presets = input$dropzone)
   })
 
   entangle(session, 'dropzone', 'mapping')

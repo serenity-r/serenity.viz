@@ -1,3 +1,6 @@
+# This stores returned reactives from layer modules
+layer_modules <- reactiveValues()
+
 # Render ----------------------
 
 # _ Subsetted data ====
@@ -9,14 +12,34 @@ output$aesthetics <- renderUI({
   layerUI(id = input$layers_selected)
 })
 
-# Run the modules upon layer changes
-layer_modules <- reactive({
-  purrr::map(setdiff(input$layers, input$layers_invisible), ~ callModule(module = layerMod, id = .))
+# Get the names of the visible layers
+visible_layers <- reactive({
+  setdiff(input$layers, input$layers_invisible)
+})
+
+# Preps geom_blank dropzone inputs for layer modules
+geom_blank_inputs_to_reactives <- function() {
+  geom_blank_inputs <- paste0('geom-blank-ds-1-', gg_aesthetics[["default"]], '-dropzone')
+  if (any(geom_blank_inputs %in% names(input))) {
+    return(reactiveValuesToList(isolate(input))[paste0('geom-blank-ds-1-', gg_aesthetics[["default"]], '-dropzone')] %>%
+             map(~ reactive({ quote(.) }, quoted = TRUE)))
+  } else {
+    return(NULL)
+  }
+}
+
+# Update layer module output reactives
+observeEvent(input$layers, {
+  # Adding new layers
+  purrr::map(setdiff(input$layers, names(layer_modules)), ~ { layer_modules[[.]] <- callModule(module = layerMod, id = .,
+                                                                                               geom_blank_inputs_to_reactives())} )
+  # Remove old layers
+  purrr::map(setdiff(names(layer_modules), input$layers), ~ { layer_modules[[.]] <- NULL })
 })
 
 # Evaluate modules
 layer_code <- reactive({
-  paste(purrr::map(layer_modules(), ~ .()), collapse = "%>%\n")
+  paste(purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .()), collapse = "%>%\n")
 })
 
 # _ Aesthetic divs ====

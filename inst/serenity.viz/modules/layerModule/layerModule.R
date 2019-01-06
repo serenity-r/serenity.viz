@@ -13,7 +13,7 @@ layerUI <- function(id) {
 
 # SERVER ----
 
-layerMod <- function(input, output, session) {
+layerMod <- function(input, output, session, geom_blank) {
   # This contains the layer id
   ns <- session$ns
 
@@ -45,7 +45,8 @@ layerMod <- function(input, output, session) {
     # Evaluate reactives
     args <- purrr::map(layer_args, ~ .())
 
-    processed_layers_code <- NULL
+    # processed_layers_code <- paste(purrr::map(geom_blank, ~ .()), collapse = " | ")
+    processed_layers_code <- geom_type
 
     return(processed_layers_code)
   })
