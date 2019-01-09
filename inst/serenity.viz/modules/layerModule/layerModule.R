@@ -13,7 +13,7 @@ layerUI <- function(id) {
 
 # SERVER ----
 
-layerMod <- function(input, output, session, geom_blank_input) {
+layerMod <- function(input, output, session, layers_selected, geom_blank_input) {
   # UTILS ----
 
   # This contains the layer id
@@ -33,6 +33,8 @@ layerMod <- function(input, output, session, geom_blank_input) {
 
   # _ Aesthetic divs ====
   output$layer_aes <- renderUI({
+    layers_selected()
+
     ns <- session$ns
     bsa <- bsplus::bs_accordion(id = ns("aes")) %>%
       bsplus::bs_set_opts(panel_type = "success", use_heading_link = TRUE)
@@ -44,6 +46,7 @@ layerMod <- function(input, output, session, geom_blank_input) {
 
   # _ load variable subset modules ====
   layer_args <- purrr::map(aesthetics, ~ callModule(module = layerAes, id = .,
+                                                    layers_selected,
                                                     geom_blank_input,
                                                     inherit.aes = geom_proto$inherit.aes,
                                                     default_aes = geom_proto$geom$default_aes[[.]]))

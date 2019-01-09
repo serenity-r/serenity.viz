@@ -17,6 +17,19 @@ help_panes <- lapply(geoms, function(x) {
 })
 names(help_panes) <- geoms_
 
+makeReactiveTrigger <- function() {
+  rv <- reactiveValues(a = 0)
+  list(
+    depend = function() {
+      rv$a
+      invisible()
+    },
+    trigger = function() {
+      rv$a <- isolate(rv$a + 1)
+    }
+  )
+}
+
 # GGPLOT
 # List of all geom aesthetics: geom_boxplot()$geom$aesthetics() (don't need group - will handle internally)
 # List of required aes: geom_boxplot()$geom$required_aes (some are calculated for you)
