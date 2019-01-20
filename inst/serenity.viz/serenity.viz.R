@@ -41,7 +41,7 @@ observeEvent(input$layers, {
 
 # Get layer code
 layer_code <- reactive({
-  paste(purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .()), collapse = "%>%\n")
+  paste(purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .()), collapse = "+\n")
 })
 
 # _ Aesthetic divs ====
@@ -152,7 +152,7 @@ output$viz <- renderPlot({
   if (!failure) {
     shinyjs::hide(id = "help-pane", anim = FALSE)
   }
-  # eval(parse(text=ggcode()))
+  eval(parse(text=ggcode()))
 })
 
 # _ Code ====

@@ -20,6 +20,11 @@ layerAes <- function(input, output, session, layers_selected, geom_blank_input,
   # Get aesthetic from namespace
   aesthetic <- stringr::str_split(session$ns(''), '-')[[1]] %>% { .[length(.)-1] }
 
+  # Convert default colour values to hex (if applicable)
+  if ((aesthetic %in% c('colour', 'fill')) && isTruthy(default_aes)) {
+    default_aes <- colour_to_hex(default_aes)
+  }
+
   # In order to update the mapping correctly, we need to know if there is
   #  a change in the truthiness of the mapping variable - e.g., going from
   #  specified mapping to no mapping
@@ -45,7 +50,9 @@ layerAes <- function(input, output, session, layers_selected, geom_blank_input,
                     presets = input$dropzone,
                     hidden = TRUE,
                     placeholder = stringr::str_split(ns(''),'-')[[1]][5],
-                    highlight = TRUE)
+                    highlight = TRUE,
+                    maxInput = 1,
+                    replaceOnDrop = TRUE)
     })
   })
 
@@ -72,7 +79,9 @@ layerAes <- function(input, output, session, layers_selected, geom_blank_input,
         # Mapping exists
         dropZoneInput(ns("mapping"),
                       choices = names(serenity.viz.data),
-                      presets = input$mapping %||% mapping)
+                      presets = input$mapping %||% mapping,
+                      maxInput = 1,
+                      replaceOnDrop = TRUE)
       } else
         if (inherit) {
           # Inherited mappings override values
@@ -104,7 +113,19 @@ layerAes <- function(input, output, session, layers_selected, geom_blank_input,
 
   # _ Aesthetic to code ====
   aesToCode <- reactive({
-    NULL
+    arg <- list(mappings = c(), values = c())
+    if (!is.null(input$mapping)) {
+      arg$mappings <- paste(aesthetic, "=", input$mapping)
+    }
+    if (!is.null(input$value) && (input$value != default_aes)) {
+      arg$values <- paste(aesthetic, "=",
+                          switch(aesthetic,
+                                "colour" = ,
+                                "fill" = paste0('"', input$value, '"'),
+                                input$value)
+                          )
+    }
+    arg
   })
 
   return(aesToCode)

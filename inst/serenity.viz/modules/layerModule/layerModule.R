@@ -56,10 +56,32 @@ layerMod <- function(input, output, session, layers_selected, geom_blank_input) 
     # Evaluate reactives
     args <- purrr::map(layer_args, ~ .())
 
-    # processed_layers_code <- paste(purrr::map(geom_blank, ~ .()), collapse = " | ")
-    processed_layers_code <- geom_type
+    # Pull out the filter and mutate elements
+    mapping_args <- unlist(purrr::map(args, "mappings"))
+    value_args <- unlist(purrr::map(args, "values"))
 
-    return(processed_layers_code)
+    processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
+                                          "ggplot",
+                                          stringr::str_replace(geom_type, "-", "_")), "(")
+
+    # Build filter code
+    if (length(mapping_args)) {
+      processed_layer_code <- paste0(processed_layer_code,
+                                     "aes(",
+                                     paste(mapping_args, collapse = ", "),
+                                     ")")
+    }
+
+    # Build mutate code
+    if (length(value_args)) {
+      processed_layer_code <- paste0(processed_layer_code,
+                                     ifelse(length(mapping_args), ",\n", ""),
+                                     paste(value_args, collapse = ", "))
+    }
+
+    processed_layer_code <- paste0(processed_layer_code, ")")
+
+    return(processed_layer_code)
   })
 
   return(layer_code)
