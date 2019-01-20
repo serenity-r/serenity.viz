@@ -143,16 +143,18 @@ layer_code <- reactive({
 output$viz <- renderPlot({
   failure <- FALSE
   # Try to plot.  If unsuccessful, pass error message to help pane.
-  tryCatch(eval(parse(text=ggcode())),
+  # We need the print statement here or we can't capture errors
+  tryCatch(print(eval(parse(text=ggcode()))),
            error = function(e) {
              shinyjs::show(id = "help-pane", anim = FALSE)
              shinyjs::html(id = "help-pane", html = e$message)
              failure <<- TRUE
+           },
+           finally = {
+             if (!failure) {
+               shinyjs::hide(id = "help-pane", anim = FALSE)
+             }
            })
-  if (!failure) {
-    shinyjs::hide(id = "help-pane", anim = FALSE)
-  }
-  eval(parse(text=ggcode()))
 })
 
 # _ Code ====
@@ -175,29 +177,6 @@ observeEvent(input$cancel, {
   shinyjs::js$close_window()
   stopApp()
 })
-
-# _ Update Layers ====
-#
-# Comments:
-#   Only triggered via new layer or reshuffling (i.e. `selected-layers-row` dropzone changes)
-#
-# observeEvent(input$`selected-layers-row`, {
-#   # Is layer new?
-#   num_layers <- length(input$`selected-layers-row`) - 1 # Ignore blank layer
-#
-#   if (num_layers > 0) {
-#     if (length(values$layers) < num_layers) {
-#       # New layer added - add to gg object (temporary until all required aesthetics are filled)
-#       values$layers[[layer_id()]] <- eval(parse(text=paste0(stringr::str_replace(geom_type(), "-", "_"), "()")))
-#
-#       # Geom mapping starts as NULL - set to aes()
-#       values$layers[[layer_id()]]$mapping <- aes()
-#     } else {
-#       # Just a reshuffling of layers - address accordingly
-#       values$layers <- values$layers[input$`selected-layers-row`[1 + (1:num_layers)]]
-#     }
-#   }
-# }, priority = 1)
 
 ## _ Ready Layer One ====
 #
@@ -267,57 +246,4 @@ observeEvent(input$cancel, {
 #       })
 #     }
 #   })
-# })
-
-# Print only active layers
-# observe({
-#   values$gg$layers <- active_layers()
-# })
-
-## Reactives ----------------------
-
-# _ Get Active Layers ====
-#
-# Depends:
-#   values$layers
-#   input$js_active_layers
-#
-# Comments:
-#   Triggered via change in values$layers as well as layer show/hide event in shinyjs-funcs.js
-#   Send message to selected-layers-row dropzone input asking for active layers.  Response goes
-#     to input$js_active_layers.
-#
-# active_layers <- reactive({
-#   if (length(values$layers) > 0) {
-#     # Has a hide/show layer button been pressed yet?
-#     # Note: Need to check if named input in names of the input reactiveVariables object
-#     #   is.null(input$js_active_layers) won't work when the value of the input is NULL!!!
-#     if ('js_active_layers' %in% names(input)) {
-#       return(values$layers[input$js_active_layers])
-#     } else {
-#       return(values$layers)
-#     }
-#   } else {
-#     return(list())
-#   }
-# })
-
-# _ Get Current Mapping ====
-#
-# Depends:
-#   layer_id()
-#   geom_type()
-#   values$layers
-#   values$gg$mapping
-#
-# Comments:
-#   What is the current mapping?  State determined by selected layer
-#   Note: ifelse didn't work here
-#
-# mapping <- reactive({
-#   if (geom_type() == "geom-blank") {
-#     return(values$gg$mapping)
-#   } else {
-#     return(values$layers[[layer_id()]]$mapping)
-#   }
 # })
