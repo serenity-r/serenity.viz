@@ -17,9 +17,16 @@ help_panes <- lapply(geoms, function(x) {
 })
 names(help_panes) <- geoms_
 
-makeReactiveTrigger <- function() {
+makeReactiveTrigger <- function(init_val = NULL) {
   rv <- reactiveValues(a = 0)
+  val <- init_val
   list(
+    get = function() {
+      val
+    },
+    set = function(new_val) {
+      val <<- new_val
+    },
     depend = function() {
       rv$a
       invisible()

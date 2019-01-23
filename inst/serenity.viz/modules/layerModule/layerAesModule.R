@@ -15,39 +15,37 @@ layerAesUI <- function(id, bsa) {
 }
 
 # SERVER ----
-layerAes <- function(input, output, session, layers_selected, geom_blank_input,
+layerAes <- function(input, output, session, triggerAesUpdate, geom_blank_input,
                      inherit.aes, default_aes) {
   # Get aesthetic from namespace
   aesthetic <- stringr::str_split(session$ns(''), '-')[[1]] %>% { .[length(.)-1] }
+  layer <- paste(stringr::str_split(session$ns(''), '-')[[1]][1:2], collapse="-")
 
   # Convert default colour values to hex (if applicable)
   if ((aesthetic %in% c('colour', 'fill')) && isTruthy(default_aes)) {
     default_aes <- colour_to_hex(default_aes)
   }
 
-  # In order to update the mapping correctly, we need to know if there is
-  #  a change in the truthiness of the mapping variable - e.g., going from
-  #  specified mapping to no mapping
-  mapping <- NULL
-  triggerRenderMapping <- makeReactiveTrigger()
+  # Need a trigger for when to update aes_input_ui
+  mapping_exists <- makeReactiveTrigger(!is.null(input$dropzone))
   observeEvent(input$dropzone, {
-    if ((is.null(mapping) && !is.null(input$dropzone)) ||
-        (is.null(input$dropzone) && !is.null(mapping))) {
-          triggerRenderMapping$trigger()
+    if ((!mapping_exists$get() && !is.null(input$dropzone)) ||
+        (is.null(input$dropzone) && mapping_exists$get())) {
+          mapping_exists$trigger()
     }
-    mapping <<- input$dropzone
-  }, ignoreNULL = FALSE)
+    mapping_exists$set(!is.null(input$dropzone))
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   # _ Aesthetic dropzone ====
   output$aes_dropzone_ui <- renderUI({
-    layers_selected()
     ns <- session$ns
+    triggerAesUpdate()
 
     isolate({
       # Should not depend on any inputs
       dropZoneInput(ns("dropzone"),
                     choices = names(serenity.viz.data),
-                    presets = input$dropzone,
+                    presets = input$dropzone %||% input$mapping,
                     hidden = TRUE,
                     placeholder = stringr::str_split(ns(''),'-')[[1]][5],
                     highlight = TRUE,
@@ -64,22 +62,21 @@ layerAes <- function(input, output, session, layers_selected, geom_blank_input,
   #
   # Triggered when layer selected or
   output$aes_input_ui <- renderUI({
-    layers_selected()
-    triggerRenderMapping$depend()
-
     ns <- session$ns
+    triggerAesUpdate()
+    mapping_exists$depend()
 
     isolate({
       geom_blank_ns <- geom_blank_NS(ns)
       inherit <- (inherit.aes && isTruthy(geom_blank_input) &&
-                  isTruthy(geom_blank_input[[geom_blank_ns("dropzone")]]) &&
-                  isTruthy(geom_blank_input[[geom_blank_ns("dropzone")]]()))
+                    isTruthy(geom_blank_input[[geom_blank_ns("dropzone")]]) &&
+                    isTruthy(geom_blank_input[[geom_blank_ns("dropzone")]]()))
 
-      if (isTruthy(input$mapping) || isTruthy(mapping)) {
+      if (isTruthy(input$mapping) || isTruthy(input$dropzone)) {
         # Mapping exists
         dropZoneInput(ns("mapping"),
                       choices = names(serenity.viz.data),
-                      presets = input$mapping %||% mapping,
+                      presets = input$mapping %||% input$dropzone,
                       maxInput = 1,
                       replaceOnDrop = TRUE)
       } else
@@ -100,13 +97,8 @@ layerAes <- function(input, output, session, layers_selected, geom_blank_input,
     })
   })
 
-  # observe({
-  #   if (is.null(input$lsuId) || input$lsuId == "") {
-  #     shinyjs::disable("submit")
-  #   } else {
-  #     shinyjs::enable("submit")
-  #   }
-  # })
+  # _ Make sure inputs always update ====
+  outputOptions(output, "aes_input_ui", suspendWhenHidden = FALSE)
 
   # _ Entangle dropzone and mapping/input ====
   entangle(session, 'dropzone', 'mapping')

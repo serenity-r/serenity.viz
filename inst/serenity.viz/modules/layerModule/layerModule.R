@@ -29,11 +29,19 @@ layerMod <- function(input, output, session, layers_selected, geom_blank_input) 
     aesthetics <- geom_proto$geom$aesthetics()
   }
 
+  # Create trigger for this layers update
+  triggerAesUpdate <- makeReactiveTrigger()
+  observeEvent(layers_selected(), {
+    if (layers_selected() == layer_id) {
+      triggerAesUpdate$trigger()
+    }
+  })
+
   # MAIN ----
 
   # _ Aesthetic divs ====
   output$layer_aes <- renderUI({
-    layers_selected()
+    triggerAesUpdate$depend()
 
     ns <- session$ns
     bsa <- bsplus::bs_accordion(id = ns("aes")) %>%
@@ -46,7 +54,7 @@ layerMod <- function(input, output, session, layers_selected, geom_blank_input) 
 
   # _ load variable subset modules ====
   layer_args <- purrr::map(aesthetics, ~ callModule(module = layerAes, id = .,
-                                                    layers_selected,
+                                                    reactive({ triggerAesUpdate$depend() }),
                                                     geom_blank_input,
                                                     inherit.aes = geom_proto$inherit.aes,
                                                     default_aes = geom_proto$geom$default_aes[[.]]))
@@ -64,7 +72,7 @@ layerMod <- function(input, output, session, layers_selected, geom_blank_input) 
                                           "ggplot",
                                           stringr::str_replace(geom_type, "-", "_")), "(")
 
-    # Build filter code
+    # Build aes code
     if (length(mapping_args)) {
       processed_layer_code <- paste0(processed_layer_code,
                                      "aes(",
@@ -72,7 +80,7 @@ layerMod <- function(input, output, session, layers_selected, geom_blank_input) 
                                      ")")
     }
 
-    # Build mutate code
+    # Build values code
     if (length(value_args)) {
       processed_layer_code <- paste0(processed_layer_code,
                                      ifelse(length(mapping_args), ",\n", ""),
