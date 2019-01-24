@@ -7,7 +7,7 @@ library(dragulaSelectR)
 
 ## Available for all R processes and UI
 
-geoms <- c("geom-bar", "geom-point", "geom-line", "geom-dotplot", "geom-boxplot")
+geoms <- c("geom-bar", "geom-point", "geom-line", "geom-dotplot", "geom-boxplot", "geom-violin", "geom-rug")
 geoms_ <- stringr::str_replace(geoms, "-", "_")
 
 help_panes <- lapply(geoms, function(x) {
@@ -48,7 +48,7 @@ makeReactiveTrigger <- function(init_val = NULL) {
 # List of default parameter values: geom_boxplot()$geom_params
 
 gg_aesthetics <- list(
-  "default" = c("x",
+  "geom-blank" = c("x",
                 "y",
                 "alpha",
                 "colour",
@@ -60,30 +60,22 @@ gg_aesthetics <- list(
                 "xmax",
                 "ymin",
                 "ymax"),
-  "geom_bar" = c("x",
+  "geom-bar" = c("x",
                  "alpha",
                  "colour",
                  "fill",
                  "linetype",
                  "size",
                  "weight"),
-  "geom_point" = ggplot2::GeomPoint$aesthetics(),
-  "geom_line" = ggplot2::GeomLine$aesthetics(),
-  "geom_dotplot" = ggplot2::GeomDotplot$aesthetics(),
-  "geom_boxplot" = c("x",
-                     "ymax",
-                     "ymin",
-                     "lower",
-                     "middle",
-                     "upper",
-                     "alpha",
-                     "colour",
-                     "fill",
-                     "linetype",
-                     "shape",
-                     "size",
-                     "weight")
+  "geom-point" = ggplot2::GeomPoint$aesthetics(),
+  "geom-line" = ggplot2::GeomLine$aesthetics(),
+  "geom-dotplot" = ggplot2::GeomDotplot$aesthetics(),
+  "geom-boxplot" = ggplot2::GeomBoxplot$aesthetics(),
+  "geom-violin" = ggplot2::GeomViolin$aesthetics(),
+  "geom-rug" = ggplot2::GeomRug$aesthetics()
 )
+ordering <- unique(unlist(gg_aesthetics))
+gg_aesthetics <- purrr::map(gg_aesthetics, ~ ordering[ordering %in% .])
 
 # Pull in modules ----
 

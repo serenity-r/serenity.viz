@@ -20,8 +20,8 @@ visible_layers <- reactive({
 
 # Preps geom_blank dropzone inputs for layer modules
 geom_blank_inputs_to_reactives <- function() {
-  geom_blank_inputs <- as.list(paste0('geom-blank-ds-1-', gg_aesthetics[["default"]], '-dropzone'))
-  names(geom_blank_inputs) <- paste0('geom-blank-ds-1-', gg_aesthetics[["default"]], '-dropzone')
+  geom_blank_inputs <- as.list(paste0('geom-blank-ds-1-', gg_aesthetics[["geom-blank"]], '-dropzone'))
+  names(geom_blank_inputs) <- paste0('geom-blank-ds-1-', gg_aesthetics[["geom-blank"]], '-dropzone')
   if (any(names(geom_blank_inputs) %in% names(input))) {
     return(geom_blank_inputs %>%
              purrr::map(~ reactive({ input[[.]] })))

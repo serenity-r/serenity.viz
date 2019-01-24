@@ -108,14 +108,14 @@ layerAes <- function(input, output, session, triggerAesUpdate, geom_blank_input,
     arg <- list(mappings = c(), values = c())
     if (!is.null(input$mapping)) {
       arg$mappings <- paste(aesthetic, "=", input$mapping)
-    }
-    if (!is.null(input$value) && (input$value != default_aes)) {
-      arg$values <- paste(aesthetic, "=",
-                          switch(aesthetic,
-                                "colour" = ,
-                                "fill" = paste0('"', input$value, '"'),
-                                input$value)
-                          )
+    } else
+      if (!is.null(input$value) && (input$value != default_aes)) {
+        arg$values <- paste(aesthetic, "=",
+                            switch(aesthetic,
+                                  "colour" = ,
+                                  "fill" = paste0('"', input$value, '"'),
+                                  input$value)
+                            )
     }
     arg
   })

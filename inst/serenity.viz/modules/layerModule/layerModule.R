@@ -23,11 +23,7 @@ layerMod <- function(input, output, session, layers_selected, geom_blank_input) 
   layer_id <- gsub("-$", "", ns(''))
   geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
-  if (geom_type == "geom-blank") {
-    aesthetics <- gg_aesthetics[["default"]]
-  } else {
-    aesthetics <- geom_proto$geom$aesthetics()
-  }
+  aesthetics <- gg_aesthetics[[geom_type]]
 
   # Create trigger for this layers update
   triggerAesUpdate <- makeReactiveTrigger()
