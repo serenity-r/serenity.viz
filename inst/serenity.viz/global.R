@@ -70,7 +70,7 @@ gg_aesthetics <- list(
   "geom-point" = ggplot2::GeomPoint$aesthetics(),
   "geom-line" = ggplot2::GeomLine$aesthetics(),
   "geom-dotplot" = ggplot2::GeomDotplot$aesthetics(),
-  "geom-boxplot" = ggplot2::GeomBoxplot$aesthetics(),
+  "geom-boxplot" = c(ggplot2::GeomBoxplot$aesthetics(), "y"),
   "geom-violin" = ggplot2::GeomViolin$aesthetics(),
   "geom-rug" = ggplot2::GeomRug$aesthetics()
 )

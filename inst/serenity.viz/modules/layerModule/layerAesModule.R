@@ -45,7 +45,7 @@ layerAes <- function(input, output, session, triggerAesUpdate, geom_blank_input,
       # Should not depend on any inputs
       dropZoneInput(ns("dropzone"),
                     choices = names(serenity.viz.data),
-                    presets = input$dropzone %||% input$mapping,
+                    presets = input$mapping, # FIX: This doesn't work: input$dropzone %||% input$mapping
                     hidden = TRUE,
                     placeholder = stringr::str_split(ns(''),'-')[[1]][5],
                     highlight = TRUE,
@@ -113,6 +113,7 @@ layerAes <- function(input, output, session, triggerAesUpdate, geom_blank_input,
         arg$values <- paste(aesthetic, "=",
                             switch(aesthetic,
                                   "colour" = ,
+                                  "linetype" = ,
                                   "fill" = paste0('"', input$value, '"'),
                                   input$value)
                             )
@@ -203,11 +204,10 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
                                  min = 0,
                                  max = 1,
                                  value = aes_val),
-           'linetype' = sliderInput(inputId = inputId,
+           'linetype' = selectInput(inputId = inputId,
                                     label = "",
-                                    min = 0,
-                                    max = 6,
-                                    value = aes_val),
+                                    choices = c("solid", "dashed", "longdash", "dotted", "twodash", "dotdash", "blank"),
+                                    selected = aes_val),
            ''
     ) %>%
       aes_wrap(default)
