@@ -1,6 +1,10 @@
-# UI ----
-
-# Module UI function
+#' UI for layer aesthetic submodule
+#'
+#' @param id  ID of layer aesthetic
+#' @param bsa Bootstrap accordian
+#'
+#' @return UI for layer aesthetic
+#'
 layerAesUI <- function(id, bsa) {
   # Create a namespace function using the provided id
   ns <- NS(id)
@@ -14,12 +18,24 @@ layerAesUI <- function(id, bsa) {
   bsplus::bs_append(bsa, title = title, content = content)
 }
 
-# SERVER ----
-layerAes <- function(input, output, session, triggerAesUpdate, geom_blank_input,
-                     inherit.aes, default_aes) {
+#' Server for layer aesthetic submodule
+#'
+#' @param input   Shiny inputs
+#' @param output  Shiny outputs
+#' @param session Shiny user session
+#' @param triggerAesUpdate  Trigger update on layer change
+#' @param geom_blank_input  Need geom_blank values to check for inheritance
+#' @param inherit.aes Is this aesthetic inheritable?
+#' @param default_aes Default value for aesthetic
+#'
+#' @importFrom magrittr %>%
+#' @import shiny ggplot2
+#'
+layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_input,
+                           inherit.aes, default_aes, dataset) {
   # Get aesthetic from namespace
   aesthetic <- stringr::str_split(session$ns(''), '-')[[1]] %>% { .[length(.)-1] }
-  layer <- paste(stringr::str_split(session$ns(''), '-')[[1]][1:2], collapse="-")
+  layer <- paste(stringr::str_split(session$ns(''), '-')[[1]][2:3], collapse="-")
 
   # Convert default colour values to hex (if applicable)
   if ((aesthetic %in% c('colour', 'fill')) && isTruthy(default_aes)) {
@@ -43,14 +59,14 @@ layerAes <- function(input, output, session, triggerAesUpdate, geom_blank_input,
 
     isolate({
       # Should not depend on any inputs
-      dropZoneInput(ns("dropzone"),
-                    choices = names(serenity.viz.data),
-                    presets = input$mapping, # FIX: This doesn't work: input$dropzone %||% input$mapping
-                    hidden = TRUE,
-                    placeholder = stringr::str_split(ns(''),'-')[[1]][5],
-                    highlight = TRUE,
-                    maxInput = 1,
-                    replaceOnDrop = TRUE)
+      dragulaSelectR::dropZoneInput(ns("dropzone"),
+                                    choices = names(dataset),
+                                    presets = input$mapping, # FIX: This doesn't work: input$dropzone %||% input$mapping
+                                    hidden = TRUE,
+                                    placeholder = stringr::str_split(ns(''),'-')[[1]][6],
+                                    highlight = TRUE,
+                                    maxInput = 1,
+                                    replaceOnDrop = TRUE)
     })
   })
 
@@ -74,11 +90,11 @@ layerAes <- function(input, output, session, triggerAesUpdate, geom_blank_input,
 
       if (isTruthy(input$mapping) || isTruthy(input$dropzone)) {
         # Mapping exists
-        dropZoneInput(ns("mapping"),
-                      choices = names(serenity.viz.data),
-                      presets = input$mapping %||% input$dropzone,
-                      maxInput = 1,
-                      replaceOnDrop = TRUE)
+        dragulaSelectR::dropZoneInput(ns("mapping"),
+                                      choices = names(dataset),
+                                      presets = input$mapping %||% input$dropzone,
+                                      maxInput = 1,
+                                      replaceOnDrop = TRUE)
       } else
         if (inherit) {
           # Inherited mappings override values
@@ -101,7 +117,7 @@ layerAes <- function(input, output, session, triggerAesUpdate, geom_blank_input,
   outputOptions(output, "aes_input_ui", suspendWhenHidden = FALSE)
 
   # _ Entangle dropzone and mapping/input ====
-  entangle(session, 'dropzone', 'mapping')
+  dragulaSelectR::entangle(session, 'dropzone', 'mapping')
 
   # _ Aesthetic to code ====
   aesToCode <- reactive({
@@ -133,8 +149,8 @@ layerAes <- function(input, output, session, triggerAesUpdate, geom_blank_input,
 geom_blank_NS <- function(ns) {
   f <- function(id) {
     ns(id) %>%
-    { stringr::str_replace(., stringr::str_split(., '-')[[1]][2], 'blank') } %>%
-    { stringr::str_replace(., stringr::str_split(., '-')[[1]][4], '1') }
+    { stringr::str_replace(., stringr::str_split(., '-')[[1]][3], 'blank') } %>%
+    { stringr::str_replace(., stringr::str_split(., '-')[[1]][5], '1') }
   }
   return(f)
 }
@@ -178,6 +194,17 @@ colour_to_hex <- function(col) {
 
 # Create aesthetic input control
 # aes_val is assumed to be truthy
+#'
+#' @param inputId
+#' @param aes
+#' @param aes_val
+#' @param default
+#'
+#' @return
+#' @importFrom magrittr %>%
+#' @export
+#'
+#' @examples
 create_aes_input <- function(inputId, aes, aes_val, default='') {
   tagList(
     switch(aes,

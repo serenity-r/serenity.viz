@@ -50,11 +50,11 @@ body {
   width: 35px;
 }
 
-#cpanel-code {
-  margin-top: 78px; /* min-height + margin-top + <extra> of #layers.  No JS for now... */
+.cpanel-code {
+  margin-top: 78px; /* min-height + margin-top + <extra> of .layers.  No JS for now... */
 }
 
-#layers {
+.layers {
   min-height: 50px;
   margin-top: 15px;
   padding: 10px;
@@ -64,7 +64,7 @@ body {
   box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
 }
 
-#geoms {
+.geoms {
   position: relative;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -72,8 +72,8 @@ body {
   -ms-user-select: none;
 }
 
-#geoms .ds-dragitem,
-#layers .ds-dropoption {
+.geoms .ds-dragitem,
+.layers .ds-dropoption {
   cursor: pointer;
   vertical-align: middle;
   border: 1px solid #999;
@@ -88,15 +88,15 @@ body {
   margin: 3px;
 }
 
-#geoms .ds-dragitem:hover,
-#layers .ds-dropoption:hover,
+.geoms .ds-dragitem:hover,
+.layers .ds-dropoption:hover,
 .dataset-vars .grid:hover,
-#selected-aes-col .grid:hover {
+.selected-aes-col .grid:hover {
   box-shadow: 0 0 0 1px #fafafa, 0 0 0 3px #AAA;
 }
 
-#geoms .ds-dragitem.ds-selected,
-#layers .ds-dropoption.ds-selected {
+.geoms .ds-dragitem.ds-selected,
+.layers .ds-dropoption.ds-selected {
   cursor: default;
   box-shadow: 0 0 0 1px #fafafa, 0 0 0 3px #666;
 }
@@ -123,7 +123,7 @@ body {
 }
 
 .dataset-vars .grid,
-#selected-aes-col .grid {
+.selected-aes-col .grid {
   cursor: pointer;
   border: 1px solid #eee;
   font-size: 15px;
@@ -136,7 +136,7 @@ body {
 }
 
 .dataset-vars .grid .varname,
-#selected-aes-col .grid .aesname {
+.selected-aes-col .grid .aesname {
   margin-left: 15px;
 }
 

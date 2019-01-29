@@ -1,5 +1,9 @@
-# UI ----
-
+#' UI for layer module
+#'
+#' @param id  Layer ID
+#'
+#' @return UI for layer
+#'
 layerUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
@@ -11,9 +15,18 @@ layerUI <- function(id) {
   )
 }
 
-# SERVER ----
-
-layerMod <- function(input, output, session, layers_selected, geom_blank_input) {
+#' Server for layer module
+#'
+#' @param input   Shiny inputs
+#' @param output  Shiny outputs
+#' @param session Shiny user session
+#' @param layers_selected Reactive value of currently selected layer
+#' @param geom_blank_input  Need geom_blank values to check for inheritance
+#'
+#' @importFrom magrittr %>%
+#' @import shiny ggplot2
+#'
+layerServer <- function(input, output, session, layers_selected, geom_blank_input, dataset) {
   # UTILS ----
 
   # This contains the layer id
@@ -21,7 +34,7 @@ layerMod <- function(input, output, session, layers_selected, geom_blank_input) 
 
   # Get layer, geom, and aesthetics information
   layer_id <- gsub("-$", "", ns(''))
-  geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
+  geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][2:3], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   aesthetics <- gg_aesthetics[[geom_type]]
 
@@ -49,11 +62,12 @@ layerMod <- function(input, output, session, layers_selected, geom_blank_input) 
   })
 
   # _ load variable subset modules ====
-  layer_args <- purrr::map(aesthetics, ~ callModule(module = layerAes, id = .,
+  layer_args <- purrr::map(aesthetics, ~ callModule(module = layerAesServer, id = .,
                                                     reactive({ triggerAesUpdate$depend() }),
                                                     geom_blank_input,
                                                     inherit.aes = geom_proto$inherit.aes,
-                                                    default_aes = geom_proto$geom$default_aes[[.]]))
+                                                    default_aes = geom_proto$geom$default_aes[[.]],
+                                                    dataset = dataset))
 
   # _ process subset arguments ====
   layer_code <- reactive({

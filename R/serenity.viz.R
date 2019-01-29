@@ -18,15 +18,13 @@ NULL
 #' }
 #' @import shiny
 #' @export
-serenity.viz <- function(data = NULL) {
+serenity.viz <- function(dataset = NULL) {
   # Process incoming data
-  # Make sure assignment to serenity.viz.data occurs in global namespace
-  if (!is.null(data)) {
-    serenity.viz.data <<- data
-    attr(serenity.viz.data, "df_name") <<- deparse(substitute(data))
+  if (!is.null(dataset)) {
+    attr(dataset, "df_name") <- deparse(substitute(dataset))
   } else {
-    serenity.viz.data <<- iris
-    attr(serenity.viz.data, "df_name") <<- "iris"
+    dataset <- iris
+    attr(dataset, "df_name") <- "iris"
   }
 
   message("Starting Serenity Viz...")
@@ -35,5 +33,21 @@ serenity.viz <- function(data = NULL) {
       stop("Calling serenity.viz start function but serenity.viz is not installed.")
   }
 
-  runApp(system.file("serenity.viz", package = "serenity.viz"), launch.browser = TRUE)
+  # Gotta be a better way: https://community.rstudio.com/t/pass-variables-to-shiny-app/1950
+  serenity.viz.app <- shinyApp(ui = serenityVizUI("serenityVizApp", dataset),
+                               server = function(input, output, session) { serenityVizAppServer(input, output, session, dataset) }
+  )
+  runApp(serenity.viz.app, launch.browser = TRUE)
 }
+
+serenityVizAppServer <- function(input, output, session, dataset) {
+  # Stop app on close of browser tab
+  # https://github.com/daattali/advanced-shiny/tree/master/auto-kill-app
+  session$onSessionEnded(stopApp)
+
+  # Call module
+  callModule(module = serenityVizServer,
+             id = "serenityVizApp",
+             dataset = dataset)
+}
+

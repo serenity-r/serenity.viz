@@ -1,31 +1,12 @@
-# UI ----
-
-# Surrounding div for buttons and labels
-var_wrap <- function(content, id, default='') {
-  tagList(
-    div(
-      id = paste0(id, '-wrap'),
-      class = paste0('var-wrap ', default),
-      content
-    )
-  )
-}
-
-init_vals <- function(var) {
-  init <- list()
-
-  if (class(var) %in% c("numeric","integer")) {
-    init$min <- min(var, na.rm = TRUE)
-    init$max <- max(var, na.rm = TRUE)
-  } else if (class(var) %in% c("factor")) {
-    init$levels <- levels(var)
-  }
-
-  return(init)
-}
-
-# Module UI function
-dataVarInput <- function(id, var, default='') {
+#' UI for data variable submodule
+#'
+#' @param id  ID of data variable
+#' @param var Variable from data frame
+#' @param default Some kind of class
+#'
+#' @return UI for data variable
+#'
+dataVarUI <- function(id, var, default='') {
   # Create a namespace function using the provided id
   ns <- NS(id)
   inputId <- ns("filter")
@@ -59,15 +40,21 @@ dataVarInput <- function(id, var, default='') {
   )
 }
 
-# SERVER ----
-dataVar <- function(input, output, session, var) {
+#' Server for data variable submodule
+#'
+#' @param input   Shiny inputs
+#' @param output  Shiny outputs
+#' @param session Shiny user session
+#' @param var Variable from data frame
+#'
+dataVarServer <- function(input, output, session, var) {
 
   varToCode <- reactive({
     init <- init_vals(var)
     arg <- list(filter = c(), mutate = c())
     if (!is.null(input$filter)) {
       ns <- session$ns
-      var_name <- stringr::str_split(ns(''), '-')[[1]][2]
+      var_name <- stringr::str_split(ns(''), '-')[[1]][3]
       if (class(input$filter[1]) %in% c('integer', 'numeric')) {
         if (init$min < input$filter[1]) {
           arg$filter <- paste(input$filter[1], "<", var_name)
@@ -112,4 +99,30 @@ dataVar <- function(input, output, session, var) {
   })
 
   return(varToCode)
+}
+
+# UTILS ----
+
+# Surrounding div for buttons and labels
+var_wrap <- function(content, id, default='') {
+  tagList(
+    div(
+      id = paste0(id, '-wrap'),
+      class = paste0('var-wrap ', default),
+      content
+    )
+  )
+}
+
+init_vals <- function(var) {
+  init <- list()
+
+  if (class(var) %in% c("numeric","integer")) {
+    init$min <- min(var, na.rm = TRUE)
+    init$max <- max(var, na.rm = TRUE)
+  } else if (class(var) %in% c("factor")) {
+    init$levels <- levels(var)
+  }
+
+  return(init)
 }

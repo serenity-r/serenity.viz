@@ -1,6 +1,10 @@
-# UI ----
-
-dataSetUI <- function(id) {
+#' UI for data module
+#'
+#' @param id  Data ID
+#'
+#' @return UI for data
+#'
+dataUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
@@ -11,10 +15,18 @@ dataSetUI <- function(id) {
   )
 }
 
-# SERVER ----
-
-dataSet <- function(input, output, session) {
-  var_names <- names(serenity.viz.data)
+#' Server for data module
+#'
+#' @param input   Shiny inputs
+#' @param output  Shiny outputs
+#' @param session Shiny user session
+#' @param dataset Passed in dataset for visualization
+#'
+#' @importFrom magrittr %>%
+#' @import shiny
+#'
+dataServer <- function(input, output, session, dataset) {
+  var_names <- names(dataset)
 
   # Variable divs ====
   output$dataset_vars <- renderUI({
@@ -24,15 +36,15 @@ dataSet <- function(input, output, session) {
       bsplus::bs_set_opts(panel_type = "warning", use_heading_link = TRUE)
     lapply(seq_along(var_names), function(var_num) {
       cls <- paste0("grid var ", stringr::str_replace(var_names[var_num], '[.]', '-')) # var class name used to count # of elements for unique id creation
-      title <- dragZone(
+      title <- dragulaSelectR::dragZone(
         id = ns(var_names[var_num]),
         choices = setNames(list(
           div(class = "varname", var_names[var_num])
-          ), var_names[var_num])
-        )
+        ), var_names[var_num])
+      )
       id <- var_names[var_num]
-      content <- dataVarInput(id = ns(id),
-                              var = serenity.viz.data[[id]])
+      content <- dataVarUI(id = ns(id),
+                              var = dataset[[id]])
       bsa <<- bsplus::bs_append(bsa,
                                 title = title,
                                 content = content
@@ -42,9 +54,9 @@ dataSet <- function(input, output, session) {
   })
 
   # load variable subset modules ====
-  subset_args <- purrr::map(var_names, ~ callModule(module = dataVar,
+  subset_args <- purrr::map(var_names, ~ callModule(module = dataVarServer,
                                                     id = .,
-                                                    var = serenity.viz.data[[.]]))
+                                                    var = dataset[[.]]))
 
   # process subset arguments ====
   processed_args <- reactive({
