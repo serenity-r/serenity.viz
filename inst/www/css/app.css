@@ -50,10 +50,6 @@ body {
   width: 35px;
 }
 
-.cpanel-code {
-  margin-top: 78px; /* min-height + margin-top + <extra> of .layers.  No JS for now... */
-}
-
 .layers {
   min-height: 50px;
   margin-top: 15px;

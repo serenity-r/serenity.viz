@@ -2,25 +2,30 @@
 #'
 #' @param id Serenity Viz module ID
 #' @param dataset Passed in dataset for visualization
+#' @param titlebar Show title bar with Done and Cancel buttons?
+#' @param showcode Show code for plots?
 #'
 #' @return UI for Serenity Viz module
 #'
 #' @import shiny
 #' @export
 #'
-serenityVizUI <- function(id, dataset) {
+serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, height = NULL) {
   ns <- NS(id)
 
   miniUI::miniPage(
+    style = switch(!is.null(height), paste("height:", height), height),
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(
       script = file.path(resourcePath, "js", "shinyjs-funcs.js"),
       functions = c("close_window")
     ),
     tags$head(includeCSS(file.path(resourcePath, "css", "app.css"))),
-    miniUI::gadgetTitleBar("Serenity Viz",
-                           left = miniUI::miniTitleBarCancelButton(ns("cancel")),
-                           right = miniUI::miniTitleBarButton(ns("done"), "Done", primary = TRUE)),
+    switch(titlebar,
+           miniUI::gadgetTitleBar("Serenity Viz",
+                                  left = miniUI::miniTitleBarCancelButton(ns("cancel")),
+                                  right = miniUI::miniTitleBarButton(ns("done"), "Done", primary = TRUE)),
+           NULL),
     fillRow(
       flex = c(1, 2, 1),
 
@@ -29,7 +34,8 @@ serenityVizUI <- function(id, dataset) {
         flex = c(7, 5),
         miniUI::miniContentPanel( # Variables
           wellPanel(
-            dataUI(id = ns(attributes(dataset)$df_name))
+            dataUI(id = ns(attributes(dataset)$df_name)),
+            height = "100%"
           )
         ),
         miniUI::miniContentPanel( # Geoms
@@ -49,7 +55,7 @@ serenityVizUI <- function(id, dataset) {
 
       # Layers, plot, and code
       fillCol(
-        flex = c(8, 4),
+        flex = c(2, 6, 4),
         tagList(
           dragulaSelectR::dropZoneInput(ns("layers"),
                                         class = "layers",
@@ -68,24 +74,20 @@ serenityVizUI <- function(id, dataset) {
                                         direction = "horizontal",
                                         removeOnSpill = FALSE
           ),
-          plotOutput(ns("viz"),
-                     height = "100%")
-        ),
-        miniUI::miniContentPanel(
-          id = ns("cpanel-code"),
-          class = "cpanel-code",
-          verbatimTextOutput(ns("code")),
-          padding = 0,
-          scrollable = TRUE
+          plotOutput(ns("viz"), height = "80%"),
+          verbatimTextOutput(ns("code"))
         )
       ),
 
       # Aesthetics
-      miniUI::miniContentPanel(
-        id = ns("selected-aes-col"),
-        class = "selected-aes-col",
-        wellPanel(
-          uiOutput(ns("aesthetics"), inline = FALSE)
+      fillCol(
+        miniUI::miniContentPanel(
+          id = ns("selected-aes-col"),
+          class = "selected-aes-col",
+          wellPanel(
+            uiOutput(ns("aesthetics"), inline = FALSE),
+            height = "100%"
+          )
         )
       )
     ),
@@ -187,7 +189,6 @@ serenityVizServer <- function(input, output, session, dataset) {
 
   ggcode <- reactive({
     code <- attributes(dataset)$df_name
-    # code <- paste("library(ggplot2)\nlibrary(magrittr)\n", code)
     if (isTruthy(subsetted_data())) {
       code <- paste(code,
                     "%>%\n",
@@ -212,13 +213,13 @@ serenityVizServer <- function(input, output, session, dataset) {
   #   https://stackoverflow.com/questions/34731975/how-to-listen-for-more-than-one-event-expression-within-a-shiny-eventreactive-ha
   observeEvent(input$done, {
     shinyjs::js$close_window()
-    stopApp()
+    stopApp(returnValue = ggcode)
   })
 
   # _ Cancel ====
   observeEvent(input$cancel, {
     shinyjs::js$close_window()
-    stopApp()
+    stopApp(returnValue = NULL)
   })
 
   return(ggcode)

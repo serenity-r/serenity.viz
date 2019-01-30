@@ -4,12 +4,17 @@
 \alias{serenityVizUI}
 \title{UI for Serenity Viz module}
 \usage{
-serenityVizUI(id, dataset)
+serenityVizUI(id, dataset, titlebar = FALSE, showcode = FALSE,
+  height = NULL)
 }
 \arguments{
 \item{id}{Serenity Viz module ID}
 
 \item{dataset}{Passed in dataset for visualization}
+
+\item{titlebar}{Show title bar with Done and Cancel buttons?}
+
+\item{showcode}{Show code for plots?}
 }
 \value{
 UI for Serenity Viz module
