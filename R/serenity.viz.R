@@ -34,7 +34,7 @@ serenity.viz <- function(dataset = NULL) {
   }
 
   # Gotta be a better way: https://community.rstudio.com/t/pass-variables-to-shiny-app/1950
-  serenity.viz.app <- shinyApp(ui = serenityVizUI("serenityVizApp", dataset),
+  serenity.viz.app <- shinyApp(ui = serenityVizUI("serenityVizApp", dataset, titlebar = TRUE),
                                server = function(input, output, session) { serenityVizAppServer(input, output, session, dataset) }
   )
   runApp(serenity.viz.app, launch.browser = TRUE)
