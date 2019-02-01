@@ -213,7 +213,7 @@ serenityVizServer <- function(input, output, session, dataset) {
   #   https://stackoverflow.com/questions/34731975/how-to-listen-for-more-than-one-event-expression-within-a-shiny-eventreactive-ha
   observeEvent(input$done, {
     shinyjs::js$close_window()
-    stopApp(returnValue = ggcode)
+    stopApp(returnValue = ggcode())
   })
 
   # _ Cancel ====
