@@ -149,8 +149,9 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
 geom_blank_NS <- function(ns) {
   f <- function(id) {
     ns(id) %>%
-    { stringr::str_replace(., stringr::str_split(., '-')[[1]][3], 'blank') } %>%
-    { stringr::str_replace(., stringr::str_split(., '-')[[1]][5], '1') }
+    { stringr::str_replace(., paste0(stringr::str_split(., '-')[[1]][1], '-'), '') } %>%
+    { stringr::str_replace(., stringr::str_split(., '-')[[1]][2], 'blank') } %>%
+    { stringr::str_replace(., stringr::str_split(., '-')[[1]][4], '1') }
   }
   return(f)
 }
