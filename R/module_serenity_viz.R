@@ -92,7 +92,8 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, heigh
       )
     ),
     shinyjs::hidden(
-      absolutePanel(id=ns("help-pane"),
+      absolutePanel(id = ns("help-pane"),
+                    class = "help-pane",
                     top = 123,
                     left = "25%",
                     width = "50%",

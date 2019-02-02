@@ -17,7 +17,7 @@ body {
   color: red;
 }
 
-#help-pane {
+.help-pane {
   opacity: 0.7;
   background: #000000;
   color: #FFFFFF;
