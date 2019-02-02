@@ -22,6 +22,7 @@ layerUI <- function(id) {
 #' @param session Shiny user session
 #' @param layers_selected Reactive value of currently selected layer
 #' @param geom_blank_input  Need geom_blank values to check for inheritance
+#' @param dataset Dataset
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
@@ -33,8 +34,8 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   ns <- session$ns
 
   # Get layer, geom, and aesthetics information
-  layer_id <- gsub("-$", "", ns(''))
-  geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][2:3], collapse="-")
+  layer_id <- paste(stringr::str_split(gsub("-$", "", ns('')), '-')[[1]][2:5], collapse="-")
+  geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   aesthetics <- gg_aesthetics[[geom_type]]
 

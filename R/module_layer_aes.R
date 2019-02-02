@@ -10,10 +10,10 @@ layerAesUI <- function(id, bsa) {
   ns <- NS(id)
 
   # Hidden dropzone input for assigning aesthetic mapping
-  title <- uiOutput(ns('aes_dropzone_ui'), inline = FALSE)
+  title <- uiOutput(ns('aes_dropzone_ui'))
 
   # Visible aesthetic input - can be mapping or value
-  content <- uiOutput(ns('aes_input_ui'), inline = FALSE)
+  content <- uiOutput(ns('aes_input_ui'))
 
   bsplus::bs_append(bsa, title = title, content = content)
 }
@@ -27,6 +27,7 @@ layerAesUI <- function(id, bsa) {
 #' @param geom_blank_input  Need geom_blank values to check for inheritance
 #' @param inherit.aes Is this aesthetic inheritable?
 #' @param default_aes Default value for aesthetic
+#' @param dataset Dataset
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2

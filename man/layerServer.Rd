@@ -16,6 +16,8 @@ layerServer(input, output, session, layers_selected, geom_blank_input, dataset)
 \item{layers_selected}{Reactive value of currently selected layer}
 
 \item{geom_blank_input}{Need geom_blank values to check for inheritance}
+
+\item{dataset}{Dataset}
 }
 \description{
 Server for layer module

@@ -21,6 +21,8 @@ layerAesServer(input, output, session, triggerAesUpdate, geom_blank_input,
 \item{inherit.aes}{Is this aesthetic inheritable?}
 
 \item{default_aes}{Default value for aesthetic}
+
+\item{dataset}{Dataset}
 }
 \description{
 Server for layer aesthetic submodule
