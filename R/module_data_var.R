@@ -54,7 +54,11 @@ dataVarServer <- function(input, output, session, var) {
     arg <- list(filter = c(), mutate = c())
     if (!is.null(input$filter)) {
       ns <- session$ns
-      var_name <- stringr::str_split(ns(''), '-')[[1]][3]
+      var_name <- stringr::str_split(ns(''), '-')[[1]][3] %>% {
+        ifelse(!stringr::str_detect(., ' '),
+             .,
+             paste0("`", ., "`"))
+      }
       if (class(input$filter[1]) %in% c('integer', 'numeric')) {
         if (init$min < input$filter[1]) {
           arg$filter <- paste(input$filter[1], "<", var_name)

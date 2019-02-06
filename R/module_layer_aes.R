@@ -124,7 +124,10 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
   aesToCode <- reactive({
     arg <- list(mappings = c(), values = c())
     if (!is.null(input$mapping)) {
-      arg$mappings <- paste(aesthetic, "=", input$mapping)
+      arg$mappings <- paste(aesthetic, "=",
+                            ifelse(!stringr::str_detect(input$mapping, ' '),
+                                   input$mapping,
+                                   paste0("`", input$mapping, "`")))
     } else
       if (!is.null(input$value) && (input$value != default_aes)) {
         arg$values <- paste(aesthetic, "=",
