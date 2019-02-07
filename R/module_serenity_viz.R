@@ -57,18 +57,23 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, heigh
 
       # Layers, plot, and code
       fillCol(
-        flex = c(2, 6, 4),
-        tagList(
-          uiOutput(ns("layersUI")),
-          plotOutput(ns("viz"), height = "70%"),
-          switch(showcode,
-                 verbatimTextOutput(ns("code")),
-                 NULL)
-        )
+        flex = c(NA, NA, NA, 6, NA, 4),
+        h3("Layers"),
+        uiOutput(ns("layersUI")),
+        h3("Plot"),
+        plotOutput(ns("viz"), height = "90%"),
+        switch(showcode,
+               tagList(
+                 h3("Code"),
+                 verbatimTextOutput(ns("code"))
+               ),
+               NULL)
       ),
 
       # Aesthetics
       fillCol(
+        flex = c(NA, 1),
+        h3("Plot Aesthetics"),
         miniUI::miniContentPanel(
           id = ns("selected-aes-col"),
           class = "selected-aes-col",
