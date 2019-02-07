@@ -31,14 +31,16 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, heigh
 
       # Variables and geoms
       fillCol(
-        flex = c(7, 5),
-        miniUI::miniContentPanel( # Variables
+        flex = c(NA, 7, NA, 5),
+        h3("Variables"),
+        miniUI::miniContentPanel(
           wellPanel(
             dataUI(id = ns(attributes(dataset)$df_name)),
             height = "100%"
           )
         ),
-        miniUI::miniContentPanel( # Geoms
+        h3("Plot Types"),
+        miniUI::miniContentPanel(
           wellPanel(
             div(
               id = ns("selected-geoms-row"),
@@ -57,25 +59,11 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, heigh
       fillCol(
         flex = c(2, 6, 4),
         tagList(
-          dragulaSelectR::dropZoneInput(ns("layers"),
-                                        class = "layers",
-                                        choices = c("geom-blank" = "",
-                                                    sapply(geoms, function(geom) { "" }, simplify = FALSE, USE.NAMES = TRUE)),
-                                        presets = list(
-                                          values = "geom-blank",
-                                          selected = "geom-blank",
-                                          locked = "geom-blank",
-                                          freeze = "geom-blank")
-                                        ,
-                                        multivalued = TRUE,
-                                        selectable = TRUE,
-                                        selectOnDrop = TRUE,
-                                        togglevis = TRUE,
-                                        direction = "horizontal",
-                                        removeOnSpill = FALSE
-          ),
-          plotOutput(ns("viz"), height = "80%"),
-          verbatimTextOutput(ns("code"))
+          uiOutput(ns("layersUI")),
+          plotOutput(ns("viz"), height = "70%"),
+          switch(showcode,
+                 verbatimTextOutput(ns("code")),
+                 NULL)
         )
       ),
 
@@ -85,7 +73,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, heigh
           id = ns("selected-aes-col"),
           class = "selected-aes-col",
           wellPanel(
-            uiOutput(ns("aesthetics"), inline = FALSE),
+            uiOutput(ns("aesthetics")),
             height = "100%"
           )
         )
@@ -115,18 +103,38 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, heigh
 #' @import shiny ggplot2 dplyr forcats
 #' @export
 #'
-serenityVizServer <- function(input, output, session, dataset) {
+serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
+  layer_id <- paste(stringr::str_split(gsub("-$", "", session$ns('')), '-')[[1]][2:5], collapse="-")
+
   # This stores returned reactives from layer modules
   layer_modules <- reactiveValues()
 
-  # Render ----------------------
-
-  # _ Subsetted data ====
   subsetted_data <- callModule(module = dataServer,
                                id = attributes(dataset)$df_name,
                                dataset = dataset)
 
-  # _ ggplot code ====
+  output$layersUI <- renderUI({
+    if (!is.null(trigger)) trigger()
+    isolate({
+      dragulaSelectR::dropZoneInput(session$ns("layers"),
+                                    class = "layers",
+                                    choices = c("geom-blank" = "",
+                                                sapply(geoms, function(geom) { "" }, simplify = FALSE, USE.NAMES = TRUE)),
+                                    presets = list(
+                                      values = idsToGeoms(input$layers) %||% "geom-blank",
+                                      selected = idsToGeoms(input$layers_selected) %||% "geom-blank",
+                                      locked = "geom-blank",
+                                      freeze = "geom-blank"),
+                                    multivalued = TRUE,
+                                    selectable = TRUE,
+                                    selectOnDrop = TRUE,
+                                    togglevis = TRUE,
+                                    direction = "horizontal",
+                                    removeOnSpill = FALSE
+      )
+    })
+  })
+
   output$aesthetics <- renderUI({
     req(input$layers_selected)
     layerUI(id = session$ns(input$layers_selected))
@@ -158,10 +166,11 @@ serenityVizServer <- function(input, output, session, dataset) {
                                                                                                  dataset = dataset)} )
     # Remove old layers
     purrr::map(setdiff(names(layer_modules), input$layers), ~ { layer_modules[[.]] <- NULL })
-  })
+  }, priority = 1) # Needs to happen before layer_code reactive
 
   # Get layer code
   layer_code <- reactive({
+    req(visible_layers())
     paste(purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .()), collapse = "+\n")
   })
 
@@ -189,6 +198,7 @@ serenityVizServer <- function(input, output, session, dataset) {
   })
 
   ggcode <- reactive({
+    req(layer_code())
     code <- attributes(dataset)$df_name
     if (isTruthy(subsetted_data())) {
       code <- paste(code,
@@ -288,3 +298,9 @@ gg_aesthetics <- list(
 )
 ordering <- unique(unlist(gg_aesthetics))
 gg_aesthetics <- purrr::map(gg_aesthetics, ~ ordering[ordering %in% .])
+
+idsToGeoms <- function(id) {
+  switch(!is.null(id),
+         sapply(id, FUN = function(x) { paste(stringr::str_split(x, '-')[[1]][1:2], collapse="-") }, simplify = "array"),
+         NULL)
+}
