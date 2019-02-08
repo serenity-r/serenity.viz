@@ -61,7 +61,18 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, heigh
         h3("Layers"),
         uiOutput(ns("layersUI")),
         h3("Plot"),
-        plotOutput(ns("viz"), height = "90%"),
+        miniUI::miniContentPanel(
+          plotOutput(ns("viz"), height = "90%"),
+          shinyjs::hidden(
+            absolutePanel(id = ns("help-pane"),
+                          class = "help-pane",
+                          top = 0,
+                          width = "100%",
+                          height = "90%",
+                          draggable = FALSE
+            )
+          )
+        ),
         switch(showcode,
                tagList(
                  h3("Code"),
@@ -82,16 +93,6 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, heigh
             height = "100%"
           )
         )
-      )
-    ),
-    shinyjs::hidden(
-      absolutePanel(id = ns("help-pane"),
-                    class = "help-pane",
-                    top = 123,
-                    left = "25%",
-                    width = "50%",
-                    height = "61%",
-                    draggable = FALSE
       )
     )
   )
