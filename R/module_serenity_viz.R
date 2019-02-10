@@ -10,7 +10,7 @@
 #' @import shiny
 #' @export
 #'
-serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, height = NULL) {
+serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height = NULL) {
   ns <- NS(id)
 
   miniUI::miniPage(
@@ -83,13 +83,22 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = FALSE, heigh
 
       # Aesthetics
       fillCol(
-        flex = c(NA, 1),
+        flex = c(NA, 7, NA , 5),
         h3("Plot Aesthetics"),
         miniUI::miniContentPanel(
           id = ns("selected-aes-col"),
           class = "selected-aes-col",
           wellPanel(
             uiOutput(ns("aesthetics")),
+            height = "100%"
+          )
+        ),
+        h3("Plot Labels"),
+        miniUI::miniContentPanel(
+          id = ns("labels-panel"),
+          class = "labels-panel",
+          wellPanel(
+            labelsUI(id = ns("labels")),
             height = "100%"
           )
         )
@@ -115,6 +124,7 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
   # This stores returned reactives from layer modules
   layer_modules <- reactiveValues()
 
+  # Data module
   subsetted_data <- callModule(module = dataServer,
                                id = attributes(dataset)$df_name,
                                dataset = dataset)
@@ -185,7 +195,7 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
     failure <- FALSE
     # Try to plot.  If unsuccessful, pass error message to help pane.
     # We need the print statement here or we can't capture errors
-    tryCatch(print(eval(parse(text=ggcode()))),
+    tryCatch(print(ggobj()),
              error = function(e) {
                shinyjs::show(id = "help-pane", anim = FALSE)
                shinyjs::html(id = "help-pane", html = e$message)
@@ -220,8 +230,41 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
       )
     }
 
+    if (isTruthy(labs_code())) {
+      code <- paste(code,
+                    "+\n",
+                    labs_code()
+      )
+    }
+
     return(styler::style_text(code))
   })
+
+  ggobj <- reactive({
+    eval(parse(text=ggcode()))
+  })
+
+  # BEGIN: Labels module ----
+
+  # _ label reactives ----
+  xlabel <- reactive({
+    req(ggobj())
+    # as.character(rlang::get_expr(ggobj()$mapping[['x']]))
+    ggobj()$labels$x
+  })
+
+  ylabel <- reactive({
+    req(ggobj())
+    # as.character(rlang::get_expr(ggobj()$mapping[['y']]))
+    ggobj()$labels$y
+  })
+
+  labs_code <- callModule(module = labelsServer,
+                          id = "labels",
+                          xlabel = xlabel,
+                          ylabel = ylabel)
+
+  # END: Labels module ----
 
   # Events ----------------------
 
