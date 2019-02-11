@@ -55,26 +55,30 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
 
       # Layers, plot, and code
       fillCol(
-        flex = c(NA, NA, NA, 6, NA, 4),
+        flex = c(NA, NA, NA, 7, ifelse(showcode, 3, NA)),
         h3("Layers"),
         uiOutput(ns("layersUI")),
         h3("Plot"),
         miniUI::miniContentPanel(
-          plotOutput(ns("viz"), height = "90%"),
+          plotOutput(ns("viz"), height = "100%"),
           shinyjs::hidden(
             absolutePanel(id = ns("help-pane"),
                           class = "help-pane",
                           top = 0,
                           width = "100%",
-                          height = "90%",
+                          height = "100%",
                           draggable = FALSE
             )
           )
         ),
         switch(showcode,
-               tagList(
-                 h3("Code"),
-                 verbatimTextOutput(ns("code"))
+               miniUI::miniContentPanel(
+                 tabsetPanel(
+                   id = ns("verbose"),
+                   type = "tabs",
+                   tabPanel("Code", verbatimTextOutput(ns("code"))),
+                   tabPanel("Log", verbatimTextOutput(ns("log")))
+                 )
                ),
                NULL)
       ),
@@ -121,6 +125,9 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
 
   # This stores returned reactives from layer modules
   layer_modules <- reactiveValues()
+
+  # Store log for warnings
+  ggplot2_log <- reactiveVal("")
 
   # Data module
   subsetted_data <- callModule(module = dataServer,
@@ -199,9 +206,13 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
                shinyjs::html(id = "help-pane", html = e$message)
                failure <<- TRUE
              },
+             warning = function(w) {
+               isolate(ggplot2_log(paste(ggplot2_log(), w)))
+             },
              finally = {
                if (!failure) {
                  shinyjs::hide(id = "help-pane", anim = FALSE)
+                 suppressWarnings(print(ggobj()))
                }
              })
   })
@@ -209,6 +220,10 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
   # _ Code ====
   output$code <- renderPrint({
     print(ggcode())
+  })
+
+  output$log <- renderText({
+    ggplot2_log()
   })
 
   ggcode <- reactive({
