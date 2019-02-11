@@ -31,7 +31,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
 
       # Variables and geoms
       fillCol(
-        flex = c(NA, 7, NA, 5),
+        flex = c(NA, 1, NA, NA),
         h3("Variables"),
         miniUI::miniContentPanel(
           wellPanel(
@@ -40,18 +40,16 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
           )
         ),
         h3("Plot Types"),
-        miniUI::miniContentPanel(
-          wellPanel(
-            div(
-              id = ns("selected-geoms-row"),
-              class = "selected-geoms-row",
-              dragulaSelectR::dragZone(ns("geoms"),
-                                       class = "geoms",
-                                       choices = sapply(geoms, function(geom) { "" }, simplify = FALSE, USE.NAMES = TRUE))
-            ),
-            height = "100%",
-            padding = 5
-          )
+        wellPanel(
+          div(
+            id = ns("selected-geoms-row"),
+            class = "selected-geoms-row",
+            dragulaSelectR::dragZone(ns("geoms"),
+                                     class = "geoms",
+                                     choices = sapply(geoms, function(geom) { "" }, simplify = FALSE, USE.NAMES = TRUE))
+          ),
+          height = "100%",
+          padding = 5
         )
       ),
 
@@ -249,13 +247,11 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
   # _ label reactives ----
   xlabel <- reactive({
     req(ggobj())
-    # as.character(rlang::get_expr(ggobj()$mapping[['x']]))
     ggobj()$labels$x
   })
 
   ylabel <- reactive({
     req(ggobj())
-    # as.character(rlang::get_expr(ggobj()$mapping[['y']]))
     ggobj()$labels$y
   })
 
