@@ -15,6 +15,7 @@ Imports:
     dplyr,
     forcats,
     stringr,
+    styler,
     shinyjs,
     dragulaSelectR
 Remotes: serenity-r/dragulaSelectR
