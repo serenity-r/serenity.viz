@@ -121,6 +121,10 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
 #' @export
 #'
 serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
+  if (is.null(attr(dataset, "df_name"))) {
+    attr(dataset, "df_name") <- deparse(substitute(dataset))
+  }
+
   layer_id <- paste(stringr::str_split(gsub("-$", "", session$ns('')), '-')[[1]][2:5], collapse="-")
 
   # This stores returned reactives from layer modules
@@ -219,10 +223,12 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
 
   # _ Code ====
   output$code <- renderPrint({
+    req(ggcode())
     print(ggcode())
   })
 
   output$log <- renderText({
+    req(ggplot2_log())
     ggplot2_log()
   })
 
