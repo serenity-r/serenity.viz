@@ -260,7 +260,8 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
   })
 
   ggobj <- reactive({
-    eval(parse(text=ggcode()))
+    req(ggcode())
+    eval(parse(text=gsub(attributes(dataset)$df_name, "dataset", ggcode())))
   })
 
   # BEGIN: Labels module ----
