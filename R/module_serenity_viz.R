@@ -155,7 +155,7 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
                                     selectOnDrop = TRUE,
                                     togglevis = TRUE,
                                     direction = "horizontal",
-                                    removeOnSpill = FALSE
+                                    removeOnSpill = TRUE
       )
     })
   })
