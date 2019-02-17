@@ -8,6 +8,10 @@ labelsUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
+  # If using an update button:
+  # The update button should be fixed - may need Javascript for this
+  # https://stackoverflow.com/a/11833892/8663034
+  # http://tether.io/overview/why_you_should_use_tether/
   div(
     id = ns("wrap"),
     class = "labels-wrap",
@@ -29,16 +33,19 @@ labelsServer <- function(input, output, session, xlabel, ylabel) {
   output$ui <- renderUI({
     ns <- session$ns
 
-    # TODO: Have these text inputs activate only on keypress
-    # - https://stackoverflow.com/questions/31415301/shiny-responds-to-enter
-    # - https://stackoverflow.com/questions/24973549/r-shiny-key-input-binding
-    tagList(
-      textInput(ns("x"), "x", input$x),
-      textInput(ns("y"), "y", input$y),
-      textInput(ns("title"), "Title", input$title),
-      textInput(ns("subtitle"), "Subtitle", input$subtitle),
-      textAreaInput(ns("caption"), "Caption", input$caption, resize="vertical")
-    )
+    isolate({
+      # NOTE: If in the future you want to make these go through a keypress of focus
+      # change before plotting, check this out:
+      #  https://gist.github.com/xiaodaigh/7150112
+      #  https://groups.google.com/forum/#!msg/shiny-discuss/BFUgjICEQlc/DSz5Itl_oGMJ
+      tagList(
+        textInput(ns("x"), "x", input$x),
+        textInput(ns("y"), "y", input$y),
+        textInput(ns("title"), "Title", input$title),
+        textInput(ns("subtitle"), "Subtitle", input$subtitle),
+        textAreaInput(ns("caption"), "Caption", input$caption, resize="vertical")
+      )
+    })
   })
 
   processed_labels <- reactive({
