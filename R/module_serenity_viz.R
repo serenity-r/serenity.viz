@@ -307,7 +307,7 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
 
 resourcePath <- system.file("www", package = "serenity.viz")
 
-geoms <- c("geom-bar", "geom-point", "geom-line", "geom-dotplot", "geom-boxplot", "geom-violin", "geom-rug")
+geoms <- c("geom-bar", "geom-point", "geom-line", "geom-dotplot", "geom-boxplot", "geom-violin", "geom-rug", "geom-smooth")
 
 help_panes <- lapply(geoms, function(x) {
   paste0("<h2>", x, "</h2>
@@ -361,7 +361,8 @@ gg_aesthetics <- list(
   "geom-dotplot" = ggplot2::GeomDotplot$aesthetics(),
   "geom-boxplot" = c(ggplot2::GeomBoxplot$aesthetics(), "y"),
   "geom-violin" = ggplot2::GeomViolin$aesthetics(),
-  "geom-rug" = ggplot2::GeomRug$aesthetics()
+  "geom-rug" = ggplot2::GeomRug$aesthetics(),
+  "geom-smooth" = ggplot2::GeomSmooth$aesthetics()
 )
 ordering <- unique(unlist(gg_aesthetics))
 gg_aesthetics <- purrr::map(gg_aesthetics, ~ ordering[ordering %in% .])

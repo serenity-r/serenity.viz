@@ -187,3 +187,9 @@ h3 {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAAAAAAfl4auAAAArElEQVRIx+2WsQ2AIBRE/x4MwxDUdszADpTuIWs4AAM4hIWthiOhVi7RGP4V/IYXAgfHl5OQULCF5g/g7/b8U9hAoQ/20KKnfRc+oE64auqDI7SqVXfhDO2MVa4PTtCmVr1yYJRV1CUZ0SoqhqgApKJ3RKuoz51qK7SJG6vfnuviod61CemwO+T55hCua330S2jzG2wtivFlPCSWkiWVkiSXEgXP3ps2X+GH8AU8+GV4A9XwagAAAABJRU5ErkJggg==) no-repeat;
   background-size: 100%;
 }
+
+.ds-dragitem[data-value="geom-smooth"],
+.ds-dropoption[data-value="geom-smooth"] {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAAAAAAfl4auAAABN0lEQVRIx+3WIZbCMBCA4bkNbwWrOMBiOQYITB93ADMWjY6md2APgY1HVwOdNslkMu0jWbcvcRS+95fmMQGef1hQccUVV0y47YrtDfB8L7UIiFgWvyHhovjbDrgg3luEZtCZcbIIy81pMm7N5fcxaQ9fcNosJ+LW0GXFj/bw/s6NGh+p5p2lB6bEOZXe2/FpN99RPKHcB+u2iscZ3W+P0jOLcD+jiAe6Wq0Xa+GZRXh2Vxn3dI943KbeWex/klp8oLR6/8O8t4TTOKPDG7vgg8VxGERxSSPPrMM8rlHvF8xiGEM+Hqix7mLw/BWbYV0bf9BYdkfqigYg7xCVF+dwiHs6G5ejlzqczsWTud21kk7HPx36StzYj08MbS8yjpt0L3LOqmQv8g46sReZp2S8F/VvRcX/Fb8AvjtIxBxZPRIAAAAASUVORK5CYII=);
+  background-size: 100%;
+}
