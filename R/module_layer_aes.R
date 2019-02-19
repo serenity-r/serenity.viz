@@ -43,6 +43,11 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
     default_aes <- colour_to_hex(default_aes)
   }
 
+  # Convert default linetype values to string (if applicable)
+  if ((aesthetic %in% c('linetype')) && isTruthy(default_aes)) {
+    default_aes <- linetype_to_string(default_aes)
+  }
+
   # Need a trigger for when to update aes_input_ui
   mapping_exists <- makeReactiveTrigger(!is.null(input$dropzone))
   observeEvent(input$dropzone, {
@@ -197,6 +202,18 @@ colour_to_hex <- function(col) {
   }
 }
 
+# Linetype translator
+#   Linetype goes from [0..6] to linetype name
+linetype_choices <- c("blank", "solid", "dashed", "dotted", "dotdash", "longdash", "twodash")
+linetype_to_string <- function(linetype) {
+  if (is.numeric(linetype) &&
+      (linetype >= 0) && (linetype <= 6)) {
+    return(linetype_choices[linetype+1])
+  } else {
+    return(linetype)
+  }
+}
+
 # Create aesthetic input control
 # aes_val is assumed to be truthy
 #'
@@ -238,8 +255,8 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
                                  value = aes_val),
            'linetype' = selectInput(inputId = inputId,
                                     label = "",
-                                    choices = c("solid", "dashed", "longdash", "dotted", "twodash", "dotdash", "blank"),
-                                    selected = aes_val),
+                                    choices = linetype_choices,
+                                    selected = linetype_to_string(aes_val)),
            ''
     ) %>%
       aes_wrap(default)
