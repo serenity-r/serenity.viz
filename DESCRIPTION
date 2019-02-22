@@ -9,7 +9,6 @@ Imports:
     shiny (>= 1.1.0),
     miniUI (>= 0.1.1),
     ggplot2 (>= 2.2.1),
-    bsplus (>= 0.1.1),
     magrittr,
     purrr,
     dplyr,
@@ -17,8 +16,11 @@ Imports:
     stringr,
     styler,
     shinyjs,
-    dragulaSelectR
-Remotes: serenity-r/dragulaSelectR
+    dragulaSelectR,
+    shinyWidgets
+Remotes: 
+    serenity-r/dragulaSelectR,
+    serenity-r/bsplus
 URL: https://github.com/serenity-r/serenity
 BugReports: https://github.com/serenity-r/dragulaSelectR/issues
 License: GPL-3

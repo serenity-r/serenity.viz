@@ -86,7 +86,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
       # Aesthetics
       fillCol(
         flex = c(NA, 7, NA , 5),
-        h3("Plot Aesthetics"),
+        h3("Layer Aesthetics"),
         miniUI::miniContentPanel(
           id = ns("selected-aes-col"),
           class = "selected-aes-col",

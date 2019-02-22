@@ -15,7 +15,7 @@ layerAesUI <- function(id, bsa) {
   # Visible aesthetic input - can be mapping or value
   content <- uiOutput(ns('aes_input_ui'))
 
-  bsplus::bs_append(bsa, title = title, content = content)
+  bsplus::bs_append(bsa, title = title, content = content, show = FALSE)
 }
 
 #' Server for layer aesthetic submodule

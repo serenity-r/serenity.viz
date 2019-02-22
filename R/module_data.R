@@ -47,7 +47,8 @@ dataServer <- function(input, output, session, dataset) {
                               var = dataset[[id]])
       bsa <<- bsplus::bs_append(bsa,
                                 title = title,
-                                content = content
+                                content = content,
+                                show = FALSE
       )
     })
     bsa
