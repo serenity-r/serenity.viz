@@ -54,6 +54,16 @@ h3 {
   width: 35px;
 }
 
+.layer-title > .dropdown {
+  position: absolute;
+  top: 15px;
+  right: 25px;
+}
+
+.dropdown-shinyWidgets {
+  width: 22vw;
+}
+
 .layers {
   min-height: 50px;
   margin: 15px 15px 0 15px;
