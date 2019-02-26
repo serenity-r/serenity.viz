@@ -22,12 +22,13 @@ layerParamsUI <- function(id) {
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerParamsServer <- function(input, output, session) {
+layerParamsServer <- function(input, output, session, triggerAesUpdate) {
   ns <- session$ns
 
   geom_fun <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="_")
   # Could of used a switch statement, but I was feeling the obfuscation bug...
   output$params <- renderUI({
+    triggerAesUpdate()
     isolate({
       tagList(
         purrr::imap(pars(geom_fun), ~ tryCatch(do.call(paste0(.y,'_ui'), list(value = .x, input = input, session = session)), error = function(e) NULL))
@@ -35,10 +36,14 @@ layerParamsServer <- function(input, output, session) {
     })
   })
 
-  # paramsToCode <- reactive({
-  #   purrr::imap(pars(geom_fun), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
-  #     dropNulls()
-  # })
+  # _ Make sure params always update ====
+  outputOptions(output, "params", suspendWhenHidden = FALSE)
+
+  paramsToCode <- reactive({
+    parList <- purrr::imap(pars(geom_fun), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
+      dropNulls() %>%
+      purrr::imap(~ paste(.y, "=", .x))
+  })
 
   return(paramsToCode)
 }
@@ -103,23 +108,24 @@ filter_out_defaults <- function(param, default, value) {
     return(NULL)
   }
 
+  show.legend.key <- list("auto" = NA, "yes" = TRUE, "no" = FALSE)
   filtered <- switch(param,
-                     "show.legend" = ifelse((value == "auto" && !is.na(default)) ||
-                                              (value == "yes" && !default) ||
-                                              (value == "no" && default),
-                                            value,
+                     "show.legend" = switch((value == "auto" && !is.na(default)) ||
+                                              (value == "yes" && (!default || is.na(default))) ||
+                                              (value == "no" && (default || is.na(default))),
+                                            show.legend.key[[value]],
                                             NULL),
-                     ifelse(default != value, value, NULL)
+                     switch(default != value, value, NULL)
   )
 
   if (is.string(filtered)) {
-    return(quote(filtered))
+    return(squote(filtered))
   }
 
   return(filtered)
 }
 
-quote <- function(x) {
+squote <- function(x) {
   paste0('"', x, '"')
 }
 

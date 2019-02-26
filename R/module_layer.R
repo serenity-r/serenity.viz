@@ -14,17 +14,17 @@ layerUI <- function(id) {
       flex = c(NA, 1),
       div(
         class = "layer-title",
-        h3("Layer Aesthetics") # ,
-        # switch(geom_type != "geom-blank",
-        #        shinyWidgets::dropdownButton(
-        #          layerParamsUI(ns('layer-params')),
-        #          inputId = ns("layer-params-btn"),
-        #          status = "primary",
-        #          icon = icon("gear"),
-        #          size = "sm",
-        #          right = TRUE,
-        #          tooltip = shinyWidgets::tooltipOptions(title = "Layer Parameters")),
-        #        NULL)
+        h3("Layer Aesthetics"),
+        switch(geom_type != "geom-blank",
+               shinyWidgets::dropdownButton(
+                 layerParamsUI(ns('layer-params')),
+                 inputId = ns("layer-params-btn"),
+                 status = "primary",
+                 icon = icon("gear"),
+                 size = "sm",
+                 right = TRUE,
+                 tooltip = shinyWidgets::tooltipOptions(title = "Layer Parameters")),
+               NULL)
       ),
       miniUI::miniContentPanel(
         id = ns("selected-aes-col"),
@@ -90,7 +90,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   # _ load parameters module ====
   layer_params <- NULL
   if (geom_type != "geom-blank") {
-    # layer_params <- callModule(module = layerParamsServer, id = 'layer-params')
+    layer_params <- callModule(module = layerParamsServer, id = 'layer-params', reactive({ triggerAesUpdate$depend() }))
   }
 
   # _ load variable subset modules ====
@@ -130,11 +130,13 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     }
 
     # Build parameter code
-    # if (!is.null(layer_params) && length(layer_params())) {
-    #   processed_layer_code <- paste0(processed_layer_code,
-    #                                  ifelse(length(mapping_args)+length(value_args), ",\n", ""),
-    #                                  paste(layer_params(), collapse = ", "))
-    # }
+    if (isTruthy(layer_params) &&
+        isTruthy(layer_params()) &&
+        length(layer_params())) {
+      processed_layer_code <- paste0(processed_layer_code,
+                                     ifelse(length(mapping_args)+length(value_args), ",\n", ""),
+                                     paste(layer_params(), collapse = ", "))
+    }
 
     processed_layer_code <- paste0(processed_layer_code, ")")
 
