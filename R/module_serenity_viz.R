@@ -307,7 +307,18 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
 
 resourcePath <- system.file("www", package = "serenity.viz")
 
-geoms <- c("geom-bar", "geom-point", "geom-line", "geom-dotplot", "geom-boxplot", "geom-violin", "geom-rug", "geom-smooth")
+geoms <- c("geom-bar", "geom-histogram", "geom-point", "geom-line", "geom-dotplot", "geom-boxplot", "geom-violin", "geom-rug", "geom-smooth")
+plot_names <- list(
+  "geom-bar" = "Bar Plot",
+  "geom-histogram" = "Histogram",
+  "geom-point" = "Scatter Plot",
+  "geom-line" = "Line Plot",
+  "geom-dotplot" = "Dot Plot",
+  "geom-boxplot" = "Box Plot",
+  "geom-violin" = "Violin Plot",
+  "geom-rug" = "Rug Plot",
+  "geom-smooth" = "Smoother"
+)
 
 help_panes <- lapply(geoms, function(x) {
   paste0("<h2>", x, "</h2>
@@ -349,13 +360,8 @@ gg_aesthetics <- list(
                    "xmax",
                    "ymin",
                    "ymax"),
-  "geom-bar" = c("x",
-                 "alpha",
-                 "colour",
-                 "fill",
-                 "linetype",
-                 "size",
-                 "weight"),
+  "geom-bar" = ggplot2::GeomBar$aesthetics(),
+  "geom-histogram" = ggplot2::GeomBar$aesthetics(),
   "geom-point" = ggplot2::GeomPoint$aesthetics(),
   "geom-line" = ggplot2::GeomLine$aesthetics(),
   "geom-dotplot" = ggplot2::GeomDotplot$aesthetics(),
