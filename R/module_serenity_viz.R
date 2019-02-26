@@ -20,6 +20,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
       script = file.path(resourcePath, "js", "shinyjs-funcs.js"),
       functions = c("close_window")
     ),
+    bsplus::use_bs_tooltip(),
     tags$head(includeCSS(file.path(resourcePath, "css", "app.css"))),
     switch(titlebar,
            miniUI::gadgetTitleBar("Serenity Viz",
@@ -46,7 +47,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
             class = "selected-geoms-row",
             dragulaSelectR::dragZone(ns("geoms"),
                                      class = "geoms",
-                                     choices = sapply(geoms, function(geom) { "" }, simplify = FALSE, USE.NAMES = TRUE))
+                                     choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
           ),
           height = "100%",
           padding = 5
