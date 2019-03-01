@@ -203,13 +203,13 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
                shinyjs::html(id = "help-pane", html = e$message)
                failure <<- TRUE
              },
-             warning = function(w) {
+             message = function(w) {
                isolate(ggplot2_log(paste(ggplot2_log(), w)))
              },
              finally = {
                if (!failure) {
                  shinyjs::hide(id = "help-pane", anim = FALSE)
-                 suppressWarnings(print(ggobj()))
+                 suppressMessages(print(ggobj()))
                }
              })
   })
