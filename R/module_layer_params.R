@@ -31,7 +31,17 @@ layerParamsServer <- function(input, output, session, triggerAesUpdate) {
     triggerAesUpdate()
     isolate({
       tagList(
-        purrr::imap(pars(geom_fun), ~ tryCatch(do.call(paste0(.y,'_ui'), list(value = .x, input = input, session = session)), error = function(e) NULL))
+        purrr::imap(pars(geom_fun), ~ tryCatch(
+          do.call(paste0(geom_fun, '_', .y,'_ui'),
+                  list(value = .x, input = input, session = session)),
+          error = function(e) {
+            tryCatch(
+              do.call(paste0(.y,'_ui'),
+                      list(value = .x, input = input, session = session)),
+              error = function(e) NULL
+              )
+            })
+          )
       )
     })
   })
@@ -73,7 +83,7 @@ show.legend_ui <- function(value, input, session) {
                inline = TRUE)
 }
 
-method_ui <- function(value, input, session) {
+geom_smooth_method_ui <- function(value, input, session) {
   selectInput(session$ns('method'),
               label = 'Regression type',
               choices = c("Auto" = "auto",
@@ -83,6 +93,15 @@ method_ui <- function(value, input, session) {
                           "LOESS" = "loess"),
               selected = input[['method']] %||% value)
 }
+
+geom_dotplot_method_ui <- function(value, input, session) {
+  selectInput(session$ns('method'),
+              label = 'Binning method',
+              choices = c("Dot-density" = "dotdensity",
+                          "Fixed bin widths" = "histodot"),
+              selected = input[['method']] %||% value)
+}
+
 
 se_ui <- function(value, input, session) {
   checkboxInput(session$ns('se'),
