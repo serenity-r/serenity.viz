@@ -197,21 +197,32 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
     failure <- FALSE
     # Try to plot.  If unsuccessful, pass error message to help pane.
     # We need the print statement here or we can't capture errors
-    tryCatch(print(ggobj()),
-             error = function(e) {
-               shinyjs::show(id = "help-pane", anim = FALSE)
-               shinyjs::html(id = "help-pane", html = e$message)
-               failure <<- TRUE
-             },
-             message = function(w) {
-               isolate(ggplot2_log(paste(ggplot2_log(), w)))
-             },
-             finally = {
-               if (!failure) {
-                 shinyjs::hide(id = "help-pane", anim = FALSE)
-                 suppressMessages(print(ggobj()))
-               }
-             })
+    # Note: Move to tryCatchLog package for smarter capturing
+    withCallingHandlers(
+      withRestarts(
+        print(ggobj()),
+        muffleError = function() NULL
+      ),
+      warning = function(w) {
+        isolate(ggplot2_log(paste0("Warning: ", w$message, ggplot2_log())))
+        invokeRestart("muffleWarning")
+      },
+      message = function(m) {
+        isolate(ggplot2_log(paste0("Message: ",  m$message, ggplot2_log())))
+        invokeRestart("muffleMessage")
+      },
+      error = function(e) {
+        shinyjs::show(id = "help-pane", anim = FALSE)
+        shinyjs::html(id = "help-pane", html = e$message)
+        invokeRestart("muffleError")
+        failure <<- TRUE
+      },
+      finally = {
+        if (!failure) {
+          shinyjs::hide(id = "help-pane", anim = FALSE)
+        }
+      }
+    )
   })
 
   # _ Code ====
