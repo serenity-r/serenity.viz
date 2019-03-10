@@ -8,8 +8,15 @@ layerParamsUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    h3("Layer Parameters"),
-    uiOutput(ns('params'))
+    tabsetPanel(
+      type = "tabs",
+      tabPanel(span(icon(name = "sliders-h"), "Parameters"),
+               uiOutput(ns('params'))
+      ),
+      tabPanel(span(icon(name = "arrows-alt"), "Position"),
+               uiOutput(ns('position'))
+      )
+    )
   )
 }
 
@@ -46,6 +53,33 @@ layerParamsServer <- function(input, output, session, triggerAesUpdate) {
     })
   })
 
+  output$position <- renderUI({
+    triggerAesUpdate()
+    isolate({
+      selectizeInput(ns('position'),
+                     label = NULL,
+                     choices = list("Identity" = "identity",
+                                    "Jitter" = "jitter",
+                                    "Dodge" = "dodge",
+                                    "Jitter-Dodge" = "jitterdodge",
+                                    "Nudge" = "nudge",
+                                    "Stack" = "stack"),
+                     options = list(render = I(
+                       "{
+                       option: function(item, escape) {
+                        return '<div class = \"position\"><span data-value = \"' + escape(item.value) + '\"></span>' + escape(item.label) + '</div>'
+                       }
+    }")),
+                     selected = input[["position"]] %||% "identity"
+      )
+    })
+  })
+
+  updateSelectizeInput(
+    session, 'position', server = TRUE,
+    choices = c("Identity", "Jitter", "Dodge", "Jitter-Dodge", "Nudge", "Stack", "Fill")
+    )
+
   # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
@@ -70,6 +104,22 @@ na.rm_ui <- function(value, input, session) {
   checkboxInput(session$ns('na.rm'),
                 label = 'Remove NA?',
                 value = input[['na.rm']] %||% value)
+}
+
+bins_ui <- function(value, input, session) {
+  numericInput(session$ns('bins'),
+               label = 'Number of bins:',
+               value = input[['bins']] %||% 30)
+}
+
+binwidth_ui <- function(value, input, session) {
+  if (is.null(value)) {
+    return(NULL)
+  }
+
+  numericInput(session$ns('binwidth'),
+               label = 'Width of bins:',
+               value = input[['binwidth']] %||% value)
 }
 
 show.legend_ui <- function(value, input, session) {
@@ -119,7 +169,8 @@ pars <- function(x) {
                 c("mapping", "data", "...", "na.rm", "show.legend", "inherit.aes", "stat", "position"))],
       .["position"]
     )
-  }
+  } %>%
+    purrr::modify_at("bins", ~ 30) # Default bins is 30
 }
 
 filter_out_defaults <- function(param, default, value) {
