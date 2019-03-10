@@ -33,7 +33,8 @@ layerUI <- function(id) {
           id = ns("layer-aes-wrap"),
           class = "layer-aes",
           uiOutput(ns("layer_aes"), inline = FALSE)
-        )
+        ),
+        padding = NULL
       )
     )
   )

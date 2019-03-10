@@ -3,6 +3,10 @@ body {
   background: #fcfcfc;
 }
 
+.title {
+  margin-bottom: 15px;
+}
+
 .title > h4 {
   margin: 15px 0 0 15px;
 }
@@ -172,6 +176,18 @@ body {
 
 .layer-inner:hover svg {
   visibility: visible;
+}
+
+.selected-aes-col,
+.selected-vars-col {
+  padding: 0 15px;
+}
+
+.btn-circle-sm {
+  width: 25px !important;
+  height: 25px !important;
+  border-radius: 25px !important;
+  font-size: 15px !important;
 }
 
 .dataset-vars .grid,

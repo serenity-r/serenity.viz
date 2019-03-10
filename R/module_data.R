@@ -16,11 +16,13 @@ dataUI <- function(id) {
         h4("Variables")
       ),
       miniUI::miniContentPanel(
+        class = "selected-vars-col",
         div(
           id = ns("dataset-vars-wrap"),
           class = "dataset-vars",
           uiOutput(ns("dataset_vars"), inline = FALSE)
-        )
+        ),
+        padding = NULL
       )
     )
   )
