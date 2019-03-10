@@ -8,10 +8,21 @@ dataUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
-  div(
-    id = ns("dataset-vars-wrap"),
-    class = "dataset-vars",
-    uiOutput(ns("dataset_vars"), inline = FALSE)
+  tagList(
+    fillCol(
+      flex = c(NA, 1),
+      div(
+        class = "title",
+        h4("Variables")
+      ),
+      miniUI::miniContentPanel(
+        div(
+          id = ns("dataset-vars-wrap"),
+          class = "dataset-vars",
+          uiOutput(ns("dataset_vars"), inline = FALSE)
+        )
+      )
+    )
   )
 }
 

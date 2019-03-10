@@ -13,8 +13,8 @@ layerUI <- function(id) {
     fillCol(
       flex = c(NA, 1),
       div(
-        class = "layer-title",
-        h3("Layer Aesthetics"),
+        class = "title",
+        h4("Layer Aesthetics"),
         switch(geom_type != "geom-blank",
                shinyWidgets::dropdownButton(
                  layerParamsUI(ns('layer-params')),
@@ -29,13 +29,10 @@ layerUI <- function(id) {
       miniUI::miniContentPanel(
         id = ns("selected-aes-col"),
         class = "selected-aes-col",
-        wellPanel(
-          height = "100%",
-          div(
-            id = ns("layer-aes-wrap"),
-            class = "layer-aes",
-            uiOutput(ns("layer_aes"), inline = FALSE)
-          )
+        div(
+          id = ns("layer-aes-wrap"),
+          class = "layer-aes",
+          uiOutput(ns("layer_aes"), inline = FALSE)
         )
       )
     )

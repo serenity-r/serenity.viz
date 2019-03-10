@@ -28,46 +28,42 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
                                   right = miniUI::miniTitleBarButton(ns("done"), "Done", primary = TRUE)),
            NULL),
     fillRow(
-      flex = c(1, 2, 1),
+      flex = c(2, 3),
 
-      # Variables and geoms
-      fillCol(
-        flex = c(NA, 1, NA, NA),
-        h3("Variables"),
-        miniUI::miniContentPanel(
-          wellPanel(
-            dataUI(id = ns(attributes(dataset)$df_name)),
-            height = "100%"
-          )
-        ),
-        h3("Plot Types"),
-        wellPanel(
-          div(
-            id = ns("selected-geoms-row"),
-            class = "selected-geoms-row",
-            dragulaSelectR::dragZone(ns("geoms"),
-                                     class = "geoms",
-                                     choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
-          ),
-          height = "100%",
-          padding = 5
-        )
+      # Variables
+      fillRow(
+        class = "vars-and-aes",
+        height = NULL,
+        width = "95%",
+        flex = c(1, 1),
+        dataUI(id = ns(attributes(dataset)$df_name)),
+        uiOutput(ns("aesthetics"), inline=TRUE)
       ),
 
       # Layers, plot, and code
       fillCol(
-        flex = c(NA, NA, NA, 7, ifelse(showcode, 3, NA)),
-        h3("Layers"),
-        uiOutput(ns("layersUI")),
-        h3("Plot"),
+        flex = c(NA, 7, ifelse(showcode, 3, NA)),
+        wellPanel(
+          class = "plots-and-layers",
+          div(
+            h4("Plots"),
+            dragulaSelectR::dragZone(ns("geoms"),
+                                     class = "geoms",
+                                     choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
+          ),
+          div(
+            h4("Layers"),
+            uiOutput(ns("layersUI"))
+          )
+        ),
         miniUI::miniContentPanel(
+          class = "ggplot",
+          style = "padding: 19px;",
           plotOutput(ns("viz"), height = "100%"),
           shinyjs::hidden(
             absolutePanel(id = ns("help-pane"),
                           class = "help-pane",
-                          top = 0,
-                          width = "100%",
-                          height = "100%",
+                          top = "20px",
                           draggable = FALSE
             )
           )
@@ -82,21 +78,6 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
                  )
                ),
                NULL)
-      ),
-
-      # Aesthetics
-      fillCol(
-        flex = c(8, NA , 4),
-        uiOutput(ns("aesthetics"), inline=TRUE),
-        h3("Plot Labels"),
-        miniUI::miniContentPanel(
-          id = ns("labels-panel"),
-          class = "labels-panel",
-          wellPanel(
-            labelsUI(id = ns("labels")),
-            height = "100%"
-          )
-        )
       )
     )
   )
