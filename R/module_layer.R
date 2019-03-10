@@ -21,7 +21,7 @@ layerUI <- function(id) {
                  inputId = ns("layer-params-btn"),
                  status = "primary",
                  icon = icon("gear"),
-                 size = "sm",
+                 size = "xs",
                  right = TRUE,
                  tooltip = shinyWidgets::tooltipOptions(title = "Layer Parameters")),
                NULL)

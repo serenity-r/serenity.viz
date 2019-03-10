@@ -183,13 +183,6 @@ body {
   padding: 0 15px;
 }
 
-.btn-circle-sm {
-  width: 25px !important;
-  height: 25px !important;
-  border-radius: 25px !important;
-  font-size: 15px !important;
-}
-
 .dataset-vars .grid,
 .selected-aes-col .grid {
   cursor: pointer;
