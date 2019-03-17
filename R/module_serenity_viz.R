@@ -42,7 +42,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
 
       # Layers, plot, and code
       fillCol(
-        flex = c(NA, NA, 7, ifelse(showcode, 3, NA)),
+        flex = c(NA, 7, NA, ifelse(showcode, 3, NA)),
         wellPanel(
           class = "plots-and-layers",
           div(
@@ -56,17 +56,6 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
             uiOutput(ns("layersUI"))
           )
         ),
-        shinyWidgets::dropdownButton(
-          labelsUI(id = ns("labels")),
-          inputId = "label-btn",
-          circle = FALSE,
-          status = "primary",
-          label = "Set Labels",
-          icon = icon("tags"), # other options: comment, edit, i-cursor, info-circle, map-signs, marker, pen-square
-          size = "sm",
-          right = TRUE,
-          tooltip = shinyWidgets::tooltipOptions(title = "Set Labels",
-                                                 placement = "top")),
         miniUI::miniContentPanel(
           class = "ggplot",
           style = "padding: 19px;",
@@ -79,6 +68,16 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
             )
           )
         ),
+        shinyWidgets::dropdownButton(
+          labelsUI(id = ns("labels")),
+          inputId = "label-btn",
+          circle = FALSE,
+          status = "primary",
+          label = "Set Labels",
+          icon = icon("tags"), # other options: comment, edit, i-cursor, info-circle, map-signs, marker, pen-square
+          size = "sm",
+          right = TRUE,
+          up = TRUE),
         switch(showcode,
                miniUI::miniContentPanel(
                  tabsetPanel(
