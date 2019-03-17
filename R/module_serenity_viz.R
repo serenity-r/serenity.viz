@@ -46,13 +46,13 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
         wellPanel(
           class = "plots-and-layers",
           div(
-            h4("Plots"),
+            h4("Plot Types"),
             dragulaSelectR::dragZone(ns("geoms"),
                                      class = "geoms",
                                      choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
           ),
           div(
-            h4("Layers"),
+            h4("Plots Used"),
             uiOutput(ns("layersUI"))
           )
         ),

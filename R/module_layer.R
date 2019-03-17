@@ -14,7 +14,7 @@ layerUI <- function(id) {
       flex = c(NA, 1),
       div(
         class = "title",
-        h4("Layer Aesthetics"),
+        h4("Plot Features"),
         switch(geom_type != "geom-blank",
                shinyWidgets::dropdownButton(
                  layerParamsUI(ns('layer-params')),
