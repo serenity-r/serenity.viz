@@ -27,69 +27,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
                                   left = miniUI::miniTitleBarCancelButton(ns("cancel")),
                                   right = miniUI::miniTitleBarButton(ns("done"), "Done", primary = TRUE)),
            NULL),
-    fillRow(
-      flex = c(2, 3),
-
-      # Variables
-      fillRow(
-        class = "vars-and-aes",
-        height = NULL,
-        width = "95%",
-        flex = c(1, 1),
-        dataUI(id = ns(attributes(dataset)$df_name)),
-        uiOutput(ns("aesthetics"), inline=TRUE)
-      ),
-
-      # Layers, plot, and code
-      fillCol(
-        flex = c(NA, 7, NA, ifelse(showcode, 3, NA)),
-        wellPanel(
-          class = "plots-and-layers",
-          div(
-            h4("Plots"),
-            dragulaSelectR::dragZone(ns("geoms"),
-                                     class = "geoms",
-                                     choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
-          ),
-          div(
-            h4("Layers"),
-            uiOutput(ns("layersUI"))
-          )
-        ),
-        miniUI::miniContentPanel(
-          class = "ggplot",
-          style = "padding: 19px;",
-          plotOutput(ns("viz"), height = "100%"),
-          shinyjs::hidden(
-            absolutePanel(id = ns("help-pane"),
-                          class = "help-pane",
-                          top = "20px",
-                          draggable = FALSE
-            )
-          )
-        ),
-        shinyWidgets::dropdownButton(
-          labelsUI(id = ns("labels")),
-          inputId = "label-btn",
-          circle = FALSE,
-          status = "primary",
-          label = "Set Labels",
-          icon = icon("tags"), # other options: comment, edit, i-cursor, info-circle, map-signs, marker, pen-square
-          size = "sm",
-          right = TRUE,
-          up = TRUE),
-        switch(showcode,
-               miniUI::miniContentPanel(
-                 tabsetPanel(
-                   id = ns("verbose"),
-                   type = "tabs",
-                   tabPanel("Code", verbatimTextOutput(ns("code"))),
-                   tabPanel("Log", verbatimTextOutput(ns("log")))
-                 )
-               ),
-               NULL)
-      )
-    )
+    phosphorr::phosphorrOutput(ns("pjsbox"), height="100%")
   )
 }
 
@@ -101,7 +39,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
 #' @param dataset Passed in dataset for visualization
 #'
 #' @importFrom magrittr %>%
-#' @import shiny ggplot2 dplyr forcats
+#' @import shiny ggplot2 dplyr forcats phosphorr
 #' @export
 #'
 serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
@@ -116,6 +54,72 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
 
   # Store log for warnings
   ggplot2_log <- reactiveVal("")
+
+  output$pjsbox <- renderPhosphorr({
+    ns <- session$ns
+
+    phosphorr() %>%
+      addWidget(id = ns("widget-geoms-and-layers"),
+                ui = uiOutput(ns("ui-geoms-and-layers")),
+                title = "Layers") %>%
+      addWidget(id = ns('widget-ggplot'),
+                refwidget = ns('widget-geoms-and-layers'),
+                insertmode = "split-right",
+                relsize = 0.6,
+                ui = miniUI::miniContentPanel(
+                  class = "ggplot",
+                  style = "padding: 19px;",
+                  plotOutput(ns("viz"), height = "100%"),
+                  shinyjs::hidden(
+                    absolutePanel(id = ns("help-pane"),
+                                  class = "help-pane",
+                                  top = "20px",
+                                  draggable = FALSE
+                                  )
+                    )
+                  ),
+                title = "Plot") %>%
+      addWidget(id = ns("widget-code"),
+                refwidget = ns('widget-ggplot'),
+                insertmode = "split-bottom",
+                relsize = 0.25,
+                ui = verbatimTextOutput(ns("code")),
+                title = "Code") %>%
+      addWidget(id = ns("widget-vars"),
+                refwidget = ns("widget-geoms-and-layers"),
+                insertmode = "split-bottom",
+                relsize = 0.75,
+                ui = dataUI(id = ns(attributes(dataset)$df_name)),
+                title = "Variables") %>%
+      addWidget(id = ns("widget-aes"),
+                refwidget = ns("widget-vars"),
+                insertmode = "split-right",
+                ui = uiOutput(ns("aesthetics"), inline=TRUE),
+                title = "Aesthetics") %>%
+      addWidget(id = ns("widget-messages"),
+                refwidget = ns("widget-code"),
+                insertmode = "tab-after",
+                ui = verbatimTextOutput(ns("log")),
+                title = "Messages")
+  })
+
+  output$`ui-geoms-and-layers` <- renderUI({
+    ns <- session$ns
+
+    wellPanel(
+      class = "plots-and-layers",
+      div(
+        h4("Plots"),
+        dragulaSelectR::dragZone(ns("geoms"),
+                                 class = "geoms",
+                                 choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
+      ),
+      div(
+        h4("Layers"),
+        uiOutput(ns("layersUI"))
+      )
+    )
+  })
 
   # Data module
   subsetted_data <- callModule(module = dataServer,
