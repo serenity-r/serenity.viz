@@ -4,7 +4,7 @@ Version: 0.0.0.9000
 Authors@R: person("M. Drew", "LaMar", email = "mdlama@wm.edu", role = c("aut", "cre"))
 Description: A platform-independent browser-based interface to data science tools for the classroom.
 Depends:
-    R (>= 3.5.0)
+    R (>= 3.4.0)
 Imports:
     shiny (>= 1.1.0),
     miniUI (>= 0.1.1),
@@ -20,6 +20,7 @@ Imports:
     shinyWidgets
 Remotes: 
     serenity-r/dragulaSelectR,
+    serenity-r/phosphorr,
     serenity-r/bsplus
 URL: https://github.com/serenity-r/serenity
 BugReports: https://github.com/serenity-r/dragulaSelectR/issues
