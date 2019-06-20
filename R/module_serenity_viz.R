@@ -60,13 +60,15 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
 
     phosphorr() %>%
       addWidget(id = ns("widget-geoms-and-layers"),
-                ui = uiOutput(ns("ui-geoms-and-layers")),
-                title = "Layers") %>%
+                body = uiOutput(ns("ui-geoms-and-layers")),
+                title = "Layers",
+                icon = icon("layer-group"),
+                closable = FALSE) %>%
       addWidget(id = ns('widget-ggplot'),
                 refwidget = ns('widget-geoms-and-layers'),
                 insertmode = "split-right",
                 relsize = 0.6,
-                ui = miniUI::miniContentPanel(
+                body = miniUI::miniContentPanel(
                   class = "ggplot",
                   style = "padding: 19px;",
                   plotOutput(ns("viz"), height = "100%"),
@@ -78,29 +80,38 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
                                   )
                     )
                   ),
-                title = "Plot") %>%
+                header = uiOutput(ns('widget-ggplot-header')),
+                title = "Plot",
+                icon = icon("image"),
+                closable = FALSE) %>%
       addWidget(id = ns("widget-code"),
                 refwidget = ns('widget-ggplot'),
                 insertmode = "split-bottom",
                 relsize = 0.25,
-                ui = verbatimTextOutput(ns("code")),
-                title = "Code") %>%
+                body = verbatimTextOutput(ns("code")),
+                title = "Code",
+                icon = icon("code")) %>%
       addWidget(id = ns("widget-vars"),
                 refwidget = ns("widget-geoms-and-layers"),
                 insertmode = "split-bottom",
                 relsize = 0.75,
-                ui = dataUI(id = ns(attributes(dataset)$df_name)),
-                title = "Variables") %>%
+                body = dataUI(id = ns(attributes(dataset)$df_name)),
+                title = "Variables",
+                icon = icon("database"),
+                closable = FALSE) %>%
       addWidget(id = ns("widget-aes"),
                 refwidget = ns("widget-vars"),
                 insertmode = "split-right",
-                ui = uiOutput(ns("aesthetics"), inline=TRUE),
-                title = "Aesthetics") %>%
+                body = uiOutput(ns("aesthetics"), inline=TRUE),
+                title = "Aesthetics",
+                icon = icon("paint-brush"),
+                closable = FALSE) %>%
       addWidget(id = ns("widget-messages"),
                 refwidget = ns("widget-code"),
                 insertmode = "tab-after",
-                ui = verbatimTextOutput(ns("log")),
-                title = "Messages")
+                body = verbatimTextOutput(ns("log")),
+                title = "Messages",
+                icon = icon("info"))
   })
 
   output$`ui-geoms-and-layers` <- renderUI({
@@ -119,6 +130,37 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
         uiOutput(ns("layersUI"))
       )
     )
+  })
+
+  output$`widget-ggplot-header` <- renderUI({
+    ns <- session$ns
+
+    shinyWidgets::prettyToggle(
+      inputId = ns("maximize"),
+      label_on = "",
+      label_off = "",
+      status_on = "default",
+      status_off = "default",
+      outline = TRUE,
+      plain = TRUE,
+      icon_on = icon("window-minimize"),
+      icon_off = icon("window-maximize"),
+      inline = TRUE
+    )
+  })
+
+  observeEvent(input$maximize, {
+    ns <- session$ns
+
+    message <- list(
+      dockID = ns('pjsbox'),
+      widgetID = ns('widget-ggplot')
+    )
+    if (input$maximize) {
+      session$sendCustomMessage("phosphorr:maximizeWidget", message)
+    } else {
+      session$sendCustomMessage("phosphorr:minimizeWidget", message)
+    }
   })
 
   # Data module

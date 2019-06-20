@@ -3,6 +3,10 @@ body {
   background: #fcfcfc;
 }
 
+.content {
+  padding: 24px 8px 8px 8px;
+}
+
 .title {
   margin-bottom: 15px;
 }
@@ -294,4 +298,27 @@ body {
 .position > span[data-value="stack"] {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAAJ1BMVEVUbzFnd1FneFFsLV12Tmx6gHF6gXF8Y3aAcHyCeIDR0dHS0tL///9WTfCRAAAATElEQVR42u3LUQqAIBBFUbUZU3P/63UBvmAgiIJ7/k+aD5DJr+dxI5Ivz5KPSC5JymQy+X+5FslDuZ9SD2U7JCOTyWQy+Su5mdT2vADNW3u0TKoH4gAAAABJRU5ErkJggg==) no-repeat;
 	background-size: 100%;
+}
+
+/* Fixes for shinyWidgets and phosphorr header */
+
+.widget-header i {
+  float: right;
+  margin-top: 0.5rem;
+  margin-right: 4px;
+  margin-left: 2px;
+}
+
+.widget-header .form-group {
+  float: right;
+  margin-right: 0;
+}
+
+.pretty {
+  margin-right: 0 !important;
+  line-height: 1.6rem !important;
+}
+
+.pretty.p-toggle .state.p-off .icon {
+  color: #000 !important;
 }
