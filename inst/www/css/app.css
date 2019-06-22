@@ -216,6 +216,59 @@ body {
   float: left;
 }
 
+/* ************** */
+/* WIDGET CONTENT */
+/* ************** */
+
+.widget-content.p-Widget {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.widget-content.p-Widget > .widget-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 8px;
+}
+
+.widget-content.p-Widget > .widget-header {
+  min-height: 24px;
+  max-height: 24px;
+  border-bottom: 1px solid #C0C0C0;
+}
+
+/* ************ */
+/* shinyWidgets */
+/* ************ */
+
+.dropdown-shinyWidgets {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.widget-header .header-icon,
+.widget-header .btn-header-icon{
+  float: right;
+  margin-right: 0;
+}
+
+.pretty {
+  margin-right: 0 !important;
+  line-height: 1.6rem !important;
+}
+
+.pretty.p-toggle .state.p-off .icon {
+  color: #000 !important;
+}
+
+.widget-header i {
+  float: right;
+  margin-top: 0.5rem;
+  margin-right: 4px;
+  margin-left: 2px;
+}
+
 .ds-dropoption[data-value="geom-blank"] {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8AgMAAABHkjHhAAAADFBMVEUAAADDw8Pf39////8rOwR2AAAAIUlEQVR4AWNAB1KrkMESBv3/yOAH/fij/FH+KB8jP6IBAPMiKJ7xlAlRAAAAAElFTkSuQmCC) no-repeat;
   background-size: 100%;
@@ -300,25 +353,3 @@ body {
 	background-size: 100%;
 }
 
-/* Fixes for shinyWidgets and phosphorr header */
-
-.widget-header i {
-  float: right;
-  margin-top: 0.5rem;
-  margin-right: 4px;
-  margin-left: 2px;
-}
-
-.widget-header .form-group {
-  float: right;
-  margin-right: 0;
-}
-
-.pretty {
-  margin-right: 0 !important;
-  line-height: 1.6rem !important;
-}
-
-.pretty.p-toggle .state.p-off .icon {
-  color: #000 !important;
-}

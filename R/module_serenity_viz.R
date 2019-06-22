@@ -60,7 +60,7 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
 
     phosphorr() %>%
       addWidget(id = ns("widget-geoms-and-layers"),
-                body = uiOutput(ns("ui-geoms-and-layers")),
+                ui = uiOutput(ns("widget-geoms-and-layers")),
                 title = "Layers",
                 icon = icon("layer-group"),
                 closable = FALSE) %>%
@@ -68,19 +68,25 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
                 refwidget = ns('widget-geoms-and-layers'),
                 insertmode = "split-right",
                 relsize = 0.6,
-                body = miniUI::miniContentPanel(
-                  class = "ggplot",
-                  style = "padding: 19px;",
-                  plotOutput(ns("viz"), height = "100%"),
-                  shinyjs::hidden(
-                    absolutePanel(id = ns("help-pane"),
-                                  class = "help-pane",
-                                  top = "20px",
-                                  draggable = FALSE
-                                  )
-                    )
+                ui = tagList(
+                  widgetHeader(
+                    uiOutput(ns('widget-ggplot-header'))
                   ),
-                header = uiOutput(ns('widget-ggplot-header')),
+                  widgetBody(
+                    miniUI::miniContentPanel(
+                      class = "ggplot",
+                      style = "padding: 19px;",
+                      plotOutput(ns("viz"), height = "100%"),
+                      shinyjs::hidden(
+                        absolutePanel(id = ns("help-pane"),
+                                      class = "help-pane",
+                                      top = "20px",
+                                      draggable = FALSE
+                        )
+                      )
+                    )
+                  )
+                ),
                 title = "Plot",
                 icon = icon("image"),
                 closable = FALSE) %>%
@@ -88,46 +94,48 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
                 refwidget = ns('widget-ggplot'),
                 insertmode = "split-bottom",
                 relsize = 0.25,
-                body = verbatimTextOutput(ns("code")),
+                ui = widgetBody(verbatimTextOutput(ns("code"))),
                 title = "Code",
                 icon = icon("code")) %>%
       addWidget(id = ns("widget-vars"),
                 refwidget = ns("widget-geoms-and-layers"),
                 insertmode = "split-bottom",
                 relsize = 0.75,
-                body = dataUI(id = ns(attributes(dataset)$df_name)),
+                ui = widgetBody(dataUI(id = ns(attributes(dataset)$df_name))),
                 title = "Variables",
                 icon = icon("database"),
                 closable = FALSE) %>%
-      addWidget(id = ns("widget-aes"),
+      addWidget(id = ns("aesthetics"),
                 refwidget = ns("widget-vars"),
                 insertmode = "split-right",
-                body = uiOutput(ns("aesthetics"), inline=TRUE),
+                ui = uiOutput(ns("aesthetics")),
                 title = "Aesthetics",
                 icon = icon("paint-brush"),
                 closable = FALSE) %>%
       addWidget(id = ns("widget-messages"),
                 refwidget = ns("widget-code"),
                 insertmode = "tab-after",
-                body = verbatimTextOutput(ns("log")),
+                ui = widgetBody(verbatimTextOutput(ns("log"))),
                 title = "Messages",
                 icon = icon("info"))
   })
 
-  output$`ui-geoms-and-layers` <- renderUI({
+  output$`widget-geoms-and-layers` <- renderUI({
     ns <- session$ns
 
-    wellPanel(
-      class = "plots-and-layers",
-      div(
-        h4("Plots"),
-        dragulaSelectR::dragZone(ns("geoms"),
-                                 class = "geoms",
-                                 choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
-      ),
-      div(
-        h4("Layers"),
-        uiOutput(ns("layersUI"))
+    widgetBody(
+      wellPanel(
+        class = "plots-and-layers",
+        div(
+          h4("Plots"),
+          dragulaSelectR::dragZone(ns("geoms"),
+                                   class = "geoms",
+                                   choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
+        ),
+        div(
+          h4("Layers"),
+          uiOutput(ns("layersUI"))
+        )
       )
     )
   })
@@ -135,17 +143,27 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
   output$`widget-ggplot-header` <- renderUI({
     ns <- session$ns
 
-    shinyWidgets::prettyToggle(
-      inputId = ns("maximize"),
-      label_on = "",
-      label_off = "",
-      status_on = "default",
-      status_off = "default",
-      outline = TRUE,
-      plain = TRUE,
-      icon_on = icon("window-minimize"),
-      icon_off = icon("window-maximize"),
-      inline = TRUE
+    tagList(
+      prettyToggle(
+        inputId = ns("maximize"),
+        label_on = "",
+        label_off = "",
+        status_on = "default",
+        status_off = "default",
+        outline = TRUE,
+        plain = TRUE,
+        icon_on = icon("window-minimize"),
+        icon_off = icon("window-maximize"),
+        inline = TRUE
+      ),
+      shinyWidgets::dropdownButton(
+        HTML("Hello, World!"),
+        inputId = ns("plot-params-btn"),
+        status = "header-icon",
+        icon = icon("gear"),
+        size = "xs",
+        right = TRUE,
+        tooltip = shinyWidgets::tooltipOptions(title = "Plot Parameters", placement = "left"))
     )
   })
 
@@ -418,4 +436,17 @@ idsToGeoms <- function(id) {
   switch(!is.null(id),
          sapply(id, FUN = function(x) { paste(stringr::str_split(x, '-')[[1]][1:2], collapse="-") }, simplify = "array"),
          NULL)
+}
+
+widgetHeader <- function(..., disable = FALSE, .list = NULL)
+{
+  items <- c(list(...), .list)
+  tags$header(class = "widget-header", style = if (disable)
+    "display: none;", items)
+}
+
+widgetBody <- function(..., .list = NULL)
+{
+  items <- c(list(...), .list)
+  tags$section(class = "widget-body", items)
 }

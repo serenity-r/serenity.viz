@@ -10,34 +10,31 @@ layerUI <- function(id) {
   geom_type <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="-")
 
   tagList(
-    fillCol(
-      flex = c(NA, 1),
-      div(
-        class = "title",
-        h4("Layer Aesthetics"),
+      widgetHeader(
         switch(geom_type != "geom-blank",
                shinyWidgets::dropdownButton(
                  layerParamsUI(ns('layer-params')),
                  inputId = ns("layer-params-btn"),
-                 status = "primary",
+                 status = "header-icon",
                  icon = icon("gear"),
-                 size = "sm",
+                 size = "xs",
                  right = TRUE,
                  tooltip = shinyWidgets::tooltipOptions(title = "Layer Parameters")),
                NULL)
       ),
-      miniUI::miniContentPanel(
-        id = ns("selected-aes-col"),
-        class = "selected-aes-col",
-        div(
-          id = ns("layer-aes-wrap"),
-          class = "layer-aes",
-          uiOutput(ns("layer_aes"), inline = FALSE)
-        ),
-        padding = NULL
+      widgetBody(
+        miniUI::miniContentPanel(
+          id = ns("selected-aes-col"),
+          class = "selected-aes-col",
+          div(
+            id = ns("layer-aes-wrap"),
+            class = "layer-aes",
+            uiOutput(ns("layer_aes"), inline = FALSE)
+          ),
+          padding = NULL
+        )
       )
     )
-  )
 }
 
 #' Server for layer module
