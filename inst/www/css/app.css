@@ -70,10 +70,6 @@ body {
   right: 25px;
 }
 
-.dropdown-shinyWidgets {
-  width: 22vw;
-}
-
 .layers, .geoms {
   min-height: 50px;
   margin-left: 70px;
@@ -166,6 +162,56 @@ body {
   box-shadow: 0 0 0 1px #fafafa, 0 0 0 3px #666;
 }
 
+/* DATA */
+.ds-dragzone.varzone {
+  border: none;
+  min-height: unset;
+}
+
+/* Need to attach class to dragitem mirror */
+.varzone > .ds-dragitem,
+.ds-dragitem.gu-mirror {
+  background: #B2DF8A;
+  border: 1px solid #979797;
+  box-sizing: border-box;
+  border-radius: 20px;
+}
+
+.varzone.numeric .ds-dragitem {
+  background: #A6CEE3;
+}
+
+.ds-dragitem.gu-mirror {
+  background: #EEEEEE;
+}
+
+.varzone > .ds-dragitem > div.btn-dropdown-input,
+.ds-dragitem.gu-mirror > div.btn-dropdown-input
+{
+  float: right;
+  display: inline-block;
+}
+
+.varzone > .ds-dragitem > div.btn-dropdown-input > button,
+.ds-dragitem.gu-mirror > div.btn-dropdown-input > button {
+  background-color: transparent;
+}
+
+#serenityVizApp-iris-dataset_vars {
+  display: flex;
+  flex-direction: column;
+}
+
+span.varname {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  width: calc(100% - 50px);
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 4px;
+}
+
 .selected-geom-inner,
 .layer-inner {
   height: 100%;
@@ -216,9 +262,9 @@ body {
   float: left;
 }
 
-/* ************** */
-/* WIDGET CONTENT */
-/* ************** */
+/* ************************ */
+/* PHOSPHORR WIDGET CONTENT */
+/* ************************ */
 
 .widget-content.p-Widget {
   display: flex;
@@ -244,11 +290,15 @@ body {
 
 .dropdown-shinyWidgets {
   width: 100%;
+  max-width: 400px;
+}
+
+.widget-header .dropdown-shinyWidgets {
   margin-top: 24px;
 }
 
 .widget-header .header-icon,
-.widget-header .btn-header-icon{
+.widget-header .btn-header-icon {
   float: right;
   margin-right: 0;
 }
@@ -267,6 +317,46 @@ body {
   margin-top: 0.5rem;
   margin-right: 4px;
   margin-left: 2px;
+}
+
+#serenityVizApp-widget-geoms-and-layers .widget-body {
+  padding: 8px;
+  position: relative;
+}
+
+#serenityVizApp-base-layer-btn_state {
+  text-align: center;
+  margin-top: -8px;
+  position: sticky;
+  position: -webkit-sticky;
+  top: -8px;
+  z-index: 1;
+}
+
+#serenityVizApp-base-layer-btn_state.open ul {
+  /* margin-top: -10px; */
+}
+
+#serenityVizApp-base-layer-btn_state button {
+  position: absolute;
+  top: -8px;
+}
+
+#serenityVizApp-base-layer-btn_state.open button {
+  top: 21px;
+}
+
+#serenityVizApp-base-layer-btn_state .dropdown-shinyWidgets {
+  max-width: none;
+  margin-top: 0;
+}
+
+#serenityVizApp-base-layer-btn i.fa-caret-down {
+  margin-top: 5px;
+}
+
+#serenityVizApp-base-layer-btn_state.open i.fa-caret-down:before {
+  content: '\f0d8';
 }
 
 .ds-dropoption[data-value="geom-blank"] {

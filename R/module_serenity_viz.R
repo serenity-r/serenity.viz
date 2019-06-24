@@ -101,7 +101,7 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
                 refwidget = ns("widget-geoms-and-layers"),
                 insertmode = "split-bottom",
                 relsize = 0.75,
-                ui = widgetBody(dataUI(id = ns(attributes(dataset)$df_name))),
+                ui = dataUI(id = ns(attributes(dataset)$df_name)),
                 title = "Variables",
                 icon = icon("database"),
                 closable = FALSE) %>%
@@ -123,18 +123,33 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
   output$`widget-geoms-and-layers` <- renderUI({
     ns <- session$ns
 
-    widgetBody(
-      wellPanel(
-        class = "plots-and-layers",
-        div(
-          h4("Plots"),
-          dragulaSelectR::dragZone(ns("geoms"),
-                                   class = "geoms",
-                                   choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
-        ),
-        div(
-          h4("Layers"),
-          uiOutput(ns("layersUI"))
+    tagList(
+      widgetHeader(
+        tagList(
+          icon("minus"),
+          icon("plus")
+        )
+      ),
+      widgetBody(
+        shinyWidgets::dropdownButton(
+          HTML("Hello, World!"),
+          inputId = ns("base-layer-btn"),
+          icon = icon("caret-down"),
+          size = "xs",
+          right = TRUE,
+          tooltip = shinyWidgets::tooltipOptions(title = "Base Layer", placement = "bottom")),
+        wellPanel(
+          class = "plots-and-layers",
+          div(
+            h4("Plots"),
+            dragulaSelectR::dragZone(ns("geoms"),
+                                     class = "geoms",
+                                     choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
+          ),
+          div(
+            h4("Layers"),
+            uiOutput(ns("layersUI"))
+          )
         )
       )
     )
