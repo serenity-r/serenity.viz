@@ -1,0 +1,461 @@
+---
+title: "Example Charts"
+author: "M. Drew LaMar"
+date: "6/13/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+# Basic plots
+
+## Scatter plot (**Basic**)
+
+```{r}
+iris %>% 
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width, colour = Species)) +
+  geom_point()
+```
+
+### Stripchart
+
+#### With jitter (**Basic**)
+
+```{r}
+iris %>% 
+  ggplot(aes(x = Species, y = Sepal.Length)) + 
+  geom_point(position = position_jitter(width = 0.1))
+```
+
+#### Connecting paired data (**Recipe**)
+
+```{r}
+blackbird <- read.csv(url("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter12/chap12e2BlackbirdTestosterone.csv")) %>%
+  rename(before = logBeforeImplant, after = logAfterImplant) %>%
+  gather(before, after, 
+         key = "time",
+         value = "logAntibody") %>%
+  mutate(time = forcats::fct_relevel(time, "before", "after"))
+```
+
+```{r}
+blackbird %>% 
+  ggplot(aes(x = time, y = logAntibody)) + 
+  geom_line(aes(group = blackbird)) +
+  geom_point(shape = 21, fill = "firebrick", size=3)
+```
+
+## Box plot (**Basic**)
+
+```{r}
+p <- iris %>% 
+  ggplot(aes(x = Species, y = Sepal.Length)) +
+  geom_boxplot()
+p
+```
+
+How to get underlying computed variables?
+
+```{r}
+computed <- ggplot_build(p)$data[[1]]
+p$layers[[1]]$geom$required_aes
+computed
+```
+
+## Violin plot (**Basic**)
+
+```{r}
+iris %>% 
+  ggplot(aes(x = Species, y = Sepal.Length)) +
+  geom_violin()
+```
+
+## Histogram (**Basic**)
+
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length)) +
+  geom_histogram()
+```
+
+## Bar plot (**Basic**)
+
+### Counts
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = cut)) + 
+  geom_bar()
+```
+
+Showing hidden assignment of `y` aesthetic:
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = cut)) + 
+  geom_bar(aes(y = stat(count)))
+```
+
+### Proportion
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = cut)) + 
+  geom_bar(aes(y = stat(count)/sum(stat(count))))
+```
+
+Here's how to do it using the computed `prop` variable.  It is a *groupwise proportion*, however, and by default ggplot adds a group for each level of the categorical variable.  See [this post](https://rstudio-pubs-static.s3.amazonaws.com/291083_2b0374fddc464ed08b4eb16c95d84075.html) that explains this (and a lot more!)
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = cut)) + 
+  geom_bar(aes(y = stat(prop), group = 1))
+```
+
+### Stacked barplot (**Basic**)
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = cut,
+             fill = clarity)) + 
+  geom_bar()
+```
+
+#### Proportional
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = cut,
+             fill = clarity)) + 
+  geom_bar(position = position_fill())
+```
+
+### Side-by-side barplot (**Basic/Recipe**)
+
+```{r}
+p <- diamonds %>%
+  ggplot(aes(x = cut,
+             fill = clarity)) + 
+  geom_bar(position = position_dodge2())
+p
+```
+
+```{r}
+p <- diamonds %>%
+  ggplot(aes(x = clarity)) + 
+  geom_bar(aes(y = stat(prop), group = cut)) +
+  facet_wrap(~cut, scales = 'free_x', nrow=1)
+p
+```
+
+## Line plot (**Basic**)
+
+```{r}
+economics %>%
+  ggplot(aes(x = date, y = unemploy)) + 
+  geom_line()
+```
+
+## Area plot (**Basic**)
+
+```{r}
+economics %>%
+  ggplot(aes(x = date, y = unemploy)) + 
+  geom_area()
+```
+
+## Stacked Histograms (**Basic/Recipe**)
+
+```{r}
+sticklebackData <- read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter03/chap03e3SticklebackPlates.csv")
+sticklebackData$genotype <- factor(sticklebackData$genotype, levels = c("mm","Mm","MM"))
+```
+
+```{r}
+sticklebackData %>% 
+  ggplot(aes(x = plates)) +
+  geom_histogram(breaks = seq(0, 70, by=2),
+                 fill = "firebrick",
+                 color = "black") +
+  facet_wrap(~ genotype, ncol = 1)
+```
+
+## Mosaic Plots
+
+See https://stackoverflow.com/a/45688044/8663034
+
+```{r}
+df <- diamonds %>%
+  group_by(cut, clarity) %>%
+  summarise(count = n()) %>%
+  mutate(cut.count = sum(count),
+         prop = count/sum(count)) %>%
+  ungroup()
+
+ggplot(df,
+       aes(x = cut, y = prop, width = cut.count, fill = clarity)) +
+  geom_bar(stat = "identity", position = "fill", colour = "black") +
+  # geom_text(aes(label = scales::percent(prop)), position = position_stack(vjust = 0.5)) + # if labels are desired
+  facet_grid(~cut, scales = "free_x", space = "free_x") +
+  scale_fill_brewer(palette = "RdYlGn") # +
+  # theme(panel.spacing.x = unit(0, "npc")) + # if no spacing preferred between bars
+  # theme_void() 
+```
+
+Another one:
+
+```{r}
+toxoplasma <- read.csv(url("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter09/chap09e3ToxoplasmaAndAccidents.csv"))
+
+info <- toxoplasma %>% 
+  group_by(accident, condition) %>% 
+  summarise(count = n()) %>% 
+  mutate(accident.count = sum(count), 
+         prop = count/sum(count)) %>% 
+  ungroup()
+
+ggplot(info, aes(x = accident, y = prop, width = accident.count, fill = condition)) + 
+  geom_bar(stat = "identity", position = "fill", colour = "black") + 
+  facet_grid(~ accident, scales = "free_x", space = "free_x") + 
+  scale_fill_manual(values = c("firebrick", "goldenrod1"))
+```
+
+Try to flip it:
+
+```{r}
+# Need to flip categoricals to have left mean top
+info$condition <- forcats::fct_relevel(info$condition, "uninfected", "infected")
+
+ggplot(info, aes(x = accident, y = prop, width = accident.count, fill = condition)) + 
+  geom_bar(stat = "identity", position = "fill", colour = "black") + 
+  coord_flip() +
+  facet_grid(rows = vars(accident), scales = "free_y", space = "free_y") + 
+  scale_fill_manual(values = c("goldenrod1", "firebrick"))
+```
+
+# Statistics
+
+## Regression
+
+```{r}
+mpg %>%
+  ggplot(aes(x = displ, y = hwy, colour = class)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) + 
+  theme(legend.position = "none")
+```
+
+```{r}
+mpg %>%
+  ggplot(aes(x = displ, y = hwy, colour = class)) + 
+  geom_point() +
+  geom_smooth(aes(x = displ, y = hwy), method = "lm", se = FALSE, inherit.aes = FALSE) + 
+  theme(legend.position = "none")
+```
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  geom_smooth(aes(colour = "loess"), method = "loess", se = FALSE) +
+  geom_smooth(aes(colour = "lm"), method = "lm", se = FALSE) + 
+  labs(colour = "Method")
+```
+
+## ECDF (**Stat**)
+
+```{r}
+spiderData <- read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter03/chap03e2SpiderAmputation.csv")
+speedBefore <- subset(spiderData, treatment == "before")
+```
+
+Base R.
+
+```{r}
+plot(ecdf(speedBefore$speed), 
+     verticals = TRUE,
+     ylab = "Cumulative relative frequency", 
+     xlab = "Running speed before amputation (cm/s)")
+```
+
+ggplot2
+
+```{r}
+speedBefore %>%
+  ggplot(aes(x = speed)) + 
+  geom_step(stat = "ecdf") + 
+  geom_point(stat = "ecdf")
+```
+
+## Confidence intervals (**Stat/Recipe**)
+
+```{r}
+iris %>% 
+  ggplot(aes(x = Species, y = Sepal.Length)) + 
+  geom_point(position = position_jitter(width = 0.1)) + 
+  geom_errorbar(stat = "summary", 
+                fun.data = "mean_cl_normal", 
+                fun.args = list(conf.int = 0.95), 
+                width = 0.1, 
+                position = position_nudge(x = 0.25)) + 
+  geom_point(stat = "summary", 
+             fun.y = "mean", 
+             position = position_nudge(x = 0.25), 
+             size=2, 
+             color = "red")
+```
+
+## Dynamite plots (**Stat/Recipe**)
+
+In front:
+
+```{r}
+iris %>%
+  ggplot(aes(x = Species, y = Sepal.Length)) +
+  geom_bar(stat = "summary",
+           fun.y = "mean") +
+  geom_errorbar(stat = "summary",
+                fun.data = "mean_cl_normal", 
+                fun.args = list(conf.int = 0.95), 
+                width = 0.1)
+```
+
+In back:
+
+```{r}
+iris %>%
+  ggplot(aes(x = Species, y = Sepal.Length)) +
+  geom_errorbar(stat = "summary",
+                fun.data = "mean_cl_normal", 
+                fun.args = list(conf.int = 0.95), 
+                width = 0.1) +
+  geom_bar(stat = "summary",
+           fun.y = "mean")
+```
+
+## Means as lines (**Stat/Recipe**)
+
+```{r}
+locustData <- read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter02/chap02f1_2locustSerotonin.csv")
+```
+
+Base R.
+
+```{r}
+# Stripchart with options
+par(bty = "l") # plot x and y axes only, not a complete box
+stripchart(serotoninLevel ~ treatmentTime, 
+           data = locustData, 
+           vertical = TRUE, 
+           method = "jitter", 
+           pch = 16, 
+           col = "firebrick", 
+           cex = 1.5, 
+           las = 1,
+           ylab = "Serotonin (pmoles)", 
+           xlab = "Treatment time (hours)",
+           ylim = c(0, max(locustData$serotoninLevel)))
+
+# The following command calculates the means in each treatment group (time)
+meanSerotonin = tapply(locustData$serotoninLevel, 
+                       locustData$treatmentTime, 
+                       mean)
+# "segments" draws draws lines to indicate the means
+segments(x0 = c(1,2,3) - 0.1, 
+         y0 = meanSerotonin, 
+         x1 = c(1,2,3) + 0.1, 
+         y1 = meanSerotonin, lwd = 2)
+```
+
+ggplot2
+
+Note that this is going to be more complicated _as we are wanting ggplot2 to do the statistical transformations for us_.  We could go manual as well, which would look like the following:
+
+```{r}
+p <- locustData %>%
+  ggplot(aes(x = treatmentTime, y = serotoninLevel)) + 
+  geom_point(position = position_jitter(width = 0.1, seed = 42),
+             color = "firebrick",
+             shape = 16,
+             size = 3)
+
+summaryData <- locustData %>% 
+  group_by(treatmentTime) %>%
+  summarize(y = mean(serotoninLevel),
+            yend = mean(serotoninLevel),
+            x = first(treatmentTime) - 0.1,
+            xend = first(treatmentTime) + 0.1)
+
+p + geom_segment(data = summaryData,
+                 aes(x = x, 
+                     y = y, 
+                     xend = xend, 
+                     yend = yend, 
+                     group = treatmentTime),
+                 size = 1) + 
+  scale_y_continuous(limits = c(0, NA))
+```
+
+```{r}
+locustData %>%
+  ggplot(aes(x = treatmentTime, y = serotoninLevel)) + 
+  geom_point(position = position_jitter(width = 0.1, seed = 42),
+             color = "firebrick",
+             shape = 16,
+             size = 3) +
+  geom_errorbarh(stat = "summary",
+                 fun.y = "mean",
+                 height = 0,
+                 aes(xmin = treatmentTime - 0.1,
+                     xmax = treatmentTime + 0.1),
+                 size = 1) +
+  scale_y_continuous(limits = c(0, NA))
+```
+
+Another way:
+
+This uses the [ggstance](https://github.com/lionel-/ggstance) package, which gives horizontal versions of geoms, stats, and positions.  This can be better than using `coord_flip`, which applies to all layers.
+
+Note that in order to implement this, the user would need to be able to specify expressions for the values of `xmin` and `xmax`.  Non-standard evaluation could be used here (see below - note that in practice the expressions will be strings).
+
+```{r}
+library(ggstance)
+one <- quote(treatmentTime - 0.1)
+two <- quote(treatmentTime + 0.1)
+locustData %>%
+  ggplot(aes(x = treatmentTime, y = serotoninLevel)) + 
+  geom_point(position = position_jitter(width = 0.1, seed = 42),
+             color = "firebrick",
+             shape = 16,
+             size = 3) +
+  geom_linerangeh(stat = "summary",
+                  fun.y = "mean",
+                  aes(xmin = !!one,
+                      xmax = !!two),
+                  size = 1) +
+  scale_y_continuous(limits = c(0, NA))
+```
+
+One more, using `aes_string`:
+
+```{r}
+library(ggstance)
+one <- "treatmentTime - 0.1"
+two <- "treatmentTime + 0.1"
+locustData %>%
+  ggplot(aes(x = treatmentTime, y = serotoninLevel)) + 
+  geom_point(position = position_jitter(width = 0.1, seed = 42),
+             color = "firebrick",
+             shape = 16,
+             size = 3) +
+  geom_linerangeh(stat = "summary",
+                  fun.y = "mean",
+                  aes_string(xmin = one,
+                             xmax = two),
+                  size = 1) +
+  scale_y_continuous(limits = c(0, NA))
+```
