@@ -11,7 +11,7 @@ dataUI <- function(id) {
   tagList(
     widgetHeader(),
     widgetBody(
-      uiOutput(ns("dataset_vars"), inline = FALSE)
+      uiOutput(ns("dataset_vars"))
     )
   )
 }
@@ -57,32 +57,6 @@ dataServer <- function(input, output, session, dataset) {
         )
       })
     )
-  })
-
-  # Variable divs ====
-  output$dataset_vars_old <- renderUI({
-    ns <- session$ns
-
-    bsa <- bsplus::bs_accordion(id = ns("vars")) %>%
-      bsplus::bs_set_opts(panel_type = "warning", use_heading_link = TRUE)
-    lapply(seq_along(var_names), function(var_num) {
-      cls <- paste0("grid var ", stringr::str_replace(var_names[var_num], '[.]', '-')) # var class name used to count # of elements for unique id creation
-      title <- dragulaSelectR::dragZone(
-        id = ns(var_names[var_num]),
-        choices = setNames(list(
-          div(class = "varname", var_names[var_num])
-        ), var_names[var_num])
-      )
-      id <- var_names[var_num]
-      content <- dataVarUI(id = ns(id),
-                              var = dataset[[id]])
-      bsa <<- bsplus::bs_append(bsa,
-                                title = title,
-                                content = content,
-                                show = FALSE
-      )
-    })
-    bsa
   })
 
   # load variable subset modules ====
