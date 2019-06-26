@@ -18,7 +18,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(
       script = file.path(resourcePath, "js", "shinyjs-funcs.js"),
-      functions = c("close_window")
+      functions = c("close_window", "toggleClass", "addClass", "removeClass")
     ),
     bsplus::use_bs_tooltip(),
     tags$head(includeCSS(file.path(resourcePath, "css", "app.css"))),

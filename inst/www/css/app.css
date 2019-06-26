@@ -163,36 +163,54 @@ body {
 }
 
 /* DATA */
-.ds-dragzone.varzone {
+
+.ds-dragzone,
+.ds-dragitem {
+  border-style: none !important;
+}
+
+.varzone,
+.aeszone {
   border: none;
   min-height: unset;
+  max-width: 300px;
+  padding: 0px 4px;
 }
 
 /* Need to attach class to dragitem mirror */
-.varzone > .ds-dragitem,
+.varzone,
+.aeszone,
 .ds-dragitem.gu-mirror {
-  background: #B2DF8A;
+  background: #EEEEEE;
   border: 1px solid #979797;
   box-sizing: border-box;
   border-radius: 20px;
 }
 
-.varzone.numeric .ds-dragitem {
+.varzone.numeric,
+.aeszone.numeric {
   background: #A6CEE3;
 }
 
-.ds-dragitem.gu-mirror {
-  background: #EEEEEE;
+.varzone.factor,
+.aeszone.factor {
+  background: #B2DF8A;
 }
 
-.varzone > .ds-dragitem > div.btn-dropdown-input,
+.aesthetic .ds-dropzone .ds-dropoption,
+.ds-dropoption.gu-mirror,
+.aesthetic .ds-dragitem.gu-transit {
+  border-style: none;
+}
+
+.varzone > div.btn-dropdown-input,
 .ds-dragitem.gu-mirror > div.btn-dropdown-input
 {
   float: right;
   display: inline-block;
 }
 
-.varzone > .ds-dragitem > div.btn-dropdown-input > button,
+.varzone > div.btn-dropdown-input > button,
 .ds-dragitem.gu-mirror > div.btn-dropdown-input > button {
   background-color: transparent;
 }
@@ -210,6 +228,120 @@ span.varname {
   display: inline-block;
   vertical-align: top;
   margin-left: 4px;
+}
+
+.aeszone span.varname {
+  width: calc(100% - 27px);
+}
+
+/* Aesthetics */
+
+/* Need higher specificity to override !important in shinyWidgets css */
+/* https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity */
+
+.layer-aesthetics {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.aesthetic {
+  height: calc(24px + 110px);
+  max-width: 350px;
+}
+
+.aesthetic .aes-header {
+  height: 24px;
+  position: relative;
+  background: #D8D8D8;
+  border: 1px solid #979797;
+  box-sizing: border-box;
+  display: block;
+}
+
+.aesthetic .aes-header .aes-name,
+.aesthetic .aes-header .aes-select {
+  display: inline-block;
+}
+
+.aesthetic .aes-header span.aes-name {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 30%;
+  margin-left: 5px;
+}
+
+.aesthetic section {
+  border: 1px solid #979797;
+  box-sizing: border-box;
+  height: 100px;
+}
+
+.aesthetic section span.ds-placeholder {
+  padding: 6px 6px;
+  font-style: italic;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.aesthetic section .sw-dropdown button.btn-header-icon {
+  float: right;
+  margin-right: 5px;
+  margin-top: 5px;
+}
+
+.aesthetic section .sw-dropdown div.sw-dropdown-content {
+  width: 100%;
+  max-width: 400px;
+  margin-top: 25px;
+}
+
+.aesthetic section div.ds-dropzone {
+  margin: 30px 10px;
+}
+
+.aesthetic .sw-dropdown .dropdown-menu li span.text {
+  display: block;
+}
+
+.pretty.p-switch.p-default .state:before {
+  border: 1px solid #5a656b!important;
+}
+
+.pretty.p-switch.p-default .state label:after,
+.pretty.p-switch.p-default .state label:before {
+  transition: none;
+}
+
+.pretty.p-switch.p-default .state label:after {
+  background-color: #5a656b!important;
+}
+
+.aes-select .fa {
+  vertical-align: text-top;
+  margin-left: 4px;
+}
+
+i.fa.inactive {
+  opacity: 0.5;
+}
+
+.aes-header div.btn-dropdown-input {
+  display: inline-block;
+  float: right;
+}
+
+.aes-header div.btn-dropdown-input > button {
+  background: transparent;
+}
+
+.aes-wrap {
+  margin: 10px;
 }
 
 .selected-geom-inner,

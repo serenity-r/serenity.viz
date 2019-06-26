@@ -32,30 +32,25 @@ dataServer <- function(input, output, session, dataset) {
   output$dataset_vars <- renderUI({
     ns <- session$ns
 
-    tagList(
-      lapply(seq_along(var_names), function(var_num) {
-        var_name <- var_names[var_num]
-        dragulaSelectR::dragZone(
-          id = ns(var_name),
+    dragulaSelectR::dragZone(
+      id = ns('datazone'),
+      choices = sapply(var_names, function(var_name) {
+        div(
           class = paste("varzone",
                         switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = 'numeric', 'factor' = 'factor')),
-          choices = setNames(list(
-            tagList(
-              switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = icon("signal"), 'factor' = icon("shapes")),
-              span(class = "varname", var_name),
-              shinyWidgets::dropdownButton(
-                dataVarUI(id = ns(var_name), var = dataset[[var_name]]),
-                inputId = ns("data-filter-btn"),
-                status = "header-icon",
-                icon = icon("filter"),
-                size = "xs",
-                right = TRUE,
-                tooltip = shinyWidgets::tooltipOptions(title = "Filter")
-              )
-            )
-          ), var_name)
+          switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = icon("signal"), 'factor' = icon("shapes")),
+          span(class = "varname", var_name),
+          shinyWidgets::dropdownButton(
+            dataVarUI(id = ns(var_name), var = dataset[[var_name]]),
+            inputId = ns("data-filter-btn"),
+            status = "header-icon",
+            icon = icon("filter"),
+            size = "xs",
+            right = TRUE,
+            tooltip = shinyWidgets::tooltipOptions(title = "Filter")
+          )
         )
-      })
+      }, simplify = FALSE, USE.NAMES = TRUE)
     )
   })
 

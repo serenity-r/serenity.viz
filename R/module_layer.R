@@ -23,16 +23,8 @@ layerUI <- function(id) {
                NULL)
       ),
       widgetBody(
-        miniUI::miniContentPanel(
-          id = ns("selected-aes-col"),
-          class = "selected-aes-col",
-          div(
-            id = ns("layer-aes-wrap"),
-            class = "layer-aes",
-            uiOutput(ns("layer_aes"), inline = FALSE)
-          ),
-          padding = NULL
-        )
+        uiOutput(ns("layer_aes"),
+                 class = "layer-aesthetics")
       )
     )
 }
@@ -74,12 +66,12 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     triggerAesUpdate$depend()
 
     ns <- session$ns
-    bsa <- bsplus::bs_accordion(id = ns("aes")) %>%
-      bsplus::bs_set_opts(panel_type = "success", use_heading_link = TRUE)
-    lapply(aesthetics, function(aes) {
-      bsa <<- layerAesUI(id = ns(aes), bsa)
-    })
-    bsa
+
+    tagList(
+      lapply(aesthetics, function(aes) {
+        layerAesUI(id = ns(aes))
+      })
+    )
   })
 
   # _ load parameters module ====

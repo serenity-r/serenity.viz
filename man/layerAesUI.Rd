@@ -4,7 +4,7 @@
 \alias{layerAesUI}
 \title{UI for layer aesthetic submodule}
 \usage{
-layerAesUI(id, bsa)
+layerAesUI(id)
 }
 \arguments{
 \item{id}{ID of layer aesthetic}

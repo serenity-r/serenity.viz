@@ -5,17 +5,18 @@
 #'
 #' @return UI for layer aesthetic
 #'
-layerAesUI <- function(id, bsa) {
+layerAesUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
+  uiOutput(ns('aes_ui'),
+           class = 'aesthetic')
+
   # Hidden dropzone input for assigning aesthetic mapping
-  title <- uiOutput(ns('aes_dropzone_ui'))
+  # title <- uiOutput(ns('aes_dropzone_ui'))
 
   # Visible aesthetic input - can be mapping or value
-  content <- uiOutput(ns('aes_input_ui'))
-
-  bsplus::bs_append(bsa, title = title, content = content, show = FALSE)
+  # content <- uiOutput(ns('aes_input_ui'))
 }
 
 #' Server for layer aesthetic submodule
@@ -48,34 +49,6 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
     default_aes <- linetype_to_string(default_aes)
   }
 
-  # Need a trigger for when to update aes_input_ui
-  mapping_exists <- makeReactiveTrigger(!is.null(input$dropzone))
-  observeEvent(input$dropzone, {
-    if ((!mapping_exists$get() && !is.null(input$dropzone)) ||
-        (is.null(input$dropzone) && mapping_exists$get())) {
-          mapping_exists$trigger()
-    }
-    mapping_exists$set(!is.null(input$dropzone))
-  }, ignoreNULL = FALSE, ignoreInit = TRUE)
-
-  # _ Aesthetic dropzone ====
-  output$aes_dropzone_ui <- renderUI({
-    ns <- session$ns
-    triggerAesUpdate()
-
-    isolate({
-      # Should not depend on any inputs
-      dragulaSelectR::dropZoneInput(ns("dropzone"),
-                                    choices = names(dataset),
-                                    presets = input$mapping, # FIX: This doesn't work: input$dropzone %||% input$mapping
-                                    hidden = TRUE,
-                                    placeholder = stringr::str_split(ns(''),'-')[[1]][6],
-                                    highlight = TRUE,
-                                    maxInput = 1,
-                                    replaceOnDrop = TRUE)
-    })
-  })
-
   # _ Aesthetic mapping/input ====
   # This can be
   #   (1) a dropzone for mapping variables,
@@ -83,47 +56,148 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
   #   (3) a shiny input when no mapping set
   #
   # Triggered when layer selected or
-  output$aes_input_ui <- renderUI({
+  output$aes_ui <- renderUI({
     ns <- session$ns
     triggerAesUpdate()
-    mapping_exists$depend()
+    input$switch
 
     isolate({
       geom_blank_ns <- geom_blank_NS(ns)
       inherit <- (inherit.aes && isTruthy(geom_blank_input) &&
-                    isTruthy(geom_blank_input[[geom_blank_ns("dropzone")]]) &&
-                    isTruthy(geom_blank_input[[geom_blank_ns("dropzone")]]()))
+                    isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]) &&
+                    isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]()))
 
-      if (isTruthy(input$mapping) || isTruthy(input$dropzone)) {
-        # Mapping exists
-        dragulaSelectR::dropZoneInput(ns("mapping"),
-                                      choices = names(dataset),
-                                      presets = input$mapping %||% input$dropzone,
-                                      maxInput = 1,
-                                      replaceOnDrop = TRUE)
-      } else
-        if (inherit) {
-          # Inherited mappings override values
-          create_aes_empty("inherited")
-        } else {
+      if (!isTruthy(input$switch) || (input$switch == FALSE)) {
+        # Mapping exists (or) first time loading
+        content <- dragulaSelectR::dropZoneInput(ns("mapping"),
+                                                 choices = sapply(names(dataset), function(var_name) {
+                                                   div(
+                                                     class = paste("aeszone",
+                                                                   switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = 'numeric', 'factor' = 'factor')),
+                                                     switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = icon("signal"), 'factor' = icon("shapes")),
+                                                     span(class = "varname", var_name)
+                                                   )
+                                                 }, simplify = FALSE, USE.NAMES = TRUE),
+                                                 presets = input$mapping %T||% switch(inherit, geom_blank_input[[geom_blank_ns("mapping")]](), NULL),
+                                                 placeholder = "Drag or select variable",
+                                                 maxInput = 1,
+                                                 replaceOnDrop = TRUE)
+      } else {
           # Fall back on default values
           #   UI doesn't depend on value, so isolate
-          ifelse(isTruthy(input$value) || isTruthy(default_aes),
-                 create_aes_input(ns('value'),
-                                  aesthetic,
-                                  input$value %T||% default_aes
-                 ),
-                 create_aes_empty(aesthetic)
-          )
-        }
+        content <- ifelse(isTruthy(input$value) || isTruthy(default_aes),
+                          create_aes_input(ns('value'),
+                                           aesthetic,
+                                           input$value %T||% default_aes
+                          ),
+                          create_aes_empty(aesthetic)
+        )
+      }
+
+      tmp <- icon("sliders-h", class = ifelse(input$switch %T||% FALSE, '', 'inactive'))
+      tmp$attribs$id <- ns("sliders-h")
+      tagList(
+        tags$header(
+          class = "aes-header",
+          span(class = "aes-name", aesthetic),
+          div(
+            class = "aes-select",
+            icon("database", class = ifelse(input$switch %T||% FALSE, 'inactive', '')),
+            shinyWidgets::prettySwitch(
+              inputId = ns("switch"),
+              label = '',
+              value = input$switch %T||% FALSE,
+              inline = TRUE
+            ),
+            tmp
+          ),
+          shinyWidgets::dropdownButton(
+            HTML("Hello, World!"),
+            inputId = ns("aes-settings-btn"),
+            status = "header-icon",
+            icon = icon("gear"),
+            size = "xs",
+            right = TRUE,
+            tooltip = shinyWidgets::tooltipOptions(title = "Aesthetic Settings", placement = "left"))
+        ),
+        tags$section(
+          uiOutput(ns('aes-action')),
+          content
+        )
+      )
     })
   })
 
-  # _ Make sure inputs always update ====
-  outputOptions(output, "aes_input_ui", suspendWhenHidden = FALSE)
+  output$`aes-action` <- renderUI({
+    ns <- session$ns
+    input$switch
 
-  # _ Entangle dropzone and mapping/input ====
-  dragulaSelectR::entangle(session, 'dropzone', 'mapping')
+    if (!input$switch %||% FALSE) {
+      shinyWidgets::dropdown(
+        shinyWidgets::pickerInput(
+          inputId = ns("aes-choose-data"),
+          label = "Select variable",
+          selected = input$`aes-choose-data` %T||% NULL,
+          choices = names(dataset),
+          choicesOpt = list(
+            content = sapply(names(dataset), function(var_name) {
+              htmltools::doRenderTags(
+                div(
+                  class = paste("aeszone",
+                                switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = 'numeric', 'factor' = 'factor')),
+                  switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = icon("signal"), 'factor' = icon("shapes")),
+                  span(class = "varname", var_name)
+                )
+              )
+            })
+          ),
+          options = list(title = "Nothing selected")
+        ),
+        inputId = ns("aes-choose-dropdown"),
+        status = "header-icon",
+        size = "xs",
+        right = TRUE,
+        tooltip = shinyWidgets::tooltipOptions(title = "Choose variables", placement = "left")
+      )
+    }
+  })
+
+  # Entangle aesthetic picker and dropzone
+  observeEvent(input$`aes-choose-data`, {
+    ns <- session$ns
+    if (!isTRUE(all.equal(ifelse(is.null(input$`aes-choose-data`), "", input$`aes-choose-data`),
+                          ifelse(is.null(input$mapping), "", input$mapping)))) {
+      dragulaSelectR::updateDropZoneInput(session, 'mapping', presets = input$`aes-choose-data` %||% NA)
+    }
+  }, ignoreNULL = FALSE)
+  observeEvent(input$mapping, {
+    ns <- session$ns
+    if (!isTRUE(all.equal(ifelse(is.null(input$`aes-choose-data`), "", input$`aes-choose-data`),
+                          ifelse(is.null(input$mapping), "", input$mapping)))) {
+      shinyWidgets::updatePickerInput(session, "aes-choose-data", selected = input$mapping %||% "")
+    }
+  }, ignoreNULL = FALSE)
+
+  # Not sure why shinyjs::toggleClass, addClass or removeClass doesn't work here
+  observe({
+    req(!is.null(input$switch))
+    ns <- session$ns
+
+    if (input$switch) {
+      # shinyjs::addClass(class = 'inactive', selector = paste(paste0('#', ns('aes_ui')), '.aes-select', '.fa-database'))
+      # shinyjs::removeClass(class = 'inactive', selector = paste(paste0('#', ns('aes_ui')), '.aes-select', '.fa-sliders-h'))
+      shinyjs::js$addClass('inactive', paste(paste0('#', ns('aes_ui')), '.aes-select', '.fa-database'))
+      shinyjs::js$removeClass('inactive', paste(paste0('#', ns('aes_ui')), '.aes-select', '.fa-sliders-h'))
+    } else {
+      # shinyjs::removeClass(class = 'inactive', selector = paste(paste0('#', ns('aes_ui')), '.aes-select', '.fa-database'))
+      # shinyjs::addClass(class = 'inactive', selector = paste(paste0('#', ns('aes_ui')), '.aes-select', '.fa-sliders-h'))
+      shinyjs::js$removeClass('inactive', paste(paste0('#', ns('aes_ui')), '.aes-select', '.fa-database'))
+      shinyjs::js$addClass('inactive', paste(paste0('#', ns('aes_ui')), '.aes-select', '.fa-sliders-h'))
+    }
+  })
+
+  # _ Make sure inputs always update ====
+  outputOptions(output, "aes_ui", suspendWhenHidden = FALSE)
 
   # _ Aesthetic to code ====
   aesToCode <- reactive({
