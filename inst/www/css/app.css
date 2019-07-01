@@ -87,7 +87,7 @@ body {
 .plots-and-layers h4 {
   display: inline;
   float: left;
-  line-height: 30px;
+  line-height: 25px;
   vertical-align: middle;
 }
 
@@ -231,7 +231,7 @@ span.varname {
 }
 
 .aeszone span.varname {
-  width: calc(100% - 27px);
+  width: calc(100% - 50px);
 }
 
 /* Aesthetics */
@@ -289,10 +289,16 @@ span.varname {
   vertical-align: top;
 }
 
-.aesthetic section .sw-dropdown button.btn-header-icon {
+.aesthetic section .sw-dropdown button.btn-header-icon,
+.aesthetic section .action-button {
   float: right;
   margin-right: 5px;
   margin-top: 5px;
+}
+
+.aesthetic section .action-button {
+  margin-right: 10px;
+  color: #000;
 }
 
 .aesthetic section .sw-dropdown div.sw-dropdown-content {

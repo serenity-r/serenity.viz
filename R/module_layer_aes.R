@@ -151,7 +151,11 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
               )
             })
           ),
-          options = list(title = "Nothing selected")
+          options = list(
+            title = "Nothing selected",
+            size = 6,
+            `live-search` = ifelse(length(names(dataset)) > 6, TRUE, FALSE)
+          )
         ),
         inputId = ns("aes-choose-dropdown"),
         status = "header-icon",
@@ -159,6 +163,11 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
         right = TRUE,
         tooltip = shinyWidgets::tooltipOptions(title = "Choose variables", placement = "left")
       )
+    } else {
+      actionLink(ns("aes-reset-value"),
+                 label = '',
+                 style = ifelse(input$value == default_aes, "display: none;", ""),
+                 icon = icon("undo"))
     }
   })
 
@@ -196,13 +205,32 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
     }
   })
 
+  # Show or hide aesthetic value reset button
+  observe({
+    req(!is.null(input$value))
+    ns <- session$ns
+
+    if (input$value != default_aes) {
+      shinyjs::show("aes-reset-value")
+    } else {
+      shinyjs::hide("aes-reset-value")
+    }
+  })
+
+  # Reset aesthetic value to default
+  observeEvent(input$`aes-reset-value`, {
+    update_aes_input(session, 'value', aesthetic, default_aes)
+  })
+
   # _ Make sure inputs always update ====
   outputOptions(output, "aes_ui", suspendWhenHidden = FALSE)
 
   # _ Aesthetic to code ====
   aesToCode <- reactive({
+    req(!is.null(input$switch))
+
     arg <- list(mappings = c(), values = c())
-    if (!is.null(input$mapping)) {
+    if (!input$switch && !is.null(input$mapping)) {
       arg$mappings <- paste(aesthetic, "=",
                             ifelse(!stringr::str_detect(input$mapping, ' '),
                                    input$mapping,
@@ -337,3 +365,23 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
   )
 }
 
+#' Update aes inputs
+#'
+#' @param session The session object passed to function given to shinyServer.
+#' @param inputId
+#' @param aes
+#' @param aes_val
+#'
+update_aes_input <- function(session, inputId, aes, aes_val) {
+  switch(aes,
+         'colour' = ,
+         'fill' = colourpicker::updateColourInput(session, inputId, value = colour_to_hex(aes_val)),
+         'alpha' = ,
+         'shape' = ,
+         'weight' = ,
+         'size' = ,
+         'stroke' = updateSliderInput(session, inputId, value = aes_val),
+         'linetype' = updateSelectInput(session, inputId, selected = linetype_to_string(aes_val)),
+         ''
+  )
+}
