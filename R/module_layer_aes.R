@@ -1,10 +1,8 @@
 #' UI for layer aesthetic submodule
 #'
 #' @param id  ID of layer aesthetic
-#' @param bsa Bootstrap accordian
 #'
 #' @return UI for layer aesthetic
-#'
 layerAesUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
@@ -318,17 +316,15 @@ linetype_to_string <- function(linetype) {
 
 # Create aesthetic input control
 # aes_val is assumed to be truthy
+
+#' Create aes inputs
 #'
-#' @param inputId
-#' @param aes
-#' @param aes_val
-#' @param default
+#' @param inputId Id of Shiny input
+#' @param aes Name of aesthetic
+#' @param aes_val Value of aesthetic
+#' @param default Not used
 #'
-#' @return
 #' @importFrom magrittr %>%
-#' @export
-#'
-#' @examples
 create_aes_input <- function(inputId, aes, aes_val, default='') {
   tagList(
     switch(aes,
@@ -368,9 +364,9 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
 #' Update aes inputs
 #'
 #' @param session The session object passed to function given to shinyServer.
-#' @param inputId
-#' @param aes
-#' @param aes_val
+#' @param inputId Id of input object
+#' @param aes Name of aesthetic
+#' @param aes_val Value of aesthetic
 #'
 update_aes_input <- function(session, inputId, aes, aes_val) {
   switch(aes,

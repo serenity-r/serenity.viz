@@ -8,8 +8,6 @@ layerAesUI(id)
 }
 \arguments{
 \item{id}{ID of layer aesthetic}
-
-\item{bsa}{Bootstrap accordian}
 }
 \value{
 UI for layer aesthetic

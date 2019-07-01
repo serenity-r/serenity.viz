@@ -9,7 +9,11 @@ update_aes_input(session, inputId, aes, aes_val)
 \arguments{
 \item{session}{The session object passed to function given to shinyServer.}
 
-\item{aes_val}{}
+\item{inputId}{Id of input object}
+
+\item{aes}{Name of aesthetic}
+
+\item{aes_val}{Value of aesthetic}
 }
 \description{
 Update aes inputs
