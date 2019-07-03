@@ -89,7 +89,12 @@ layerParamsServer <- function(input, output, session, triggerAesUpdate) {
       purrr::imap(~ paste(.y, "=", .x))
   })
 
-  return(paramsToCode)
+  return(
+    list(
+      inherit.aes = reactive({ input[['inherit.aes']] }),
+      code = paramsToCode
+    )
+  )
 }
 
 # Parameter UI ----

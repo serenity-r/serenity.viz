@@ -11,7 +11,8 @@ dataUI <- function(id) {
   tagList(
     widgetHeader(),
     widgetBody(
-      uiOutput(ns("dataset_vars"))
+      uiOutput(ns("dataset_vars"),
+               class = "dataset-vars")
     )
   )
 }

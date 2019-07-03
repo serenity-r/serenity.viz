@@ -131,6 +131,7 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
         )
       ),
       widgetBody(
+        class = "widget-geoms-and-layers",
         shinyWidgets::dropdownButton(
           HTML("Hello, World!"),
           inputId = ns("base-layer-btn"),
@@ -235,8 +236,8 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
 
   # Preps geom_blank dropzone inputs for layer modules
   geom_blank_inputs_to_reactives <- function() {
-    geom_blank_inputs <- as.list(paste0('geom-blank-ds-1-', gg_aesthetics[["geom-blank"]], '-dropzone'))
-    names(geom_blank_inputs) <- paste0('geom-blank-ds-1-', gg_aesthetics[["geom-blank"]], '-dropzone')
+    geom_blank_inputs <- as.list(paste0('geom-blank-ds-1-', gg_aesthetics[["geom-blank"]], '-mapping'))
+    names(geom_blank_inputs) <- paste0('geom-blank-ds-1-', gg_aesthetics[["geom-blank"]], '-mapping')
     if (any(names(geom_blank_inputs) %in% names(input))) {
       return(geom_blank_inputs %>%
                purrr::map(~ reactive({ input[[.]] })))
@@ -460,8 +461,8 @@ widgetHeader <- function(..., disable = FALSE, .list = NULL)
     "display: none;", items)
 }
 
-widgetBody <- function(..., .list = NULL)
+widgetBody <- function(..., class = NULL, .list = NULL)
 {
   items <- c(list(...), .list)
-  tags$section(class = "widget-body", items)
+  tags$section(class = paste0(c("widget-body", class), collapse = " "), items)
 }

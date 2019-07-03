@@ -4,7 +4,6 @@
 \name{serenity.viz}
 \alias{serenity.viz}
 \alias{serenity.viz-package}
-\alias{serenity.viz}
 \title{Serenity Viz}
 \usage{
 serenity.viz(dataset = NULL)

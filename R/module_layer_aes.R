@@ -24,7 +24,7 @@ layerAesUI <- function(id) {
 #' @param session Shiny user session
 #' @param triggerAesUpdate  Trigger update on layer change
 #' @param geom_blank_input  Need geom_blank values to check for inheritance
-#' @param inherit.aes Is this aesthetic inheritable?
+#' @param inherit.aes Reactive: Is this aesthetic inheritable?
 #' @param default_aes Default value for aesthetic
 #' @param dataset Dataset
 #'
@@ -58,10 +58,11 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
     ns <- session$ns
     triggerAesUpdate()
     input$switch
+    inherit.aes()
 
     isolate({
       geom_blank_ns <- geom_blank_NS(ns)
-      inherit <- (inherit.aes && isTruthy(geom_blank_input) &&
+      inherit <- (inherit.aes() && isTruthy(geom_blank_input) &&
                     isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]) &&
                     isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]()))
 
@@ -152,7 +153,8 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
           options = list(
             title = "Nothing selected",
             size = 6,
-            `live-search` = ifelse(length(names(dataset)) > 6, TRUE, FALSE)
+            `live-search` = ifelse(length(names(dataset)) > 6, TRUE, FALSE),
+            `dropup-auto` = FALSE
           )
         ),
         inputId = ns("aes-choose-dropdown"),
@@ -227,22 +229,34 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
   aesToCode <- reactive({
     req(!is.null(input$switch))
 
+    geom_blank_ns <- geom_blank_NS(session$ns)
+    inherit <- (inherit.aes() && isTruthy(geom_blank_input) &&
+                  isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]) &&
+                  isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]()))
+
     arg <- list(mappings = c(), values = c())
     if (!input$switch && !is.null(input$mapping)) {
-      arg$mappings <- paste(aesthetic, "=",
-                            ifelse(!stringr::str_detect(input$mapping, ' '),
-                                   input$mapping,
-                                   paste0("`", input$mapping, "`")))
+      if ((layer == "geom-blank") ||
+          !inherit ||
+          (inherit && (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]()))) {
+        arg$mappings <- paste(aesthetic, "=",
+                              ifelse(!stringr::str_detect(input$mapping, ' '),
+                                     input$mapping,
+                                     paste0("`", input$mapping, "`")))
+      }
     } else
-      if (!is.null(input$value) && (input$value != default_aes)) {
-        arg$values <- paste(aesthetic, "=",
-                            switch(aesthetic,
-                                  "colour" = ,
-                                  "linetype" = ,
-                                  "fill" = paste0('"', input$value, '"'),
-                                  input$value)
-                            )
-    }
+      if (!is.null(input$value)) {
+        if ((input$value != default_aes) ||
+            (inherit && (!is.null(input$mapping)))) {
+          arg$values <- paste(aesthetic, "=",
+                              switch(aesthetic,
+                                     "colour" = ,
+                                     "linetype" = ,
+                                     "fill" = paste0('"', input$value, '"'),
+                                     input$value)
+          )
+        }
+      }
     arg
   })
 

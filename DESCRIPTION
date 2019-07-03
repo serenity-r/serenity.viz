@@ -16,14 +16,14 @@ Imports:
     stringr,
     styler,
     shinyjs,
-    shinyWidgets
+    shinyWidgets,
+    bsplus
 Remotes: 
     serenity-r/dragulaSelectR,
-    serenity-r/phosphorr,
-    serenity-r/bsplus
+    serenity-r/phosphorr
 URL: https://github.com/serenity-r/serenity
 BugReports: https://github.com/serenity-r/serenity.viz/issues
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1

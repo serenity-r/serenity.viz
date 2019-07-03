@@ -80,11 +80,18 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     layer_params <- callModule(module = layerParamsServer, id = 'layer-params', reactive({ triggerAesUpdate$depend() }))
   }
 
+  inherit.aes <- reactive({
+    if (isTruthy(layer_params$inherit.aes) && is.logical(layer_params$inherit.aes()))
+      layer_params$inherit.aes()
+    else
+      geom_proto$inherit.aes
+  })
+
   # _ load variable subset modules ====
   layer_args <- purrr::map(aesthetics, ~ callModule(module = layerAesServer, id = .,
                                                     reactive({ triggerAesUpdate$depend() }),
                                                     geom_blank_input,
-                                                    inherit.aes = geom_proto$inherit.aes,
+                                                    inherit.aes = inherit.aes,
                                                     default_aes = geom_proto$geom$default_aes[[.]],
                                                     dataset = dataset))
 
@@ -118,11 +125,12 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
 
     # Build parameter code
     if (isTruthy(layer_params) &&
-        isTruthy(layer_params()) &&
-        length(layer_params())) {
+        isTruthy(layer_params$code) &&
+        isTruthy(layer_params$code()) &&
+        length(layer_params$code())) {
       processed_layer_code <- paste0(processed_layer_code,
                                      ifelse(length(mapping_args)+length(value_args), ",\n", ""),
-                                     paste(layer_params(), collapse = ", "))
+                                     paste(layer_params$code(), collapse = ", "))
     }
 
     processed_layer_code <- paste0(processed_layer_code, ")")

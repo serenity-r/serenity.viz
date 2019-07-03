@@ -215,7 +215,7 @@ body {
   background-color: transparent;
 }
 
-#serenityVizApp-iris-dataset_vars {
+.dataset-vars {
   display: flex;
   flex-direction: column;
 }
@@ -257,6 +257,7 @@ span.varname {
   border: 1px solid #979797;
   box-sizing: border-box;
   display: block;
+  line-height: 1.3em;
 }
 
 .aesthetic .aes-header .aes-name,
@@ -315,6 +316,10 @@ span.varname {
   display: block;
 }
 
+.pretty.p-switch.p-default {
+  line-height: 1.1em !important;
+}
+
 .pretty.p-switch.p-default .state:before {
   border: 1px solid #5a656b!important;
 }
@@ -326,6 +331,10 @@ span.varname {
 
 .pretty.p-switch.p-default .state label:after {
   background-color: #5a656b!important;
+}
+
+.pretty.p-toggle.p-plain.p-icon {
+  line-height: 1.15em !important;
 }
 
 .aes-select .fa {
@@ -457,12 +466,12 @@ i.fa.inactive {
   margin-left: 2px;
 }
 
-#serenityVizApp-widget-geoms-and-layers .widget-body {
+.widget-geoms-and-layers {
   padding: 8px;
   position: relative;
 }
 
-#serenityVizApp-base-layer-btn_state {
+.widget-geoms-and-layers > div.btn-dropdown-input {
   text-align: center;
   margin-top: -8px;
   position: sticky;
@@ -471,29 +480,29 @@ i.fa.inactive {
   z-index: 1;
 }
 
-#serenityVizApp-base-layer-btn_state.open ul {
+.widget-geoms-and-layers > div.btn-dropdown-input.open ul {
   /* margin-top: -10px; */
 }
 
-#serenityVizApp-base-layer-btn_state button {
+.widget-geoms-and-layers > div.btn-dropdown-input button {
   position: absolute;
   top: -8px;
 }
 
-#serenityVizApp-base-layer-btn_state.open button {
+.widget-geoms-and-layers > div.btn-dropdown-input.open button {
   top: 21px;
 }
 
-#serenityVizApp-base-layer-btn_state .dropdown-shinyWidgets {
+.widget-geoms-and-layers > div.btn-dropdown-input .dropdown-shinyWidgets {
   max-width: none;
   margin-top: 0;
 }
 
-#serenityVizApp-base-layer-btn i.fa-caret-down {
+.widget-geoms-and-layers > div.btn-dropdown-input > button i.fa-caret-down {
   margin-top: 5px;
 }
 
-#serenityVizApp-base-layer-btn_state.open i.fa-caret-down:before {
+.widget-geoms-and-layers > div.btn-dropdown-input.open i.fa-caret-down:before {
   content: '\f0d8';
 }
 

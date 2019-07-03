@@ -18,7 +18,7 @@ layerAesServer(input, output, session, triggerAesUpdate, geom_blank_input,
 
 \item{geom_blank_input}{Need geom_blank values to check for inheritance}
 
-\item{inherit.aes}{Is this aesthetic inheritable?}
+\item{inherit.aes}{Reactive: Is this aesthetic inheritable?}
 
 \item{default_aes}{Default value for aesthetic}
 

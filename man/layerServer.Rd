@@ -4,7 +4,8 @@
 \alias{layerServer}
 \title{Server for layer module}
 \usage{
-layerServer(input, output, session, layers_selected, geom_blank_input, dataset)
+layerServer(input, output, session, layers_selected, geom_blank_input,
+  dataset)
 }
 \arguments{
 \item{input}{Shiny inputs}
