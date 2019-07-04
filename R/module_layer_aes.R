@@ -27,15 +27,17 @@ layerAesUI <- function(id) {
 #' @param inherit.aes Reactive: Is this aesthetic inheritable?
 #' @param default_aes Default value for aesthetic
 #' @param dataset Dataset
+#' @param renderNum Closure used to mark number of times aesthetic is rendered
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
 layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_input,
-                           inherit.aes, default_aes, dataset) {
+                           inherit.aes, default_aes, dataset, renderNum) {
   # Get aesthetic from namespace
   aesthetic <- stringr::str_split(session$ns(''), '-')[[1]] %>% { .[length(.)-1] }
   layer <- paste(stringr::str_split(session$ns(''), '-')[[1]][2:3], collapse="-")
+  geom_blank_ns <- geom_blank_NS(session$ns)
 
   # Convert default colour values to hex (if applicable)
   if ((aesthetic %in% c('colour', 'fill')) && isTruthy(default_aes)) {
@@ -46,6 +48,13 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
   if ((aesthetic %in% c('linetype')) && isTruthy(default_aes)) {
     default_aes <- linetype_to_string(default_aes)
   }
+
+  # Inheritable mapping exists
+  inheritable <- reactive({
+    inherit.aes() && isTruthy(geom_blank_input) &&
+      isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]) &&
+      isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]())
+  })
 
   # _ Aesthetic mapping/input ====
   # This can be
@@ -58,14 +67,8 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
     ns <- session$ns
     triggerAesUpdate()
     input$switch
-    inherit.aes()
 
     isolate({
-      geom_blank_ns <- geom_blank_NS(ns)
-      inherit <- (inherit.aes() && isTruthy(geom_blank_input) &&
-                    isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]) &&
-                    isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]()))
-
       if (!isTruthy(input$switch) || (input$switch == FALSE)) {
         # Mapping exists (or) first time loading
         content <- dragulaSelectR::dropZoneInput(ns("mapping"),
@@ -77,13 +80,14 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
                                                      span(class = "varname", var_name)
                                                    )
                                                  }, simplify = FALSE, USE.NAMES = TRUE),
-                                                 presets = input$mapping %T||% switch(inherit, geom_blank_input[[geom_blank_ns("mapping")]](), NULL),
+                                                 presets = input$mapping %T||% switch(inheritable() && (renderNum$nextNum() <= 1), geom_blank_input[[geom_blank_ns("mapping")]](), NULL),
                                                  placeholder = "Drag or select variable",
                                                  maxInput = 1,
                                                  replaceOnDrop = TRUE)
       } else {
           # Fall back on default values
           #   UI doesn't depend on value, so isolate
+
         content <- ifelse(isTruthy(input$value) || isTruthy(default_aes),
                           create_aes_input(ns('value'),
                                            aesthetic,
@@ -120,48 +124,57 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
             tooltip = shinyWidgets::tooltipOptions(title = "Aesthetic Settings", placement = "left"))
         ),
         tags$section(
-          uiOutput(ns('aes-action')),
+          class = ifelse(input$switch, 'value-section', 'mapping-section'),
+          uiOutput(ns('aes-section-header')),
           content
         )
       )
     })
   })
 
-  output$`aes-action` <- renderUI({
+  # Can't isolate majority of this or get infinite loop with mapping inputs
+  output$`aes-section-header` <- renderUI({
     ns <- session$ns
     input$switch
+    inherit.aes()
 
     if (!input$switch %||% FALSE) {
-      shinyWidgets::dropdown(
-        shinyWidgets::pickerInput(
-          inputId = ns("aes-choose-data"),
-          label = "Select variable",
-          selected = input$`aes-choose-data` %T||% NULL,
-          choices = names(dataset),
-          choicesOpt = list(
-            content = sapply(names(dataset), function(var_name) {
-              htmltools::doRenderTags(
-                div(
-                  class = paste("aeszone",
-                                switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = 'numeric', 'factor' = 'factor')),
-                  switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = icon("signal"), 'factor' = icon("shapes")),
-                  span(class = "varname", var_name)
+      tagList(
+        shinyWidgets::dropdown(
+          shinyWidgets::pickerInput(
+            inputId = ns("aes-choose-data"),
+            label = "Select variable",
+            selected = input$`aes-choose-data` %T||% NULL,
+            choices = names(dataset),
+            choicesOpt = list(
+              content = sapply(names(dataset), function(var_name) {
+                htmltools::doRenderTags(
+                  div(
+                    class = paste("aeszone",
+                                  switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = 'numeric', 'factor' = 'factor')),
+                    switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = icon("signal"), 'factor' = icon("shapes")),
+                    span(class = "varname", var_name)
+                  )
                 )
-              )
-            })
+              })
+            ),
+            options = list(
+              title = "Nothing selected",
+              size = 6,
+              `live-search` = ifelse(length(names(dataset)) > 6, TRUE, FALSE),
+              `dropup-auto` = FALSE
+            )
           ),
-          options = list(
-            title = "Nothing selected",
-            size = 6,
-            `live-search` = ifelse(length(names(dataset)) > 6, TRUE, FALSE),
-            `dropup-auto` = FALSE
-          )
+          inputId = ns("aes-choose-dropdown"),
+          status = "header-icon",
+          size = "xs",
+          right = TRUE,
+          tooltip = shinyWidgets::tooltipOptions(title = "Choose variables", placement = "left")
         ),
-        inputId = ns("aes-choose-dropdown"),
-        status = "header-icon",
-        size = "xs",
-        right = TRUE,
-        tooltip = shinyWidgets::tooltipOptions(title = "Choose variables", placement = "left")
+        actionLink(ns("aes-reset-mapping"),
+                   label = '',
+                   style = ifelse(!inheritable() || (!is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]())), "display: none;", ""),
+                   icon = icon("undo"))
       )
     } else {
       actionLink(ns("aes-reset-value"),
@@ -208,7 +221,6 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
   # Show or hide aesthetic value reset button
   observe({
     req(!is.null(input$value))
-    ns <- session$ns
 
     if (input$value != default_aes) {
       shinyjs::show("aes-reset-value")
@@ -217,9 +229,23 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
     }
   })
 
+  # Show or hide aesthetic mapping reset button
+  observe({
+    if (inheritable() && (is.null(input$mapping) || (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]()))) {
+      shinyjs::show("aes-reset-mapping")
+    } else {
+      shinyjs::hide("aes-reset-mapping")
+    }
+  })
+
   # Reset aesthetic value to default
   observeEvent(input$`aes-reset-value`, {
     update_aes_input(session, 'value', aesthetic, default_aes)
+  })
+
+  # Reset aesthetic mapping to base layer (default)
+  observeEvent(input$`aes-reset-mapping`, {
+    dragulaSelectR::updateDropZoneInput(session, 'mapping', geom_blank_input[[geom_blank_ns("mapping")]]())
   })
 
   # _ Make sure inputs always update ====
@@ -229,25 +255,23 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
   aesToCode <- reactive({
     req(!is.null(input$switch))
 
-    geom_blank_ns <- geom_blank_NS(session$ns)
-    inherit <- (inherit.aes() && isTruthy(geom_blank_input) &&
-                  isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]) &&
-                  isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]()))
-
     arg <- list(mappings = c(), values = c())
-    if (!input$switch && !is.null(input$mapping)) {
-      if ((layer == "geom-blank") ||
-          !inherit ||
-          (inherit && (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]()))) {
+    if (!input$switch) {
+      if (!is.null(input$mapping) &&
+          ((layer == "geom-blank") ||
+          !inheritable() ||
+          (inheritable() && (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]())))) {
         arg$mappings <- paste(aesthetic, "=",
                               ifelse(!stringr::str_detect(input$mapping, ' '),
                                      input$mapping,
                                      paste0("`", input$mapping, "`")))
+      } else if (is.null(input$mapping) && inheritable()) {
+        arg$mappings <- paste(aesthetic, "= NULL")
       }
     } else
       if (!is.null(input$value)) {
         if ((input$value != default_aes) ||
-            (inherit && (!is.null(input$mapping)))) {
+            (inheritable())) { #  && (!is.null(input$mapping))
           arg$values <- paste(aesthetic, "=",
                               switch(aesthetic,
                                      "colour" = ,

@@ -93,7 +93,8 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
                                                     geom_blank_input,
                                                     inherit.aes = inherit.aes,
                                                     default_aes = geom_proto$geom$default_aes[[.]],
-                                                    dataset = dataset))
+                                                    dataset = dataset,
+                                                    renderNum = renderNumSource()))
 
   # _ process subset arguments ====
   layer_code <- reactive({
@@ -139,4 +140,13 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   })
 
   return(layer_code)
+}
+
+renderNumSource <- function() {
+  nextRenderNum <- 1
+  list(nextNum = function() {
+    r <- nextRenderNum
+    nextRenderNum <<- nextRenderNum + 1
+    r
+  })
 }

@@ -302,6 +302,10 @@ span.varname {
   color: #000;
 }
 
+.aesthetic .mapping-section .action-button {
+  margin-right: 0;
+}
+
 .aesthetic section .sw-dropdown div.sw-dropdown-content {
   width: 100%;
   max-width: 400px;
