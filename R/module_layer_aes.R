@@ -136,6 +136,7 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
   # Can't isolate majority of this or get infinite loop with mapping inputs
   output$`aes-section-header` <- renderUI({
     ns <- session$ns
+    triggerAesUpdate()
     input$switch
     inherit.aes()
 
