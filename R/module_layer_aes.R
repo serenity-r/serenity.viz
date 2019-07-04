@@ -67,6 +67,7 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
     ns <- session$ns
     triggerAesUpdate()
     input$switch
+    renderNum$nextNum()
 
     isolate({
       if (!isTruthy(input$switch) || (input$switch == FALSE)) {
@@ -80,7 +81,7 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
                                                      span(class = "varname", var_name)
                                                    )
                                                  }, simplify = FALSE, USE.NAMES = TRUE),
-                                                 presets = input$mapping %T||% switch(inheritable() && (renderNum$nextNum() <= 1), geom_blank_input[[geom_blank_ns("mapping")]](), NULL),
+                                                 presets = input$mapping %T||% switch(inheritable() && (renderNum$getNum() == 2), geom_blank_input[[geom_blank_ns("mapping")]](), NULL),
                                                  placeholder = "Drag or select variable",
                                                  maxInput = 1,
                                                  replaceOnDrop = TRUE)
@@ -144,7 +145,7 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
           shinyWidgets::pickerInput(
             inputId = ns("aes-choose-data"),
             label = "Select variable",
-            selected = input$`aes-choose-data` %T||% NULL,
+            selected = input$`aes-choose-data` %T||% NULL, # Can't isolate this for some reason
             choices = names(dataset),
             choicesOpt = list(
               content = sapply(names(dataset), function(var_name) {
@@ -173,13 +174,13 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
         ),
         actionLink(ns("aes-reset-mapping"),
                    label = '',
-                   style = ifelse(!inheritable() || (!is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]())), "display: none;", ""),
+                   style = ifelse(isolate(!inheritable() || (!is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]()))), "display: none;", ""),
                    icon = icon("undo"))
       )
     } else {
       actionLink(ns("aes-reset-value"),
                  label = '',
-                 style = ifelse(input$value == default_aes, "display: none;", ""),
+                 style = ifelse(isolate(input$value == default_aes), "display: none;", ""),
                  icon = icon("undo"))
     }
   })

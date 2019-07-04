@@ -148,5 +148,8 @@ renderNumSource <- function() {
     r <- nextRenderNum
     nextRenderNum <<- nextRenderNum + 1
     r
+  },
+  getNum = function() {
+    nextRenderNum
   })
 }
