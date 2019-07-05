@@ -226,7 +226,7 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
 
   output$aesthetics <- renderUI({
     req(input$layers_selected)
-    layerUI(id = session$ns(input$layers_selected))
+    layerAestheticsUI(id = session$ns(input$layers_selected))
   })
 
   # Get the names of the visible layers
@@ -249,7 +249,7 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
   # Update layer module output reactives - create only once!
   observeEvent(input$layers, {
     # Adding new layers
-    purrr::map(setdiff(input$layers, names(layer_modules)), ~ { layer_modules[[.]] <- callModule(module = layerServer, id = .,
+    purrr::map(setdiff(input$layers, names(layer_modules)), ~ { layer_modules[[.]] <- callModule(module = layerAestheticsServer, id = .,
                                                                                                  reactive({input$layers_selected}),
                                                                                                  geom_blank_inputs_to_reactives(),
                                                                                                  dataset = dataset)} )

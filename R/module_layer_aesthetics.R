@@ -1,10 +1,10 @@
-#' UI for layer module
+#' UI for layer aesthetics module
 #'
 #' @param id  Layer ID
 #'
 #' @return UI for layer
 #'
-layerUI <- function(id) {
+layerAestheticsUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
   geom_type <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="-")
@@ -23,13 +23,13 @@ layerUI <- function(id) {
                NULL)
       ),
       widgetBody(
-        uiOutput(ns("layer_aes"),
+        uiOutput(ns("layer_aesthetics"),
                  class = "layer-aesthetics")
       )
     )
 }
 
-#' Server for layer module
+#' Server for layer aesthetics module
 #'
 #' @param input   Shiny inputs
 #' @param output  Shiny outputs
@@ -41,7 +41,7 @@ layerUI <- function(id) {
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerServer <- function(input, output, session, layers_selected, geom_blank_input, dataset) {
+layerAestheticsServer <- function(input, output, session, layers_selected, geom_blank_input, dataset) {
   # This contains the layer id
   ns <- session$ns
 
@@ -62,7 +62,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   # MAIN ----
 
   # _ Aesthetic divs ====
-  output$layer_aes <- renderUI({
+  output$layer_aesthetics <- renderUI({
     triggerAesUpdate$depend()
 
     ns <- session$ns
