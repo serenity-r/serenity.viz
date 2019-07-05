@@ -81,21 +81,16 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
                                                      span(class = "varname", var_name)
                                                    )
                                                  }, simplify = FALSE, USE.NAMES = TRUE),
-                                                 presets = input$mapping %T||% switch(inheritable() && (renderNum$getNum() == 2), geom_blank_input[[geom_blank_ns("mapping")]](), NULL),
+                                                 presets = input$mapping %T||% switch(inheritable() && (renderNum$getNum() == 1), geom_blank_input[[geom_blank_ns("mapping")]](), NULL),
                                                  placeholder = "Drag or select variable",
                                                  maxInput = 1,
                                                  replaceOnDrop = TRUE)
+      } else if (!is.null(default_aes)) {
+        content <- create_aes_input(ns('value'),
+                                    aesthetic,
+                                    isolate(input$value) %T||% ifelse(!is.na(default_aes), default_aes, NA_defaults[[aesthetic]]))
       } else {
-          # Fall back on default values
-          #   UI doesn't depend on value, so isolate
-
-        content <- ifelse(isTruthy(input$value) || isTruthy(default_aes),
-                          create_aes_input(ns('value'),
-                                           aesthetic,
-                                           input$value %T||% default_aes
-                          ),
-                          create_aes_empty(aesthetic)
-        )
+        content <- create_aes_empty("Only mappings allowed for this aesthetic", class = "message")
       }
 
       tmp <- icon("sliders-h", class = ifelse(input$switch %T||% FALSE, '', 'inactive'))
@@ -179,10 +174,12 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
                    icon = icon("undo"))
       )
     } else {
-      actionLink(ns("aes-reset-value"),
-                 label = '',
-                 style = ifelse(isolate(input$value == default_aes), "display: none;", ""),
-                 icon = icon("undo"))
+      if (isTruthy(default_aes)) {
+        actionLink(ns("aes-reset-value"),
+                   label = '',
+                   style = ifelse(isolate(input$value == default_aes), "display: none;", ""),
+                   icon = icon("undo"))
+      }
     }
   })
 
@@ -222,7 +219,7 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
 
   # Show or hide aesthetic value reset button
   observe({
-    req(!is.null(input$value))
+    req(!is.null(input$value) && !is.na(default_aes))
 
     if (input$value != default_aes) {
       shinyjs::show("aes-reset-value")
@@ -272,8 +269,9 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
       }
     } else
       if (!is.null(input$value)) {
-        if ((input$value != default_aes) ||
-            (inheritable())) { #  && (!is.null(input$mapping))
+        if (is.na(default_aes) ||
+            (input$value != default_aes) ||
+            (inheritable())) {
           arg$values <- paste(aesthetic, "=",
                               switch(aesthetic,
                                      "colour" = ,
@@ -305,21 +303,21 @@ geom_blank_NS <- function(ns) {
   return(f)
 }
 
-aes_wrap <- function(content, default='') {
+aes_wrap <- function(content, class=NULL) {
   tagList(
     div(
-      class = paste0('aes-wrap ', default),
+      class = paste(c('aes-wrap', class), collapse = " "),
       content
     )
   )
 }
 
-create_aes_empty <- function(default='') {
+create_aes_empty <- function(content='Not set', class=NULL) {
   tagList(
     span(
-      'Not set'
+      content
     ) %>%
-      aes_wrap(default)
+      aes_wrap(class)
   )
 }
 
@@ -362,10 +360,10 @@ linetype_to_string <- function(linetype) {
 #' @param inputId Id of Shiny input
 #' @param aes Name of aesthetic
 #' @param aes_val Value of aesthetic
-#' @param default Not used
+#' @param class Class to add to aesthetic wrapper div
 #'
 #' @importFrom magrittr %>%
-create_aes_input <- function(inputId, aes, aes_val, default='') {
+create_aes_input <- function(inputId, aes, aes_val, class=NULL) {
   tagList(
     switch(aes,
            'shape' = sliderInput(inputId = inputId,
@@ -397,7 +395,7 @@ create_aes_input <- function(inputId, aes, aes_val, default='') {
                                     selected = linetype_to_string(aes_val)),
            ''
     ) %>%
-      aes_wrap(default)
+      aes_wrap(class)
   )
 }
 

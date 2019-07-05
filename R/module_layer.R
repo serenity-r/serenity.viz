@@ -143,7 +143,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
 }
 
 renderNumSource <- function() {
-  nextRenderNum <- 1
+  nextRenderNum <- 0
   list(nextNum = function() {
     r <- nextRenderNum
     nextRenderNum <<- nextRenderNum + 1

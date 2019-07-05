@@ -363,6 +363,13 @@ i.fa.inactive {
   margin: 10px;
 }
 
+.aes-wrap.message {
+  position: relative;
+  top: 40%;
+  transform: translateY(-40%);
+  font-style: italic;
+}
+
 .selected-geom-inner,
 .layer-inner {
   height: 100%;
@@ -449,9 +456,14 @@ i.fa.inactive {
 }
 
 .widget-header .header-icon,
+.value-section .header-icon,
 .widget-header .btn-header-icon {
   float: right;
   margin-right: 0;
+}
+
+.value-section .header-icon {
+  margin-top: 5px;
 }
 
 .pretty {
@@ -463,7 +475,8 @@ i.fa.inactive {
   color: #000 !important;
 }
 
-.widget-header i {
+.widget-header i,
+.value-section i {
   float: right;
   margin-top: 0.5rem;
   margin-right: 4px;

@@ -4,7 +4,7 @@
 \alias{create_aes_input}
 \title{Create aes inputs}
 \usage{
-create_aes_input(inputId, aes, aes_val, default = "")
+create_aes_input(inputId, aes, aes_val, class = NULL)
 }
 \arguments{
 \item{inputId}{Id of Shiny input}
@@ -13,7 +13,7 @@ create_aes_input(inputId, aes, aes_val, default = "")
 
 \item{aes_val}{Value of aesthetic}
 
-\item{default}{Not used}
+\item{class}{Class to add to aesthetic wrapper div}
 }
 \description{
 Create aes inputs

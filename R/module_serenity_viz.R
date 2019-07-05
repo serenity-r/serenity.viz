@@ -395,6 +395,11 @@ plot_names <- list(
   "geom-smooth" = "Smoother"
 )
 
+NA_defaults <- list(
+  fill = "#000000",
+  alpha = 1
+)
+
 help_panes <- lapply(geoms, function(x) {
   paste0("<h2>", x, "</h2>
          <div class='axis' id='xaxis'></div>
