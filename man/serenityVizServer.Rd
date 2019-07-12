@@ -4,7 +4,7 @@
 \alias{serenityVizServer}
 \title{Server code for Serenity Viz module}
 \usage{
-serenityVizServer(input, output, session, dataset, trigger = NULL)
+serenityVizServer(input, output, session, dataset)
 }
 \arguments{
 \item{input}{Shiny input}

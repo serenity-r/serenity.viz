@@ -18,3 +18,16 @@ prettyToggle <- function (inputId, label_on, label_off, icon_on = NULL, icon_off
   myToggle$attribs$class <- paste(myToggle$attribs$class, "header-icon")
   myToggle
 }
+
+widgetHeader <- function(..., disable = FALSE, .list = NULL)
+{
+  items <- c(list(...), .list)
+  tags$header(class = "widget-header", style = if (disable)
+    "display: none;", items)
+}
+
+widgetBody <- function(..., class = NULL, .list = NULL)
+{
+  items <- c(list(...), .list)
+  tags$section(class = paste0(c("widget-body", class), collapse = " "), items)
+}

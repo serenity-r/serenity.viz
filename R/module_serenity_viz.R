@@ -18,7 +18,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(
       script = file.path(resourcePath, "js", "shinyjs-funcs.js"),
-      functions = c("close_window", "toggleClass", "addClass", "removeClass")
+      functions = c("close_window", "toggleClass", "addClass", "removeClass", "myshow", "myhide")
     ),
     bsplus::use_bs_tooltip(),
     tags$head(includeCSS(file.path(resourcePath, "css", "app.css"))),
@@ -42,12 +42,10 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
 #' @import shiny ggplot2 dplyr forcats phosphorr
 #' @export
 #'
-serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
+serenityVizServer <- function(input, output, session, dataset) {
   if (is.null(attr(dataset, "df_name"))) {
     attr(dataset, "df_name") <- deparse(substitute(dataset))
   }
-
-  layer_id <- paste(stringr::str_split(gsub("-$", "", session$ns('')), '-')[[1]][2:5], collapse="-")
 
   # This stores returned reactives from layer modules
   layer_modules <- reactiveValues()
@@ -60,7 +58,42 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
 
     phosphorr() %>%
       addWidget(id = ns("widget-geoms-and-layers"),
-                ui = uiOutput(ns("widget-geoms-and-layers")),
+                ui = tagList(
+                  widgetHeader(
+                    div(
+                      style = "display: flex; flex-direction: row; justify-content: flex-end;",
+                      actionButton(
+                        inputId = ns("add-layer-button"),
+                        label = "Add Layer",
+                        icon = icon("plus"),
+                        style = "padding: 0;",
+                        class = "add-layer"
+                      ),
+                      actionButton(
+                        inputId = ns("remove-layer"),
+                        label = "",
+                        icon = icon("minus"),
+                        style = "border: transparent; padding: 0;"
+                      ),
+                      prettyToggle(
+                        inputId = ns("layer-chooser"),
+                        label_on = "",
+                        label_off = "",
+                        status_on = "default",
+                        status_off = "default",
+                        outline = TRUE,
+                        plain = TRUE,
+                        icon_on = icon("times"),
+                        icon_off = icon("plus"),
+                        inline = TRUE
+                      )
+                    )
+                  ),
+                  widgetBody(
+                    class = "widget-geoms-and-layers",
+                    uiOutput(ns("widget-layers-body"))
+                  )
+                ),
                 title = "Layers",
                 icon = icon("layer-group"),
                 closable = FALSE) %>%
@@ -100,7 +133,7 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
       addWidget(id = ns("widget-vars"),
                 refwidget = ns("widget-geoms-and-layers"),
                 insertmode = "split-bottom",
-                relsize = 0.75,
+                relsize = 0.65,
                 ui = dataUI(id = ns(attributes(dataset)$df_name)),
                 title = "Variables",
                 icon = icon("database"),
@@ -120,40 +153,91 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
                 icon = icon("info"))
   })
 
-  output$`widget-geoms-and-layers` <- renderUI({
+  output$`widget-layers-body` <- renderUI({
     ns <- session$ns
 
     tagList(
-      widgetHeader(
-        tagList(
-          icon("minus"),
-          icon("plus")
+      div(
+        class = "layers-wrapper",
+        bsplus::bs_collapse(
+          id = ns("base_layer_panel"),
+          dragulaSelectR::dropZoneInput(
+            ns("base_layer"),
+            class = "layers",
+            choices = list(
+              'geom-blank' = layerUI("geom-blank")
+            ),
+            presets = list(values = "geom-blank-ds-1",
+                           locked = "geom-blank-ds-1",
+                           freeze = "geom-blank-ds-1"),
+            multivalued = TRUE,
+            selectable = TRUE
+          )
+        ),
+        bsplus::bs_button(
+          icon("caret-down"),
+          class = "toggle-base-layer"
+        ) %>% bsplus::bs_embed_tooltip(title = "Base Layer") %>%
+          bsplus::bs_attach_collapse(ns("base_layer_panel")),
+        dragulaSelectR::dropZoneInput(
+          ns("layers"),
+          class = "layers",
+          choices = sapply(geoms, function(geom) { layerUI(geom) }, simplify = FALSE, USE.NAMES = TRUE),
+          presets = list(
+            values = isolate(input$layers),
+            selected = isolate(input$layers_selected),
+            invisible = isolate(input$layers_invisible)
+          ),
+          placeholder = "Add a layer",
+          multivalued = TRUE,
+          selectable = TRUE,
+          selectOnDrop = TRUE,
+          removeOnSpill = TRUE
         )
       ),
-      widgetBody(
-        class = "widget-geoms-and-layers",
-        shinyWidgets::dropdownButton(
-          HTML("Hello, World!"),
-          inputId = ns("base-layer-btn"),
-          icon = icon("caret-down"),
-          size = "xs",
-          right = TRUE,
-          tooltip = shinyWidgets::tooltipOptions(title = "Base Layer", placement = "bottom")),
-        wellPanel(
-          class = "plots-and-layers",
-          div(
-            h4("Plots"),
-            dragulaSelectR::dragZone(ns("geoms"),
-                                     class = "geoms",
-                                     choices = sapply(geoms, function(geom) { div(style = "width: inherit; height: inherit;") %>% bsplus::bs_embed_tooltip(title = plot_names[[geom]]) }, simplify = FALSE, USE.NAMES = TRUE))
-          ),
-          div(
-            h4("Layers"),
-            uiOutput(ns("layersUI"))
-          )
+      div(
+        class = "layer-chooser-wrapper",
+        style = "display: none;",
+        dropZoneInput(ns("ds-layer-chooser"), choices = sapply(geoms, function(geom) { layerChoiceUI(geom) }, simplify = FALSE),
+                      class = "layer-chooser",
+                      flex = TRUE,
+                      selectable = TRUE,
+                      direction = "horizontal",
+                      presets = list(values = geoms,
+                                     locked = geoms)
         )
       )
     )
+  })
+
+  observeEvent(input$`layer-chooser`, {
+    ns <- session$ns
+
+    dragulaSelectR::unselect(session, "ds-layer-chooser")
+    if (input$`layer-chooser`) {
+      # Toggle header views
+      shinyjs::js$myhide(paste0('#', ns("remove-layer")))
+
+      # Toggle body views
+      shinyjs::js$myhide('.layers-wrapper')
+      shinyjs::js$myshow('.layer-chooser-wrapper')
+    } else {
+      # Toggle header views
+      shinyjs::js$myshow(paste0('#', ns("remove-layer")))
+      shinyjs::js$myhide(paste0('#', ns("add-layer-button")))
+
+      # Toggle body views
+      shinyjs::js$myshow('.layers-wrapper')
+      shinyjs::js$myhide('.layer-chooser-wrapper')
+    }
+  })
+
+  observeEvent(input$`ds-layer-chooser_selected`, {
+    ns <- session$ns
+
+    if (!is.null(input$`ds-layer-chooser_selected`)) {
+      shinyjs::js$myshow(paste0('#', ns("add-layer-button")))
+    }
   })
 
   output$`widget-ggplot-header` <- renderUI({
@@ -183,6 +267,32 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
     )
   })
 
+  # The next two observe events handle selection of layers
+  observeEvent(input$base_layer_selected, {
+    if (!is.null(input$layers_selected)) {
+      dragulaSelectR::unselect(session, "layers")
+    }
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$layers_selected, {
+    if (!is.null(input$base_layer_selected) && !is.null(input$layers_selected)) {
+      dragulaSelectR::unselect(session, "base_layer")
+    } else if (is.null(input$base_layer_selected) && is.null(input$layers_selected)) {
+      dragulaSelectR::select(session, "geom-blank-ds-1", "base_layer")
+    }
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
+
+  observeEvent(input$`add-layer-button`, {
+    updatePrettyToggle(session, "layer-chooser", value = FALSE)
+    dragulaSelectR::appendToDropzone(session, input$`ds-layer-chooser_selected`, "layers")
+  })
+
+  observeEvent(input$`remove-layer`, {
+    if (!is.null(input$layers_selected)) {
+      dragulaSelectR::removeSelected(session, "layers")
+    }
+  })
+
   observeEvent(input$maximize, {
     ns <- session$ns
 
@@ -202,36 +312,24 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
                                id = attributes(dataset)$df_name,
                                dataset = dataset)
 
-  output$layersUI <- renderUI({
-    if (!is.null(trigger)) trigger()
-    isolate({
-      dragulaSelectR::dropZoneInput(session$ns("layers"),
-                                    class = "layers",
-                                    choices = c("geom-blank" = "",
-                                                sapply(geoms, function(geom) { "" }, simplify = FALSE, USE.NAMES = TRUE)),
-                                    presets = list(
-                                      values = idsToGeoms(input$layers) %||% "geom-blank",
-                                      selected = idsToGeoms(input$layers_selected) %||% "geom-blank",
-                                      locked = "geom-blank",
-                                      freeze = "geom-blank"),
-                                    multivalued = TRUE,
-                                    selectable = TRUE,
-                                    selectOnDrop = TRUE,
-                                    togglevis = TRUE,
-                                    direction = "horizontal",
-                                    removeOnSpill = TRUE
-      )
-    })
+  # Aesthetics UI
+  output$aesthetics <- renderUI({
+    req(selected_layer())
+    layerAestheticsUI(id = session$ns(selected_layer()))
   })
 
-  output$aesthetics <- renderUI({
-    req(input$layers_selected)
-    layerAestheticsUI(id = session$ns(input$layers_selected))
+  all_layers <- reactive({
+    req(input$base_layer)
+    c(input$base_layer, input$layers)
+  })
+
+  selected_layer <- reactive({
+    input$layers_selected %||% "geom-blank-ds-1"
   })
 
   # Get the names of the visible layers
   visible_layers <- reactive({
-    setdiff(input$layers, input$layers_invisible)
+    setdiff(all_layers(), input$layers_invisible)
   })
 
   # Preps geom_blank dropzone inputs for layer modules
@@ -247,14 +345,14 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
   }
 
   # Update layer module output reactives - create only once!
-  observeEvent(input$layers, {
+  observeEvent(all_layers(), {
     # Adding new layers
-    purrr::map(setdiff(input$layers, names(layer_modules)), ~ { layer_modules[[.]] <- callModule(module = layerAestheticsServer, id = .,
-                                                                                                 reactive({input$layers_selected}),
+    purrr::map(setdiff(all_layers(), names(layer_modules)), ~ { layer_modules[[.]] <- callModule(module = layerAestheticsServer, id = .,
+                                                                                                 selected_layer,
                                                                                                  geom_blank_inputs_to_reactives(),
                                                                                                  dataset = dataset)} )
     # Remove old layers
-    purrr::map(setdiff(names(layer_modules), input$layers), ~ { layer_modules[[.]] <- NULL })
+    purrr::map(setdiff(names(layer_modules), all_layers()), ~ { layer_modules[[.]] <- NULL })
   }, priority = 1) # Needs to happen before layer_code reactive
 
   # Get layer code
@@ -302,9 +400,11 @@ serenityVizServer <- function(input, output, session, dataset, trigger=NULL) {
     print(ggcode())
   })
 
-  output$log <- renderText({
-    req(ggplot2_log())
-    ggplot2_log()
+  output$log <- renderPrint({
+    req(ggcode())
+    # req(ggplot2_log())
+    # ggplot2_log()
+    reactiveValuesToList(layer_modules)
   })
 
   ggcode <- reactive({
@@ -459,15 +559,8 @@ idsToGeoms <- function(id) {
          NULL)
 }
 
-widgetHeader <- function(..., disable = FALSE, .list = NULL)
-{
-  items <- c(list(...), .list)
-  tags$header(class = "widget-header", style = if (disable)
-    "display: none;", items)
-}
-
-widgetBody <- function(..., class = NULL, .list = NULL)
-{
-  items <- c(list(...), .list)
-  tags$section(class = paste0(c("widget-body", class), collapse = " "), items)
+revList <- function(x) {
+  tmp <- names(x)
+  names(tmp) <- unlist(x)
+  as.list(tmp)
 }

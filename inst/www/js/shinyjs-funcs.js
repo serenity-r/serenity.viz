@@ -14,3 +14,11 @@ shinyjs.removeClass = function(params) {
 shinyjs.toggleClass = function(params) {
   $(params[1]).toggleClass(params[0]);
 };
+
+shinyjs.myhide = function(params) {
+  $(params[0]).hide();
+}
+
+shinyjs.myshow = function(params) {
+  $(params[0]).show();
+}
