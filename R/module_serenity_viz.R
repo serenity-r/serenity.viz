@@ -198,13 +198,13 @@ serenityVizServer <- function(input, output, session, dataset) {
       div(
         class = "layer-chooser-wrapper",
         style = "display: none;",
-        dropZoneInput(ns("ds-layer-chooser"), choices = sapply(geoms, function(geom) { layerChoiceUI(geom) }, simplify = FALSE),
-                      class = "layer-chooser",
-                      flex = TRUE,
-                      selectable = TRUE,
-                      direction = "horizontal",
-                      presets = list(values = geoms,
-                                     locked = geoms)
+        dragulaSelectR::dropZoneInput(ns("ds-layer-chooser"), choices = sapply(geoms, function(geom) { layerChoiceUI(geom) }, simplify = FALSE),
+                                      class = "layer-chooser",
+                                      flex = TRUE,
+                                      selectable = TRUE,
+                                      direction = "horizontal",
+                                      presets = list(values = geoms,
+                                                     locked = geoms)
         )
       )
     )
@@ -283,7 +283,7 @@ serenityVizServer <- function(input, output, session, dataset) {
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   observeEvent(input$`add-layer-button`, {
-    updatePrettyToggle(session, "layer-chooser", value = FALSE)
+    shinyWidgets::updatePrettyToggle(session, "layer-chooser", value = FALSE)
     dragulaSelectR::appendToDropzone(session, input$`ds-layer-chooser_selected`, "layers")
   })
 
@@ -401,10 +401,8 @@ serenityVizServer <- function(input, output, session, dataset) {
   })
 
   output$log <- renderPrint({
-    req(ggcode())
-    # req(ggplot2_log())
-    # ggplot2_log()
-    reactiveValuesToList(layer_modules)
+    req(ggplot2_log())
+    ggplot2_log()
   })
 
   ggcode <- reactive({
