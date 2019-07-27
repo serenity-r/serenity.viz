@@ -8,6 +8,9 @@
 \usage{
 serenity.viz(dataset = NULL)
 }
+\arguments{
+\item{dataset}{Passed in dataset for visualization}
+}
 \description{
 Serenity Viz
 

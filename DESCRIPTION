@@ -17,7 +17,11 @@ Imports:
     styler,
     shinyjs,
     shinyWidgets,
-    bsplus
+    bsplus,
+    phosphorr,
+    dragulaSelectR,
+    htmltools,
+    colourpicker
 Remotes: 
     serenity-r/dragulaSelectR,
     serenity-r/phosphorr

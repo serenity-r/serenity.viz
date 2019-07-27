@@ -25,6 +25,7 @@ layerParamsUI <- function(id) {
 #' @param input   Shiny inputs
 #' @param output  Shiny outputs
 #' @param session Shiny user session
+#' @param triggerAesUpdate Reactive trigger for aesthetic update
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2

@@ -4,10 +4,11 @@
 #' @param dataset Passed in dataset for visualization
 #' @param titlebar Show title bar with Done and Cancel buttons?
 #' @param showcode Show code for plots?
+#' @param height Specify height
 #'
 #' @return UI for Serenity Viz module
 #'
-#' @import shiny
+#' @import shiny phosphorr
 #' @export
 #'
 serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height = NULL) {
@@ -27,7 +28,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
                                   left = miniUI::miniTitleBarCancelButton(ns("cancel")),
                                   right = miniUI::miniTitleBarButton(ns("done"), "Done", primary = TRUE)),
            NULL),
-    phosphorr::phosphorrOutput(ns("pjsbox"), height="100%")
+    phosphorrOutput(ns("pjsbox"), height="100%")
   )
 }
 

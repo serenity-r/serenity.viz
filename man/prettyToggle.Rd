@@ -10,6 +10,44 @@ prettyToggle(inputId, label_on, label_off, icon_on = NULL,
   outline = FALSE, fill = FALSE, thick = FALSE, plain = FALSE,
   bigger = FALSE, animation = NULL, inline = FALSE, width = NULL)
 }
+\arguments{
+\item{inputId}{The \code{input} slot that will be used to access the value.}
+
+\item{label_on}{Display label for the control when value is \code{TRUE}.}
+
+\item{label_off}{Display label for the control when value is \code{FALSE}}
+
+\item{icon_on}{Optional, display an icon on the checkbox when value is \code{TRUE}, must be an icon created with \code{icon}.}
+
+\item{icon_off}{Optional, display an icon on the checkbox when value is \code{FALSE}, must be an icon created with \code{icon}.}
+
+\item{value}{Initial value (\code{TRUE} or \code{FALSE}).}
+
+\item{status_on}{Add a class to the checkbox when value is \code{TRUE},
+you can use Bootstrap status like 'info', 'primary', 'danger', 'warning' or 'success'.}
+
+\item{status_off}{Add a class to the checkbox when value is \code{FALSE},
+you can use Bootstrap status like 'info', 'primary', 'danger', 'warning' or 'success'.}
+
+\item{shape}{Shape of the checkbox between \code{square}, \code{curve} and \code{round}.}
+
+\item{outline}{Color also the border of the checkbox (\code{TRUE} or \code{FALSE}).}
+
+\item{fill}{Fill the checkbox with color (\code{TRUE} or \code{FALSE}).}
+
+\item{thick}{Make the content inside checkbox smaller (\code{TRUE} or \code{FALSE}).}
+
+\item{plain}{Remove the border when checkbox is checked (\code{TRUE} or \code{FALSE}).}
+
+\item{bigger}{Scale the checkboxes a bit bigger (\code{TRUE} or \code{FALSE}).}
+
+\item{animation}{Add an animation when checkbox is checked, a value between
+\code{smooth}, \code{jelly}, \code{tada}, \code{rotate}, \code{pulse}.}
+
+\item{inline}{Display the input inline, if you want to place checkboxes next to each other.}
+
+\item{width}{The width of the input, e.g. \code{400px}, or \code{100\%}.}
+}
 \value{
 prettyToggle
 }

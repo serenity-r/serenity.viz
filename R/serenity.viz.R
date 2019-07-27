@@ -12,6 +12,7 @@ NULL
 #
 #' Launch Serenity Viz in the default browser.
 #'
+#' @param dataset Passed in dataset for visualization
 #' @examples
 #' \dontrun{
 #' serenity.viz::serenity.viz()

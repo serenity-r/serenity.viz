@@ -2,6 +2,7 @@
 #'
 #' We need to attach the header-icon class to the outermost div
 #'
+#' @inheritParams shinyWidgets::prettyToggle
 #' @return prettyToggle
 #'
 prettyToggle <- function (inputId, label_on, label_off, icon_on = NULL, icon_off = NULL,

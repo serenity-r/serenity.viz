@@ -51,7 +51,7 @@ layerUI <- function(id) {
 
 #' UI for layer choice
 #'
-#' @param id  Layer ID
+#' @param geom  Layer geom
 #'
 #' @return UI for layer chioce
 #'

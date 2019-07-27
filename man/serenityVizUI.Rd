@@ -15,6 +15,8 @@ serenityVizUI(id, dataset, titlebar = FALSE, showcode = TRUE,
 \item{titlebar}{Show title bar with Done and Cancel buttons?}
 
 \item{showcode}{Show code for plots?}
+
+\item{height}{Specify height}
 }
 \value{
 UI for Serenity Viz module

@@ -7,7 +7,7 @@
 layerChoiceUI(geom)
 }
 \arguments{
-\item{id}{Layer ID}
+\item{geom}{Layer geom}
 }
 \value{
 UI for layer chioce
