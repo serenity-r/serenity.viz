@@ -297,14 +297,10 @@ serenityVizServer <- function(input, output, session, dataset) {
   observeEvent(input$maximize, {
     ns <- session$ns
 
-    message <- list(
-      dockID = ns('pjsbox'),
-      widgetID = ns('widget-ggplot')
-    )
     if (input$maximize) {
-      session$sendCustomMessage("phosphorr:maximizeWidget", message)
+      phosphorr::phosphorrProxy(ns('pjsbox')) %>% phosphorr::maximizeWidget(ns('widget-ggplot'))
     } else {
-      session$sendCustomMessage("phosphorr:minimizeWidget", message)
+      phosphorr::phosphorrProxy(ns('pjsbox')) %>% phosphorr::minimizeWidget(ns('widget-ggplot'))
     }
   })
 
