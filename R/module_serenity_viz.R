@@ -67,7 +67,7 @@ serenityVizServer <- function(input, output, session, dataset) {
                         inputId = ns("add-layer-button"),
                         label = "Add Layer",
                         icon = icon("plus"),
-                        style = "padding: 0;",
+                        style = "padding: 0; display: none;",
                         class = "add-layer"
                       ),
                       actionButton(
@@ -184,11 +184,6 @@ serenityVizServer <- function(input, output, session, dataset) {
           ns("layers"),
           class = "layers",
           choices = sapply(geoms, function(geom) { layerUI(geom) }, simplify = FALSE, USE.NAMES = TRUE),
-          presets = list(
-            values = isolate(input$layers),
-            selected = isolate(input$layers_selected),
-            invisible = isolate(input$layers_invisible)
-          ),
           placeholder = "Add a layer",
           multivalued = TRUE,
           selectable = TRUE,
