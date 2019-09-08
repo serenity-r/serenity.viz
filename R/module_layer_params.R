@@ -84,16 +84,19 @@ layerParamsServer <- function(input, output, session, triggerAesUpdate) {
   # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
-  paramsToCode <- reactive({
-    parList <- purrr::imap(pars(geom_fun), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
+  params_code <- reactive({
+    processed_params_code <- purrr::imap(pars(geom_fun), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
       dropNulls() %>%
-      purrr::imap(~ paste(.y, "=", .x))
+      purrr::imap(~ paste(.y, "=", .x)) %>%
+      paste(., collapse = ", ")
+
+    return(processed_params_code)
   })
 
   return(
     list(
       inherit.aes = reactive({ input[['inherit.aes']] }),
-      code = paramsToCode
+      code = params_code
     )
   )
 }

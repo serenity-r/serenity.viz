@@ -4,7 +4,8 @@
 \alias{layerServer}
 \title{Server for layers module}
 \usage{
-layerServer(input, output, session)
+layerServer(input, output, session, layers_selected, geom_blank_input,
+  dataset)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -12,6 +13,12 @@ layerServer(input, output, session)
 \item{output}{Shiny outputs}
 
 \item{session}{Shiny user session}
+
+\item{layers_selected}{Reactive value of currently selected layer}
+
+\item{geom_blank_input}{Need geom_blank values to check for inheritance}
+
+\item{dataset}{Dataset}
 }
 \description{
 Server for layers module

@@ -39,11 +39,12 @@ layerAestheticsUI <- function(id) {
 #' @param layers_selected Reactive value of currently selected layer
 #' @param geom_blank_input  Need geom_blank values to check for inheritance
 #' @param dataset Dataset
+#' @param inherit.aes Inherit aesthetics from base layer? (reactive)
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerAestheticsServer <- function(input, output, session, layers_selected, geom_blank_input, dataset) {
+layerAestheticsServer <- function(input, output, session, layers_selected, geom_blank_input, dataset, inherit.aes) {
   # This contains the layer id
   ns <- session$ns
 
@@ -76,72 +77,44 @@ layerAestheticsServer <- function(input, output, session, layers_selected, geom_
     )
   })
 
-  # _ load parameters module ====
-  layer_params <- NULL
-  if (geom_type != "geom-blank") {
-    layer_params <- callModule(module = layerParamsServer, id = 'layer-params', reactive({ triggerAesUpdate$depend() }))
-  }
-
-  inherit.aes <- reactive({
-    if (isTruthy(layer_params$inherit.aes) && is.logical(layer_params$inherit.aes()))
-      layer_params$inherit.aes()
-    else
-      geom_proto$inherit.aes
-  })
-
   # _ load variable subset modules ====
-  layer_args <- purrr::map(aesthetics, ~ callModule(module = layerAesServer, id = .,
-                                                    reactive({ triggerAesUpdate$depend() }),
-                                                    geom_blank_input,
-                                                    inherit.aes = inherit.aes,
-                                                    default_aes = geom_proto$geom$default_aes[[.]],
-                                                    dataset = dataset,
-                                                    renderNum = renderNumSource()))
+  aes_args <- purrr::map(aesthetics, ~ callModule(module = layerAesServer, id = .,
+                                                  reactive({ triggerAesUpdate$depend() }),
+                                                  geom_blank_input,
+                                                  inherit.aes = inherit.aes,
+                                                  default_aes = geom_proto$geom$default_aes[[.]],
+                                                  dataset = dataset,
+                                                  renderNum = renderNumSource()))
 
   # _ process subset arguments ====
-  layer_code <- reactive({
+  aes_code <- reactive({
     # Evaluate reactives
-    args <- purrr::map(layer_args, ~ .())
+    args <- purrr::map(aes_args, ~ .())
 
     # Pull out the filter and mutate elements
     mapping_args <- unlist(purrr::map(args, "mappings"))
     value_args <- unlist(purrr::map(args, "values"))
 
-    processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
-                                          "ggplot",
-                                          stringr::str_replace(geom_type, "-", "_")), "(")
-
+    processed_aes_code <- ''
     # Build aes code
     if (length(mapping_args)) {
-      processed_layer_code <- paste0(processed_layer_code,
-                                     "aes(",
-                                     paste(mapping_args, collapse = ", "),
-                                     ")")
+      processed_aes_code <- paste0(processed_aes_code,
+                                   "aes(",
+                                   paste(mapping_args, collapse = ", "),
+                                   ")")
     }
 
     # Build values code
     if (length(value_args)) {
-      processed_layer_code <- paste0(processed_layer_code,
-                                     ifelse(length(mapping_args), ",\n", ""),
-                                     paste(value_args, collapse = ", "))
+      processed_aes_code <- paste0(processed_aes_code,
+                                   ifelse(length(mapping_args), ",\n", ""),
+                                   paste(value_args, collapse = ", "))
     }
 
-    # Build parameter code
-    if (isTruthy(layer_params) &&
-        isTruthy(layer_params$code) &&
-        isTruthy(layer_params$code()) &&
-        length(layer_params$code())) {
-      processed_layer_code <- paste0(processed_layer_code,
-                                     ifelse(length(mapping_args)+length(value_args), ",\n", ""),
-                                     paste(layer_params$code(), collapse = ", "))
-    }
-
-    processed_layer_code <- paste0(processed_layer_code, ")")
-
-    return(processed_layer_code)
+    return(processed_aes_code)
   })
 
-  return(layer_code)
+  return(aes_code)
 }
 
 renderNumSource <- function() {

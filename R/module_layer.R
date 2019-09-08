@@ -82,9 +82,65 @@ layerChoiceUI <- function(geom) {
 #' @param input   Shiny inputs
 #' @param output  Shiny outputs
 #' @param session Shiny user session
+#' @param layers_selected Reactive value of currently selected layer
+#' @param geom_blank_input  Need geom_blank values to check for inheritance
+#' @param dataset Dataset
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerServer <- function(input, output, session) {
+layerServer <- function(input, output, session, layers_selected, geom_blank_input, dataset) {
+
+  ns <- session$ns
+
+  # Get layer, geom, and aesthetics information
+  layer_id <- paste(stringr::str_split(gsub("-$", "", ns('')), '-')[[1]][2:5], collapse="-")
+  geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
+  geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
+
+  # _ load parameters module ====
+  layer_params <- NULL
+  if (geom_type != "geom-blank") {
+    layer_params <- callModule(module = layerParamsServer, id = ns('params'), layers_selected)
+  }
+
+  inherit.aes <- reactive({
+    if (isTruthy(layer_params$inherit.aes) && is.logical(layer_params$inherit.aes()))
+      layer_params$inherit.aes()
+    else
+      geom_proto$inherit.aes
+  })
+
+  # _ load aesthetics module ====
+  layer_aesthetics <- callModule(module = layerAestheticsServer, id = 'aesthetics',
+                                 layers_selected,
+                                 geom_blank_input,
+                                 dataset,
+                                 inherit.aes)
+
+  layer_code <- reactive({
+    processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
+                                          "ggplot",
+                                          stringr::str_replace(geom_type, "-", "_")), "(")
+
+    hasAesthetics <- isTruthy(layer_aesthetics) && nchar(layer_aesthetics())
+    if (hasAesthetics) {
+      processed_layer_code <- paste0(processed_layer_code,
+                                     layer_aesthetics())
+    }
+
+    if (isTruthy(layer_params) &&
+        isTruthy(layer_params$code) &&
+        nchar((layer_params$code()))) {
+      processed_layer_code <- paste0(processed_layer_code,
+                                     ifelse(hasAesthetics, ",\n", ""),
+                                     layer_params$code())
+    }
+
+    processed_layer_code <- paste0(processed_layer_code, ")")
+
+    return(processed_layer_code)
+  })
+
+  return(layer_code)
 }
