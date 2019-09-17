@@ -48,6 +48,10 @@ serenityVizServer <- function(input, output, session, dataset) {
     attr(dataset, "df_name") <- deparse(substitute(dataset))
   }
 
+  # Server code for layer dropzones
+  dragulaSelectR::dropZoneServer(session, "layers", layerUI)
+  dragulaSelectR::dropZoneServer(session, "base-layer", layerUI)
+
   # This stores returned reactives from layer modules
   layer_modules <- reactiveValues()
 
@@ -162,18 +166,21 @@ serenityVizServer <- function(input, output, session, dataset) {
         class = "layers-wrapper",
         bsplus::bs_collapse(
           id = ns("base_layer_panel"),
-          dragulaSelectR::dropZoneInput(
-            ns("base_layer"),
-            class = "layers",
-            choices = list(
-              'geom-blank' = layerUI("geom-blank")
-            ),
-            presets = list(values = "geom-blank-ds-1",
-                           locked = "geom-blank-ds-1",
-                           freeze = "geom-blank-ds-1"),
-            multivalued = TRUE,
-            selectable = TRUE
-          )
+          isolate({ # See Example 22 in DragulaSelectR
+            dragulaSelectR::dropZoneInput(
+              ns("base_layer"),
+              class = "layers",
+              choices = list(
+                'geom-blank' = layerUI("geom-blank")
+              ),
+              server = layerUI,
+              presets = list(values = "geom-blank-ds-1",
+                             locked = "geom-blank-ds-1",
+                             freeze = "geom-blank-ds-1"),
+              multivalued = TRUE,
+              selectable = TRUE
+            )
+          })
         ),
         bsplus::bs_button(
           icon("caret-down"),
@@ -184,6 +191,7 @@ serenityVizServer <- function(input, output, session, dataset) {
           ns("layers"),
           class = "layers",
           choices = sapply(geoms, function(geom) { layerUI(geom) }, simplify = FALSE, USE.NAMES = TRUE),
+          server = layerUI,
           placeholder = "Add a layer",
           multivalued = TRUE,
           selectable = TRUE,
@@ -393,8 +401,9 @@ serenityVizServer <- function(input, output, session, dataset) {
   })
 
   output$log <- renderPrint({
-    req(ggplot2_log())
-    ggplot2_log()
+    # req(ggplot2_log())
+    # ggplot2_log()
+    names(outputOptions(output))
   })
 
   ggcode <- reactive({

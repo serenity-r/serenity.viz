@@ -4,10 +4,14 @@
 \alias{layerUI}
 \title{UI for layer module}
 \usage{
-layerUI(id)
+layerUI(id, server = FALSE, session = getDefaultReactiveDomain())
 }
 \arguments{
 \item{id}{Layer ID}
+
+\item{server}{Render Shiny reactive elements if TRUE}
+
+\item{session}{Shiny user session}
 }
 \value{
 UI for layer

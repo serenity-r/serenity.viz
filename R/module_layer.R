@@ -1,13 +1,15 @@
 #' UI for layer module
 #'
 #' @param id  Layer ID
+#' @param server  Render Shiny reactive elements if TRUE
+#' @param session Shiny user session
 #'
 #' @return UI for layer
 #'
-layerUI <- function(id) {
+layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
   # Create a namespace function using the provided id
-  ns <- NS(id)
-  geom_type <- paste(stringr::str_split(ns(''), '-')[[1]][1:2], collapse="-")
+  ns <- NS(session$ns(id))
+  geom_type <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="-")
 
   if (geom_type == "geom-blank") {
     geom_name <- tagList("Base", br(), "Layer")
@@ -31,7 +33,9 @@ layerUI <- function(id) {
       ),
       wellPanel(
         class = "layer-settings",
-        "Stuff to say"
+        switch(as.character(server),
+               "TRUE" = verbatimTextOutput(ns("setts"), placeholder = TRUE),
+               "FALSE" = "Client stuff to say")
       ),
       div(
         class = "layer-icons",
@@ -117,6 +121,11 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
                                  geom_blank_input,
                                  dataset,
                                  inherit.aes)
+
+  output$setts <- renderPrint({
+    req(layer_aesthetics())
+    layer_aesthetics()
+  })
 
   layer_code <- reactive({
     processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
