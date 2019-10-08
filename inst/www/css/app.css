@@ -479,7 +479,7 @@ i.fa.inactive {
   background-color: transparent !important;
 }
 
-.widget-geoms-and-layers div.layers-wrapper .ds-selected .layer-settings {
+.widget-geoms-and-layers div.layers-wrapper .ds-selected .layer-settings-and-params {
   border-color: red;
 }
 
@@ -519,10 +519,28 @@ i.fa.inactive {
 
 /* Begin: Style active layers */
 
+/* Set well to 220px for params */
+/* Well overflow-y auto (maybe can do overflow dependent on tab selected) */
+/* Set layer-settings-and-params to 200px for params */
+
 .layer-wrap.layer {
   min-height:60px;
   height:60px;
   position:relative;
+}
+
+.layer-wrap.layer.params,
+.layer-wrap.layer.params .well {
+  height:220px;
+}
+
+.layer-wrap.layer.params .layer-settings-and-params {
+  height:200px;
+}
+
+.layer-wrap.layer.params .tab-pane[data-value*='Parameters'] {
+  overflow-y:auto;
+  height:140px;
 }
 
 .layer-wrap.layer .layer-title {
@@ -551,7 +569,7 @@ i.fa.inactive {
   line-height: 20px;
 }
 
-.layer-wrap.layer .layer-settings {
+.layer-wrap.layer .layer-settings-and-params {
   display:inline-block;
   width: 60%;
   height: 50px;
@@ -562,16 +580,22 @@ i.fa.inactive {
 .layer-wrap.layer .layer-icons {
   position:absolute;
   right:0;
-  top:0;
+  top:5px;
   bottom: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: flex-start;
   align-items: center;
 }
 
 .layer-wrap.layer .layer-icons > div {
   flex: 0 1 auto;
+}
+
+/* Override shiny input style formatting */
+.layer-wrap.layer .layer-icons > .form-group {
+  margin-right: -5px !important;
+  margin-bottom: 0;
 }
 
 /* End: Style active layers */
@@ -661,7 +685,7 @@ i.fa.inactive {
   visibility: visible !important;
 }
 
-.ds-toggle-visible {
+.layer-icons > .ds-toggle-visible {
   margin-left: 0;
   float: unset;
 }

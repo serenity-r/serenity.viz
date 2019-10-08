@@ -397,13 +397,12 @@ serenityVizServer <- function(input, output, session, dataset) {
   # _ Code ====
   output$code <- renderPrint({
     req(ggcode())
-    print(ggcode())
+    ggcode()
   })
 
   output$log <- renderPrint({
-    # req(ggplot2_log())
-    # ggplot2_log()
-    names(outputOptions(output))
+    req(ggplot2_log())
+    ggplot2_log()
   })
 
   ggcode <- reactive({

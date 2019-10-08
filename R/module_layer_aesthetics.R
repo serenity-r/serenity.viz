@@ -12,17 +12,7 @@ layerAestheticsUI <- function(id) {
   tagList(
       widgetHeader(
         span(em(paste("Layer:", ifelse(geom_type == "geom-blank", "Base Layer", plot_names[[geom_type]]))),
-             style="float:right;margin-right:10px"),
-        switch(geom_type != "geom-blank",
-               shinyWidgets::dropdownButton(
-                 layerParamsUI(ns('layer-params')),
-                 inputId = ns("layer-params-btn"),
-                 status = "header-icon",
-                 icon = icon("gear"),
-                 size = "xs",
-                 right = TRUE,
-                 tooltip = shinyWidgets::tooltipOptions(title = "Layer Parameters")),
-               NULL)
+             style="float:right;margin-right:10px")
       ),
       widgetBody(
         uiOutput(ns("layer_aesthetics"),

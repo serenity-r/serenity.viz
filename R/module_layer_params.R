@@ -37,6 +37,7 @@ layerParamsServer <- function(input, output, session, triggerAesUpdate) {
   # Could of used a switch statement, but I was feeling the obfuscation bug...
   output$params <- renderUI({
     triggerAesUpdate()
+
     isolate({
       tagList(
         purrr::imap(pars(geom_fun), ~ tryCatch(
@@ -67,7 +68,7 @@ layerParamsServer <- function(input, output, session, triggerAesUpdate) {
                                     "Stack" = "stack"),
                      options = list(render = I(
                        "{
-                       option: function(item, escape) {
+                        option: function(item, escape) {
                         return '<div class = \"position\"><span data-value = \"' + escape(item.value) + '\"></span>' + escape(item.label) + '</div>'
                        }
     }")),

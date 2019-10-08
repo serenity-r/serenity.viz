@@ -32,16 +32,27 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
         )
       ),
       wellPanel(
-        class = "layer-settings",
+        class = "layer-settings-and-params",
         switch(as.character(server),
-               "TRUE" = verbatimTextOutput(ns("setts"), placeholder = TRUE),
+               "TRUE" = uiOutput(ns("settings-or-params")),
                "FALSE" = "Client stuff to say")
       ),
       div(
         class = "layer-icons",
         tagList(
           switch(geom_type != "geom-blank",
-                 div(icon("cog")),
+                 prettyToggle(
+                   inputId = ns("toggle-settings-or-params"),
+                   label_on = "",
+                   label_off = "",
+                   status_on = "default",
+                   status_off = "default",
+                   outline = TRUE,
+                   plain = TRUE,
+                   icon_on = icon("times"),
+                   icon_off = icon("cog"),
+                   inline = TRUE
+                 ),
                  NULL),
           switch(geom_type != "geom-blank",
                  div(class = "ds-toggle-visible", icon("eye")),
@@ -97,17 +108,22 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
 
   ns <- session$ns
 
-  # Get layer, geom, and aesthetics information
+  # _ Initialization and Setup ====
+
+  # _ _ Get layer, geom, and aesthetics information ====
   layer_id <- paste(stringr::str_split(gsub("-$", "", ns('')), '-')[[1]][2:5], collapse="-")
   geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
 
-  # _ load parameters module ====
+  layer_instance <- dragulaSelectR::multivalues(layer_id, ids=TRUE)
+
+  # _ _ load parameters module ====
   layer_params <- NULL
   if (geom_type != "geom-blank") {
-    layer_params <- callModule(module = layerParamsServer, id = ns('params'), layers_selected)
+    layer_params <- callModule(module = layerParamsServer, id = 'params', layers_selected)
   }
 
+  # _ _ create reactive inherit.aes for aesthetics module ====
   inherit.aes <- reactive({
     if (isTruthy(layer_params$inherit.aes) && is.logical(layer_params$inherit.aes()))
       layer_params$inherit.aes()
@@ -115,18 +131,50 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
       geom_proto$inherit.aes
   })
 
-  # _ load aesthetics module ====
+  # _ _ load aesthetics module ====
   layer_aesthetics <- callModule(module = layerAestheticsServer, id = 'aesthetics',
                                  layers_selected,
                                  geom_blank_input,
                                  dataset,
                                  inherit.aes)
 
-  output$setts <- renderPrint({
+  # _ settings or params UI ====
+  # Doesn't really need to be a renderUI at the moment but keeping for ease of reading
+  output$`settings-or-params` <- renderUI({
+    tagList(
+      div(
+        class = "layer-settings", # Settings
+        verbatimTextOutput(ns("summary"), placeholder = TRUE)
+      ),
+      div(
+        class = "layer-params", # Parameters
+        style = "display: none;",
+        layerParamsUI(ns('params'))
+      )
+    )
+  })
+
+  # _ _ toggle hide/show of settings or params ====
+  observeEvent(input$`toggle-settings-or-params`, {
+    # Toggle class for params
+    if (input$`toggle-settings-or-params`) {
+      shinyjs::js$myhide(paste0('#', ns("settings-or-params"), ' .layer-settings'))
+      shinyjs::js$myshow(paste0('#', ns("settings-or-params"), ' .layer-params'))
+      shinyjs::js$addClass('params', paste0('.ds-dropoption[data-value="', geom_type, '"][data-instance="', layer_instance, '"] .layer-wrap'))
+    } else {
+      shinyjs::js$myshow(paste0('#', ns("settings-or-params"), ' .layer-settings'))
+      shinyjs::js$myhide(paste0('#', ns("settings-or-params"), ' .layer-params'))
+      shinyjs::js$removeClass('params', paste0('.ds-dropoption[data-value="', geom_type, '"][data-instance="', layer_instance, '"] .layer-wrap'))
+    }
+  })
+
+  # _ _ settings output ====
+  output$summary <- renderPrint({
     req(layer_aesthetics())
     layer_aesthetics()
   })
 
+  # _ layer code ====
   layer_code <- reactive({
     processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
                                           "ggplot",
