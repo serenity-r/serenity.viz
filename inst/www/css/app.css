@@ -531,16 +531,7 @@ i.fa.inactive {
 
 .layer-wrap.layer.params,
 .layer-wrap.layer.params .well {
-  height:220px;
-}
-
-.layer-wrap.layer.params .layer-settings-and-params {
-  height:200px;
-}
-
-.layer-wrap.layer.params .tab-pane[data-value*='Parameters'] {
-  overflow-y:auto;
-  height:140px;
+  height:auto;
 }
 
 .layer-wrap.layer .layer-title {
