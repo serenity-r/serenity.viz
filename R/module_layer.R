@@ -120,7 +120,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   # _ _ load parameters module ====
   layer_params <- NULL
   if (geom_type != "geom-blank") {
-    layer_params <- callModule(module = layerParamsServer, id = 'params', layers_selected)
+    layer_params <- callModule(module = layerParamsServer, id = 'params') # , layers_selected)
   }
 
   # _ _ create reactive inherit.aes for aesthetics module ====

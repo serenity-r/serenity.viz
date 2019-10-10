@@ -4,7 +4,7 @@
 \alias{layerParamsServer}
 \title{Server for layer parameters submodule}
 \usage{
-layerParamsServer(input, output, session, triggerAesUpdate)
+layerParamsServer(input, output, session)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -12,8 +12,6 @@ layerParamsServer(input, output, session, triggerAesUpdate)
 \item{output}{Shiny outputs}
 
 \item{session}{Shiny user session}
-
-\item{triggerAesUpdate}{Reactive trigger for aesthetic update}
 }
 \description{
 Server for layer parameters submodule

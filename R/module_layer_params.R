@@ -14,7 +14,7 @@ layerParamsUI <- function(id) {
                uiOutput(ns('params'))
       ),
       tabPanel(span(icon(name = "arrows-alt"), "Position"),
-               uiOutput(ns('position'))
+               layerPositionUI(ns('position'))
       )
     )
   )
@@ -25,19 +25,20 @@ layerParamsUI <- function(id) {
 #' @param input   Shiny inputs
 #' @param output  Shiny outputs
 #' @param session Shiny user session
-#' @param triggerAesUpdate Reactive trigger for aesthetic update
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerParamsServer <- function(input, output, session, triggerAesUpdate) {
+layerParamsServer <- function(input, output, session) {
   ns <- session$ns
 
   geom_fun <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="_")
+
+  # Call position module
+  position_code <- callModule(module = layerPositionServer, id = 'position')
+
   # Could of used a switch statement, but I was feeling the obfuscation bug...
   output$params <- renderUI({
-    triggerAesUpdate()
-
     isolate({
       tagList(
         purrr::imap(pars(geom_fun), ~ tryCatch(
@@ -55,33 +56,6 @@ layerParamsServer <- function(input, output, session, triggerAesUpdate) {
     })
   })
 
-  output$position <- renderUI({
-    triggerAesUpdate()
-    isolate({
-      selectizeInput(ns('position'),
-                     label = NULL,
-                     choices = list("Identity" = "identity",
-                                    "Jitter" = "jitter",
-                                    "Dodge" = "dodge",
-                                    "Jitter-Dodge" = "jitterdodge",
-                                    "Nudge" = "nudge",
-                                    "Stack" = "stack"),
-                     options = list(render = I(
-                       "{
-                        option: function(item, escape) {
-                        return '<div class = \"position\"><span data-value = \"' + escape(item.value) + '\"></span>' + escape(item.label) + '</div>'
-                       }
-    }")),
-                     selected = input[["position"]] %||% "identity"
-      )
-    })
-  })
-
-  updateSelectizeInput(
-    session, 'position', server = TRUE,
-    choices = c("Identity", "Jitter", "Dodge", "Jitter-Dodge", "Nudge", "Stack", "Fill")
-    )
-
   # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
@@ -90,6 +64,12 @@ layerParamsServer <- function(input, output, session, triggerAesUpdate) {
       dropNulls() %>%
       purrr::imap(~ paste(.y, "=", .x)) %>%
       paste(., collapse = ", ")
+
+    if (!is.null(position_code())) {
+      processed_params_code <- paste0(processed_params_code,
+                                      ifelse(nchar(processed_params_code) > 0, ",\n", ""),
+                                      position_code())
+    }
 
     return(processed_params_code)
   })
@@ -176,8 +156,7 @@ pars <- function(x) {
     c(
       .[c("na.rm", "show.legend", "inherit.aes")],
       .[setdiff(names(.),
-                c("mapping", "data", "...", "na.rm", "show.legend", "inherit.aes", "stat", "position"))],
-      .["position"]
+                c("mapping", "data", "...", "na.rm", "show.legend", "inherit.aes", "stat", "position"))]
     )
   } %>%
     purrr::modify_at("bins", ~ 30) # Default bins is 30
@@ -195,7 +174,7 @@ filter_out_defaults <- function(param, default, value) {
                                               (value == "no" && (default || is.na(default))),
                                             show.legend.key[[value]],
                                             NULL),
-                     switch(default != value, value, NULL)
+                     switch(is.na(default) || (default != value), value, NULL)
   )
 
   if (is.string(filtered)) {
