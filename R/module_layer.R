@@ -100,11 +100,12 @@ layerChoiceUI <- function(geom) {
 #' @param layers_selected Reactive value of currently selected layer
 #' @param geom_blank_input  Need geom_blank values to check for inheritance
 #' @param dataset Dataset
+#' @param ggdata Ggplot plot object
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerServer <- function(input, output, session, layers_selected, geom_blank_input, dataset) {
+layerServer <- function(input, output, session, layers_selected, geom_blank_input, dataset, ggdata) {
 
   ns <- session$ns
 
@@ -120,7 +121,9 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   # _ _ load parameters module ====
   layer_params <- NULL
   if (geom_type != "geom-blank") {
-    layer_params <- callModule(module = layerParamsServer, id = 'params') # , layers_selected)
+    layer_params <- callModule(module = layerParamsServer,
+                               id = 'params',
+                               ggdata = ggdata)
   }
 
   # _ _ create reactive inherit.aes for aesthetics module ====

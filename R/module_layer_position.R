@@ -7,7 +7,7 @@ layerPositionUI <- function(id) {
   )
 }
 
-layerPositionServer <- function(input, output, session) {
+layerPositionServer <- function(input, output, session, ggdata) {
   # Needed for mapping of ui inputs to ggplot2 arguments
   #  This creates the default list of reactives that just pass on the value of inputs
   # position_vals <- reactive({
@@ -15,6 +15,10 @@ layerPositionServer <- function(input, output, session) {
   #
   #   do.call(reactiveValues, purrr::imap(formals(paste0("position_", input[["position"]])), ~ eval(substitute(reactive({ input[[.y]] }), list(.y = .y)))))
   # })
+
+  observeEvent(input[['jitter_seed_refresh']], {
+    updateNumericInput(session, 'jitter_seed', value = sample.int(.Machine$integer.max, 1L))
+  })
 
   output$position_chooser <- renderUI({
     ns <- session$ns
@@ -43,11 +47,11 @@ layerPositionServer <- function(input, output, session) {
     switch(isTruthy(input[["position"]]),
            purrr::imap(formals(paste0("position_", input[["position"]])), ~ tryCatch(
              do.call(paste0(input[["position"]], '_', .y,'_ui'),
-                     list(value = .x, input = input, session = session)),
+                     list(value = .x, input = input, session = session, data = isolate(ggdata()))),
              error = function(e) {
                tryCatch(
                  do.call(paste0(.y,'_ui'),
-                         list(value = .x, input = input, session = session)),
+                         list(value = .x, input = input, session = session, data = isolate(ggdata()))),
                  error = function(e) NULL
                )
              })
@@ -69,6 +73,7 @@ layerPositionServer <- function(input, output, session) {
       processed_position_code <- paste0(processed_position_code,
                                         purrr::imap(position_args(input$position), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
                                           dropNulls() %>%
+                                          # purrr::imap(~ modify_args(.y, .x, isolate(ggdata()))) %>%
                                           purrr::imap(~ paste(stringr::str_split(.y, "_")[[1]][2], "=", .x)) %>%
                                           paste(., collapse = ", ")
       )
@@ -86,29 +91,30 @@ layerPositionServer <- function(input, output, session) {
 }
 
 # Option inputs  ----
-jitter_width_ui <- function(value, input, session) {
-  if (is.null(value)) value = 0.4
+jitter_width_ui <- function(value, input, session, data = NULL) {
+  browser()
+  if (is.null(value)) value = 0.4*resolution(data$x, zero = FALSE)
 
-  sliderInput(session$ns('jitter_width'),
+  numericInput(session$ns('jitter_width'),
               label = 'Width:',
-              min = 0,
-              max = 1,
               value = input[['jitter_width']] %||% value,
-              step = 0.01)
-}
-
-jitter_height_ui <- function(value, input, session) {
-  if (is.null(value)) value = 0.4
-
-  sliderInput(session$ns('jitter_height'),
-              label = 'Height:',
               min = 0,
-              max = 1,
-              value = input[['jitter_height']] %||% value,
-              step = 0.01)
+              max = Inf,
+              step = 0.1)
 }
 
-jitter_seed_ui <- function(value, input, session) {
+jitter_height_ui <- function(value, input, session, data = NULL) {
+  if (is.null(value)) value = 0.4*resolution(data$y, zero = FALSE)
+
+  numericInput(session$ns('jitter_height'),
+               label = 'Height:',
+               value = input[['jitter_height']] %||% value,
+               min = 0,
+               max = Inf,
+               step = 0.1)
+}
+
+jitter_seed_ui <- function(value, input, session, data = NULL) {
   if (!isTruthy(value)) value = sample.int(.Machine$integer.max, 1L)
 
   tagList(
@@ -136,10 +142,10 @@ position_args <- function(position) {
     purrr::modify_at(c("dodge_width", "dodge2_width"), ~ 0)
 }
 
-modify_args <- function(param, value, position="identity") {
+modify_args <- function(param, value, data) {
   return(
-    switch(paste0(position, '_', param),
-           "jitter_width" = value,
+    switch(param,
+           "jitter_width" = value*resolution(data$x, zero = FALSE),
            value
     )
   )

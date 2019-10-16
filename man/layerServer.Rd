@@ -5,7 +5,7 @@
 \title{Server for layers module}
 \usage{
 layerServer(input, output, session, layers_selected, geom_blank_input,
-  dataset)
+  dataset, ggdata)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -19,6 +19,8 @@ layerServer(input, output, session, layers_selected, geom_blank_input,
 \item{geom_blank_input}{Need geom_blank values to check for inheritance}
 
 \item{dataset}{Dataset}
+
+\item{ggdata}{Ggplot plot object}
 }
 \description{
 Server for layers module

@@ -132,7 +132,7 @@ serenityVizServer <- function(input, output, session, dataset) {
                 refwidget = ns('widget-ggplot'),
                 insertmode = "split-bottom",
                 relsize = 0.25,
-                ui = widgetBody(verbatimTextOutput(ns("code"))),
+                ui = widgetBody(uiOutput(ns("code"))),
                 title = "Code",
                 icon = icon("code")) %>%
       addWidget(id = ns("widget-vars"),
@@ -153,9 +153,16 @@ serenityVizServer <- function(input, output, session, dataset) {
       addWidget(id = ns("widget-messages"),
                 refwidget = ns("widget-code"),
                 insertmode = "tab-after",
-                ui = widgetBody(verbatimTextOutput(ns("log"))),
+                ui = widgetBody(uiOutput(ns("log"))),
                 title = "Messages",
-                icon = icon("info"))
+                icon = icon("info")) %>%
+      addWidget(id = ns("widget-labels"),
+                refwidget = ns('widget-ggplot'),
+                insertmode = "tab-after",
+                ui = labelsUI(ns("labels")),
+                title = "Labels",
+                icon = icon("tags"),
+                closable = FALSE)
   })
 
   output$`widget-layers-body` <- renderUI({
@@ -347,10 +354,20 @@ serenityVizServer <- function(input, output, session, dataset) {
   # Update layer module output reactives - create only once!
   observeEvent(all_layers(), {
     # Adding new layers
-    purrr::map(setdiff(all_layers(), names(layer_modules)), ~ { layer_modules[[.]] <- callModule(module = layerServer, id = .,
-                                                                                                 selected_layer,
-                                                                                                 geom_blank_inputs_to_reactives(),
-                                                                                                 dataset = dataset)} )
+    purrr::map(setdiff(all_layers(), names(layer_modules)), ~ {
+      layer_modules[[.]] <- callModule(module = layerServer, id = .,
+                                       selected_layer,
+                                       geom_blank_inputs_to_reactives(),
+                                       dataset = dataset,
+                                       ggdata = reactive({
+                                         if ((. != 'geom-blank-ds-1') && isTruthy(ggobj) && isTruthy(ggobj())) {
+                                           return(layer_data(ggobj(), which(input$layers == .)))
+                                         } else {
+                                           return(NULL)
+                                         }
+                                         }))
+    })
+
     # Remove old layers
     purrr::map(setdiff(names(layer_modules), all_layers()), ~ { layer_modules[[.]] <- NULL })
   }, priority = 1) # Needs to happen before layer_code reactive
@@ -366,44 +383,59 @@ serenityVizServer <- function(input, output, session, dataset) {
     failure <- FALSE
     # Try to plot.  If unsuccessful, pass error message to help pane.
     # We need the print statement here or we can't capture errors
-    # Note: Move to tryCatchLog package for smarter capturing
-    withCallingHandlers(
-      withRestarts(
-        print(ggobj()),
-        muffleError = function() NULL
-      ),
-      warning = function(w) {
-        isolate(ggplot2_log(paste0("Warning: ", w$message, ggplot2_log())))
-        invokeRestart("muffleWarning")
-      },
-      message = function(m) {
-        isolate(ggplot2_log(paste0("Message: ",  m$message, ggplot2_log())))
-        invokeRestart("muffleMessage")
-      },
-      error = function(e) {
-        shinyjs::show(id = "help-pane", anim = FALSE)
-        shinyjs::html(id = "help-pane", html = e$message)
-        invokeRestart("muffleError")
-        failure <<- TRUE
-      },
+    # See: https://aryoda.github.io/tutorials/tryCatchLog/tryCatchLog-intro-slides.html#/code-snippet-for-better-error-handling
+    tryCatch(
+      withCallingHandlers(
+        withRestarts(
+          print(ggobj()),
+          muffleError = function() {
+            failure <<- TRUE
+            NULL
+          }
+        ),
+        warning = function(w) {
+          isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:yellow'>**Warning**</span>: ", w$message, "<br/>", ggplot2_log())))
+          invokeRestart("muffleWarning")
+        },
+        message = function(m) {
+          isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:blue'>**Message**</span>: ",  m$message, "<br/>", ggplot2_log())))
+          invokeRestart("muffleMessage")
+        },
+        error = function(e) {
+          if (nchar(e$message)) {
+            isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:red'>**Error**</span>: ", e$message, "<br/>", ggplot2_log())))
+            shinyjs::show(id = "help-pane", anim = FALSE)
+            shinyjs::html(id = "help-pane", html = e$message)
+          }
+          invokeRestart("muffleError")
+        }),
       finally = {
-        if (!failure) {
-          shinyjs::hide(id = "help-pane", anim = FALSE)
-        }
+        if (!failure) shinyjs::hide(id = "help-pane", anim = FALSE)
       }
     )
   })
 
   # _ Code ====
-  output$code <- renderPrint({
+  output$code <- renderUI({
     req(ggcode())
-    ggcode()
+    lines <- fansi::sgr_to_html(prettycode::highlight(ggcode()))
+    HTML(
+      paste0(
+        purrr::map2(
+          lines,
+          purrr::map(gregexpr("^\\s+", lines), ~ attr(., "match.length")),
+          ~ ifelse(.y > 0, stringr::str_replace(.x, "^\\s+", paste0(rep("&nbsp;", .y), collapse = "")), .x)
+        ),
+        collapse = "<br/>")
+    )
   })
+  outputOptions(output, "code", suspendWhenHidden = FALSE)  # Look into Shiny way of handling tabs
 
-  output$log <- renderPrint({
+  output$log <- renderUI({
     req(ggplot2_log())
-    ggplot2_log()
+    HTML(markdown::markdownToHTML(text = ggplot2_log(), fragment.only = TRUE))
   })
+  outputOptions(output, "log", suspendWhenHidden = FALSE)
 
   ggcode <- reactive({
     req(layer_code())
