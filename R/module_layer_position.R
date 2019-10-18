@@ -92,7 +92,6 @@ layerPositionServer <- function(input, output, session, ggdata) {
 
 # Option inputs  ----
 jitter_width_ui <- function(value, input, session, data = NULL) {
-  browser()
   if (is.null(value)) value = 0.4*resolution(data$x, zero = FALSE)
 
   numericInput(session$ns('jitter_width'),

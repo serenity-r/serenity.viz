@@ -132,7 +132,8 @@ serenityVizServer <- function(input, output, session, dataset) {
                 refwidget = ns('widget-ggplot'),
                 insertmode = "split-bottom",
                 relsize = 0.25,
-                ui = widgetBody(uiOutput(ns("code"))),
+                ui = widgetBody(uiOutput(ns("code"),
+                                         class="terminal-dark-theme")),
                 title = "Code",
                 icon = icon("code")) %>%
       addWidget(id = ns("widget-vars"),
@@ -153,7 +154,8 @@ serenityVizServer <- function(input, output, session, dataset) {
       addWidget(id = ns("widget-messages"),
                 refwidget = ns("widget-code"),
                 insertmode = "tab-after",
-                ui = widgetBody(uiOutput(ns("log"))),
+                ui = widgetBody(uiOutput(ns("log"),
+                                         class="terminal-dark-theme")),
                 title = "Messages",
                 icon = icon("info")) %>%
       addWidget(id = ns("widget-labels"),
@@ -394,16 +396,16 @@ serenityVizServer <- function(input, output, session, dataset) {
           }
         ),
         warning = function(w) {
-          isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:yellow'>**Warning**</span>: ", w$message, "<br/>", ggplot2_log())))
+          isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:#C4A000'>**Warning**</span>: ", w$message, "<br/>", ggplot2_log())))
           invokeRestart("muffleWarning")
         },
         message = function(m) {
-          isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:blue'>**Message**</span>: ",  m$message, "<br/>", ggplot2_log())))
+          isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:#3d77c2'>**Message**</span>: ",  m$message, "<br/>", ggplot2_log())))
           invokeRestart("muffleMessage")
         },
         error = function(e) {
           if (nchar(e$message)) {
-            isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:red'>**Error**</span>: ", e$message, "<br/>", ggplot2_log())))
+            isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:#CC0000'>**Error**</span>: ", e$message, "<br/>", ggplot2_log())))
             shinyjs::show(id = "help-pane", anim = FALSE)
             shinyjs::html(id = "help-pane", html = e$message)
           }
@@ -418,7 +420,8 @@ serenityVizServer <- function(input, output, session, dataset) {
   # _ Code ====
   output$code <- renderUI({
     req(ggcode())
-    lines <- fansi::sgr_to_html(prettycode::highlight(ggcode()))
+    lines <- fansi::sgr_to_html(prettycode::highlight(ggcode(),
+                                                      style = terminal_dark_theme()))
     HTML(
       paste0(
         purrr::map2(
@@ -593,4 +596,12 @@ revList <- function(x) {
   tmp <- names(x)
   names(tmp) <- unlist(x)
   as.list(tmp)
+}
+
+terminal_dark_theme <- function() {
+  mystyle <- prettycode::default_style()
+  mystyle$call <- crayon::make_style("#06989A")
+  mystyle$number <- crayon::make_style("#3465A4")
+  mystyle$operator <- crayon::make_style("#4E9A06")
+  return(mystyle)
 }

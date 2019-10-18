@@ -130,6 +130,18 @@ body {
   box-shadow: 0 0 0 1px #fafafa, 0 0 0 3px #AAA;
 }
 
+/* CODE */
+
+.terminal-dark-theme {
+  font-size: 16px;
+  color: #E6E1DC;
+  background: #1C1C1C;
+  padding: 10px;
+  border-radius: 5px;
+  height: 100%;
+  overflow-y: auto;
+}
+
 /* DATA */
 
 .ds-dragzone,
@@ -524,9 +536,20 @@ i.fa.inactive {
 /* Set layer-settings-and-params to 200px for params */
 
 .layer-wrap.layer {
-  min-height:60px;
-  height:60px;
+  min-height:80px;
+  height:80px;
   position:relative;
+}
+
+.layers.ds-dropzone .ds-dropoption {
+  cursor: default;
+}
+
+.layers.ds-dropzone .ds-dropoption .ds-handle {
+  cursor: move;
+  font-size: 24px;
+  margin-left: 5px;
+  margin-right: 10px !important;
 }
 
 .layer-wrap.layer.params,
@@ -544,20 +567,20 @@ i.fa.inactive {
   font-size: 20px;
   font-weight: 500;
   margin-top: 10px;
+  display: flex;
+  flex-direction: row;
 }
 
+.layer-wrap.layer .geom-layer-title > .ds-handle,
 .layer-wrap.layer .geom-layer-title > .geom-icon,
 .layer-wrap.layer .geom-layer-title > .geom-name {
   height: 30px;
-  display: inline-block;
+  margin-right: 5px;
+  flex: auto 0 1;
 }
 
 .layer-wrap.layer .geom-layer-title > .geom-icon {
   width: 30px;
-}
-
-.layer-wrap.layer .geom-layer-title > .geom-name {
-  line-height: 20px;
 }
 
 .layer-wrap.layer .layer-settings-and-params {
@@ -565,7 +588,12 @@ i.fa.inactive {
   width: 60%;
   height: 50px;
   margin: 5px 0;
-  padding: 5px;
+}
+
+.layer-wrap.layer .layer-settings-and-params > .well {
+  height: 50px;
+  padding: 0;
+  margin: 0;
 }
 
 .layer-wrap.layer .layer-icons {
@@ -581,6 +609,7 @@ i.fa.inactive {
 
 .layer-wrap.layer .layer-icons > div {
   flex: 0 1 auto;
+  margin-bottom: 2px !important;
 }
 
 /* Override shiny input style formatting */

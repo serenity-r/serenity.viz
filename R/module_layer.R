@@ -25,17 +25,17 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
         tagList(
           div(
             class = "geom-layer-title",
+            icon("sort", class = "ds-handle"),
             div(class = paste("geom-icon", geom_type)),
             span(class = "geom-name", geom_name)
           ),
           switch(geom_type != "geom-blank", span("Other stuff", class="hidden"), NULL)
         )
       ),
-      wellPanel(
-        class = "layer-settings-and-params",
-        switch(as.character(server),
-               "TRUE" = uiOutput(ns("settings-or-params")),
-               "FALSE" = "Client stuff to say")
+      wellPanel(class = "layer-settings-and-params",
+                switch(as.character(server),
+                       "TRUE" = uiOutput(ns("settings-or-params")),
+                       "FALSE" = "Client stuff to say")
       ),
       div(
         class = "layer-icons",
