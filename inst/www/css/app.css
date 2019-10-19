@@ -536,8 +536,8 @@ i.fa.inactive {
 /* Set layer-settings-and-params to 200px for params */
 
 .layer-wrap.layer {
-  min-height:80px;
-  height:80px;
+  min-height:60px;
+  height:60px;
   position:relative;
 }
 
@@ -580,6 +580,10 @@ i.fa.inactive {
 }
 
 .layer-wrap.layer .geom-layer-title > .geom-icon {
+  flex-shrink: 0;
+}
+
+.layer-wrap.layer .geom-layer-title > .geom-icon {
   width: 30px;
 }
 
@@ -588,12 +592,18 @@ i.fa.inactive {
   width: 60%;
   height: 50px;
   margin: 5px 0;
+  padding: 5px;
 }
 
-.layer-wrap.layer .layer-settings-and-params > .well {
-  height: 50px;
-  padding: 0;
-  margin: 0;
+.layer-wrap.layer .layer-settings-and-params .layer-params .tab-content {
+  padding: 10px 5px 0px 5px;
+  margin-bottom: -10px;
+}
+
+.layer-wrap.layer .layer-settings-and-params .layer-params hr {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-top: 1px solid #aaa;
 }
 
 .layer-wrap.layer .layer-icons {

@@ -49,8 +49,11 @@ layerParamsServer <- function(input, output, session, ggdata) {
                   list(value = .x, input = input, session = session)),
           error = function(e) {
             tryCatch(
-              do.call(paste0(.y,'_ui'),
-                      list(value = .x, input = input, session = session)),
+              tagList(
+                switch(.y == "na.rm", hr(), NULL),
+                do.call(paste0(.y,'_ui'),
+                        list(value = .x, input = input, session = session))
+              ),
               error = function(e) NULL
               )
             })
@@ -157,9 +160,9 @@ pars <- function(x) {
   formals(x) %>%
   {
     c(
-      .[c("na.rm", "show.legend", "inherit.aes")],
       .[setdiff(names(.),
-                c("mapping", "data", "...", "na.rm", "show.legend", "inherit.aes", "stat", "position"))]
+                c("mapping", "data", "...", "na.rm", "show.legend", "inherit.aes", "stat", "position"))],
+      .[c("na.rm", "show.legend", "inherit.aes")]
     )
   } %>%
     purrr::modify_at("bins", ~ 30) # Default bins is 30

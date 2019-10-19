@@ -32,10 +32,11 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
           switch(geom_type != "geom-blank", span("Other stuff", class="hidden"), NULL)
         )
       ),
-      wellPanel(class = "layer-settings-and-params",
-                switch(as.character(server),
-                       "TRUE" = uiOutput(ns("settings-or-params")),
-                       "FALSE" = "Client stuff to say")
+      wellPanel(
+        class = "layer-settings-and-params",
+        switch(as.character(server),
+               "TRUE" = uiOutput(ns("settings-or-params")),
+               "FALSE" = "Client stuff to say")
       ),
       div(
         class = "layer-icons",

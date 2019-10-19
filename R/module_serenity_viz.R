@@ -602,6 +602,7 @@ terminal_dark_theme <- function() {
   mystyle <- prettycode::default_style()
   mystyle$call <- crayon::make_style("#06989A")
   mystyle$number <- crayon::make_style("#3465A4")
+  mystyle$null <- crayon::make_style("#CC0000")
   mystyle$operator <- crayon::make_style("#4E9A06")
   return(mystyle)
 }
