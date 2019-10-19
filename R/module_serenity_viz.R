@@ -361,13 +361,10 @@ serenityVizServer <- function(input, output, session, dataset) {
                                        selected_layer,
                                        geom_blank_inputs_to_reactives(),
                                        dataset = dataset,
-                                       ggdata = reactive({
-                                         if ((. != 'geom-blank-ds-1') && isTruthy(ggobj) && isTruthy(ggobj())) {
-                                           return(layer_data(ggobj(), which(input$layers == .)))
-                                         } else {
-                                           return(NULL)
-                                         }
-                                         }))
+                                       ggbase = switch(. != "geom-blank-ds-1",
+                                                       layer_modules[["geom-blank-ds-1"]],
+                                                       reactive({ NULL }))
+      )
     })
 
     # Remove old layers

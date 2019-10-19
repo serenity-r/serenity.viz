@@ -101,12 +101,12 @@ layerChoiceUI <- function(geom) {
 #' @param layers_selected Reactive value of currently selected layer
 #' @param geom_blank_input  Need geom_blank values to check for inheritance
 #' @param dataset Dataset
-#' @param ggdata Ggplot plot object
+#' @param ggbase  All your base are belong to us...
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerServer <- function(input, output, session, layers_selected, geom_blank_input, dataset, ggdata) {
+layerServer <- function(input, output, session, layers_selected, geom_blank_input, dataset, ggbase = NULL) {
 
   ns <- session$ns
 
@@ -120,11 +120,52 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   layer_instance <- dragulaSelectR::multivalues(layer_id, ids=TRUE)
 
   # _ _ load parameters module ====
+
+  # Ignoring subsetted data for now
+  gglayercode <- reactive({
+    req({
+      ggbase()
+      base_layer_code()
+    })
+    paste("dataset %>%", ggbase(), "+", paste0(base_layer_code(), ")"))
+  })
+
+  gglayerobj <- reactive({
+    req(gglayercode())
+    eval(parse(text=gglayercode()))
+  })
+
+  gglayerdata <- reactive({
+    req(gglayerobj())
+    failure <- FALSE
+    tryCatch(
+      withCallingHandlers(
+        withRestarts(
+          print(gglayerobj()),
+          muffleError = function() {
+            failure <<- TRUE
+            NULL
+          }
+        ),
+        error = function(e) {
+          invokeRestart("muffleError")
+        }),
+      finally = {
+        if (!failure) {
+          return(layer_data(gglayerobj(), 1))
+        } else {
+          return(NULL)
+        }
+      }
+    )
+  })
+
   layer_params <- NULL
   if (geom_type != "geom-blank") {
     layer_params <- callModule(module = layerParamsServer,
                                id = 'params',
-                               ggdata = ggdata)
+                               ggdata = gglayerdata
+    )
   }
 
   # _ _ create reactive inherit.aes for aesthetics module ====
@@ -174,27 +215,36 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
 
   # _ _ settings output ====
   output$summary <- renderPrint({
-    req(layer_aesthetics())
-    layer_aesthetics()
+    # req(layer_aesthetics())
+    # layer_aesthetics()
   })
 
   # _ layer code ====
-  layer_code <- reactive({
+  hasAesthetics <- reactive({
+    isTruthy(layer_aesthetics) && nchar(layer_aesthetics())
+  })
+
+  base_layer_code <- reactive({
     processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
                                           "ggplot",
                                           stringr::str_replace(geom_type, "-", "_")), "(")
 
-    hasAesthetics <- isTruthy(layer_aesthetics) && nchar(layer_aesthetics())
-    if (hasAesthetics) {
+    if (hasAesthetics()) {
       processed_layer_code <- paste0(processed_layer_code,
                                      layer_aesthetics())
     }
+
+    return(processed_layer_code)
+  })
+
+  layer_code <- reactive({
+    processed_layer_code <- base_layer_code()
 
     if (isTruthy(layer_params) &&
         isTruthy(layer_params$code) &&
         nchar((layer_params$code()))) {
       processed_layer_code <- paste0(processed_layer_code,
-                                     ifelse(hasAesthetics, ",\n", ""),
+                                     ifelse(hasAesthetics(), ",\n", ""),
                                      layer_params$code())
     }
 

@@ -38,7 +38,7 @@ layerParamsServer <- function(input, output, session, ggdata) {
   # Call position module
   position_code <- callModule(module = layerPositionServer,
                               id = 'position',
-                              ggdata = ggdata)
+                              ggdata = reactive({ ggdata() }))
 
   # Could of used a switch statement, but I was feeling the obfuscation bug...
   output$params <- renderUI({

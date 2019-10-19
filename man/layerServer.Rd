@@ -5,7 +5,7 @@
 \title{Server for layers module}
 \usage{
 layerServer(input, output, session, layers_selected, geom_blank_input,
-  dataset, ggdata)
+  dataset, ggbase = NULL)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -20,7 +20,7 @@ layerServer(input, output, session, layers_selected, geom_blank_input,
 
 \item{dataset}{Dataset}
 
-\item{ggdata}{Ggplot plot object}
+\item{ggbase}{All your base are belong to us...}
 }
 \description{
 Server for layers module

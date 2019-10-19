@@ -44,19 +44,23 @@ layerPositionServer <- function(input, output, session, ggdata) {
   })
 
   output$position_options <- renderUI({
-    switch(isTruthy(input[["position"]]),
-           purrr::imap(formals(paste0("position_", input[["position"]])), ~ tryCatch(
-             do.call(paste0(input[["position"]], '_', .y,'_ui'),
-                     list(value = .x, input = input, session = session, data = isolate(ggdata()))),
-             error = function(e) {
-               tryCatch(
-                 do.call(paste0(.y,'_ui'),
-                         list(value = .x, input = input, session = session, data = isolate(ggdata()))),
-                 error = function(e) NULL
-               )
-             })
-           ),
-           NULL)
+    if (isTruthy(ggdata())) {
+      switch(isTruthy(input[["position"]]),
+             purrr::imap(formals(paste0("position_", input[["position"]])), ~ tryCatch(
+               do.call(paste0(input[["position"]], '_', .y,'_ui'),
+                       list(value = .x, input = input, session = session, data = isolate(ggdata()))),
+               error = function(e) {
+                 tryCatch(
+                   do.call(paste0(.y,'_ui'),
+                           list(value = .x, input = input, session = session, data = isolate(ggdata()))),
+                   error = function(e) NULL
+                 )
+               })
+             ),
+             NULL)
+    } else {
+      tags$em("What?!?!")
+    }
   })
 
   updateSelectizeInput(
