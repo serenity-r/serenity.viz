@@ -43,6 +43,9 @@ layerPositionServer <- function(input, output, session, ggdata) {
     })
   })
 
+  # Change this from depends on ggdata() to reactive trigger
+  #  in module_layer, create failure <- makeReactiveTrigger(FALSE)
+  # This should only redraw when plot failure switches logical value
   output$position_options <- renderUI({
     if (isTruthy(ggdata())) {
       switch(isTruthy(input[["position"]]),
@@ -77,7 +80,7 @@ layerPositionServer <- function(input, output, session, ggdata) {
       processed_position_code <- paste0(processed_position_code,
                                         purrr::imap(position_args(input$position), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
                                           dropNulls() %>%
-                                          # purrr::imap(~ modify_args(.y, .x, isolate(ggdata()))) %>%
+                                          purrr::imap(~ modify_args(.y, .x, isolate(ggdata()))) %>%
                                           purrr::imap(~ paste(stringr::str_split(.y, "_")[[1]][2], "=", .x)) %>%
                                           paste(., collapse = ", ")
       )
@@ -96,31 +99,32 @@ layerPositionServer <- function(input, output, session, ggdata) {
 
 # Option inputs  ----
 jitter_width_ui <- function(value, input, session, data = NULL) {
-  if (is.null(value)) value = 0.4*resolution(data$x, zero = FALSE)
+  if (is.null(value)) value = 0.4
 
-  numericInput(session$ns('jitter_width'),
+  sliderInput(session$ns('jitter_width'),
               label = 'Width:',
               value = input[['jitter_width']] %||% value,
               min = 0,
-              max = Inf,
-              step = 0.1)
+              max = 1,
+              step = 0.05)
 }
 
 jitter_height_ui <- function(value, input, session, data = NULL) {
-  if (is.null(value)) value = 0.4*resolution(data$y, zero = FALSE)
+  if (is.null(value)) value = 0.4
 
-  numericInput(session$ns('jitter_height'),
+  sliderInput(session$ns('jitter_height'),
                label = 'Height:',
                value = input[['jitter_height']] %||% value,
                min = 0,
-               max = Inf,
-               step = 0.1)
+               max = 1,
+               step = 0.05)
 }
 
 jitter_seed_ui <- function(value, input, session, data = NULL) {
   if (!isTruthy(value)) value = sample.int(.Machine$integer.max, 1L)
 
-  tagList(
+  div(
+    class = "jitter-seed-ui",
     numericInput(session$ns('jitter_seed'),
                  label = 'Seed:',
                  value = input[['jitter_seed']] %||% value,
@@ -149,6 +153,7 @@ modify_args <- function(param, value, data) {
   return(
     switch(param,
            "jitter_width" = value*resolution(data$x, zero = FALSE),
+           "jitter_height" = value*resolution(data$y, zero = FALSE),
            value
     )
   )
