@@ -7,15 +7,10 @@ layerPositionUI <- function(id) {
   )
 }
 
-layerPositionServer <- function(input, output, session, ggdata) {
-  # Needed for mapping of ui inputs to ggplot2 arguments
-  #  This creates the default list of reactives that just pass on the value of inputs
-  # position_vals <- reactive({
-  #   req(input[["position"]])
-  #
-  #   do.call(reactiveValues, purrr::imap(formals(paste0("position_", input[["position"]])), ~ eval(substitute(reactive({ input[[.y]] }), list(.y = .y)))))
-  # })
-
+layerPositionServer <- function(input, output, session, ggdata, default_position) {
+  # Consider doing something similar to ui with server code
+  #  (e.g. create jitter_seed_server function analogous to
+  #   jitter_seed_ui function)
   observeEvent(input[['jitter_seed_refresh']], {
     updateNumericInput(session, 'jitter_seed', value = sample.int(.Machine$integer.max, 1L))
   })
@@ -38,7 +33,7 @@ layerPositionServer <- function(input, output, session, ggdata) {
                         return '<div class = \"position\"><span data-value = \"' + escape(item.value) + '\"></span>' + escape(item.label) + '</div>'
                        }
     }")),
-                     selected = input[["position"]] %||% "identity"
+                     selected = input[["position"]] %||% default_position
       )
     })
   })
@@ -62,7 +57,7 @@ layerPositionServer <- function(input, output, session, ggdata) {
              ),
              NULL)
     } else {
-      tags$em("What?!?!")
+      span("Please fix layer error before continuing.")
     }
   })
 
@@ -72,23 +67,20 @@ layerPositionServer <- function(input, output, session, ggdata) {
   )
 
   position_code <- reactive({
-    if (isTruthy(input$position) &&
-        input$position != "identity") {
-      processed_position_code <- paste0("position = position_", input$position, "(")
-
+    processed_position_code <- NULL
+    if (isTruthy(input$position)) {
       # Process arguments
-      processed_position_code <- paste0(processed_position_code,
-                                        purrr::imap(position_args(input$position), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
-                                          dropNulls() %>%
-                                          purrr::imap(~ modify_args(.y, .x, isolate(ggdata()))) %>%
-                                          purrr::imap(~ paste(stringr::str_split(.y, "_")[[1]][2], "=", .x)) %>%
-                                          paste(., collapse = ", ")
-      )
+      args <- purrr::imap(position_args(input$position), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
+        dropNulls() %>%
+        purrr::imap(~ modify_args(.y, .x, isolate(ggdata()))) %>%
+        purrr::imap(~ paste(stringr::str_split(.y, "_")[[1]][2], "=", .x)) %>%
+        paste(., collapse = ", ")
 
-      # Close it up
-      processed_position_code <- paste0(processed_position_code, ")")
-    } else {
-      processed_position_code <- NULL
+      if ((input$position != default_position) || isTruthy(args)) {
+        processed_position_code <- paste0("position = position_", input$position, "(")
+        processed_position_code <- paste0(processed_position_code, args)
+        processed_position_code <- paste0(processed_position_code, ")")
+      }
     }
 
     return(processed_position_code)
@@ -143,10 +135,14 @@ jitter_seed_ui <- function(value, input, session, data = NULL) {
 # Get argument list for position function and set defaults
 position_args <- function(position) {
   pargs <- formals(paste0("position_", position))
-  names(pargs) <- paste0(position, "_", names(pargs))
-  pargs %>%
-    purrr::modify_at(c("jitter_width", "jitter_height"), ~ 0.4) %>%
-    purrr::modify_at(c("dodge_width", "dodge2_width"), ~ 0)
+  if (!is.null(pargs)) {
+    names(pargs) <- paste0(position, "_", names(pargs))
+    pargs %>%
+      purrr::modify_at(c("jitter_width", "jitter_height"), ~ 0.4) %>%
+      purrr::modify_at(c("dodge_width", "dodge2_width"), ~ 0)
+  } else {
+    NULL
+  }
 }
 
 modify_args <- function(param, value, data) {

@@ -26,11 +26,12 @@ layerParamsUI <- function(id) {
 #' @param output  Shiny outputs
 #' @param session Shiny user session
 #' @param ggdata Ggplot plot object
+#' @param default_position  Default layer position
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerParamsServer <- function(input, output, session, ggdata) {
+layerParamsServer <- function(input, output, session, ggdata, default_position) {
   ns <- session$ns
 
   geom_fun <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="_")
@@ -38,7 +39,8 @@ layerParamsServer <- function(input, output, session, ggdata) {
   # Call position module
   position_code <- callModule(module = layerPositionServer,
                               id = 'position',
-                              ggdata = reactive({ ggdata() }))
+                              ggdata = reactive({ ggdata() }),
+                              default_position = default_position)
 
   # Could of used a switch statement, but I was feeling the obfuscation bug...
   output$params <- renderUI({

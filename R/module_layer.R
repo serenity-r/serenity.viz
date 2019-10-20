@@ -164,7 +164,8 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   if (geom_type != "geom-blank") {
     layer_params <- callModule(module = layerParamsServer,
                                id = 'params',
-                               ggdata = gglayerdata
+                               ggdata = gglayerdata,
+                               default_position = tolower(stringr::str_remove(class(geom_proto$position)[1], "Position"))
     )
   }
 
