@@ -23,6 +23,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
     ),
     bsplus::use_bs_tooltip(),
     tags$head(includeCSS(file.path(resourcePath, "css", "app.css"))),
+    tags$head(includeScript(file.path(resourcePath, "js", "serenity_viz.js"))),
     switch(titlebar,
            miniUI::gadgetTitleBar("Serenity Viz",
                                   left = miniUI::miniTitleBarCancelButton(ns("cancel")),

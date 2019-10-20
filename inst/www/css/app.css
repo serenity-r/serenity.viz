@@ -635,6 +635,19 @@ i.fa.inactive {
 
 /* End: Style active layers */
 
+.position-dodge-width {
+  display: flex;
+}
+
+.position-dodge-width .dodge-width-switch {
+  flex: 0 1 auto;
+}
+
+.position-dodge-width .dodge-width-input {
+  flex: 1 1 auto;
+  margin-top: -20px;
+}
+
 /* Begin: Style layer chooser */
 
 .widget-header .action-button.add-layer {

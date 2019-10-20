@@ -150,11 +150,16 @@ geom_dotplot_method_ui <- function(value, input, session) {
               selected = input[['method']] %||% value)
 }
 
-
 se_ui <- function(value, input, session) {
   checkboxInput(session$ns('se'),
                 label = 'Show confidence bands?',
                 value = input[['se']] %||% value)
+}
+
+geom_boxplot_varwidth_ui <- function(value, input, session) {
+  checkboxInput(session$ns('varwidth'),
+                label = 'Use variable width boxes?',
+                value = input[['varwidth']] %||% value)
 }
 
 # Utils ----

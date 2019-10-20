@@ -3,81 +3,157 @@ layerPositionUI <- function(id) {
 
   tagList(
     uiOutput(ns('position_chooser')),
-    uiOutput(ns('position_options'))
+    uiOutput(ns('position_options')),
+    uiOutput(ns('position_sub_options'))
   )
 }
 
 layerPositionServer <- function(input, output, session, ggdata, default_position) {
-  # Consider doing something similar to ui with server code
-  #  (e.g. create jitter_seed_server function analogous to
-  #   jitter_seed_ui function)
-  observeEvent(input[['jitter_seed_refresh']], {
-    updateNumericInput(session, 'jitter_seed', value = sample.int(.Machine$integer.max, 1L))
-  })
+  positions <- c("identity", "jitter", "dodge", "dodge2", "jitterdodge", "nudge", "stack", "fill")
+
+  # Need a reactive trigger to fix a shinyWidgets bug
+  refreshWidget <- makeReactiveTrigger()
+
+  # Sub-positions that share settings
+  pos_to_sub <- list(
+    "dodge" = "dodge2",
+    "stack" = "fill"
+  )
+  sub_to_pos <- as.list(names(pos_to_sub))
+  names(sub_to_pos) <- purrr::flatten_chr(pos_to_sub)
+
+  # Load position server code (if present)
+  # Note that for now all _server function need the additional argument refreshWidget
+  #   Can remove once bug in shinyWidgets is addressed
+  purrr::map(positions, ~ tryCatch(
+    do.call(paste0(.,'_server'),
+            list(session = session, refreshWidget = refreshWidget)),
+    error = function(e) NULL)
+  )
 
   output$position_chooser <- renderUI({
     ns <- session$ns
 
+    init_position <- input$position %||% sub_to_pos[[default_position]] %||% default_position
     isolate({
-      selectizeInput(ns('position'),
-                     label = NULL,
-                     choices = list("Identity" = "identity",
-                                    "Jitter" = "jitter",
-                                    "Dodge" = "dodge",
-                                    "Jitter-Dodge" = "jitterdodge",
-                                    "Nudge" = "nudge",
-                                    "Stack" = "stack"),
-                     options = list(render = I(
-                       "{
+      tagList(
+        selectizeInput(ns('position'),
+                       label = NULL,
+                       choices = list("Identity" = "identity",
+                                      "Jitter" = "jitter",
+                                      "Dodge" = "dodge",
+                                      "Jitter-Dodge" = "jitterdodge",
+                                      "Nudge" = "nudge",
+                                      "Stack" = "stack"),
+                       options = list(render = I(
+                         "{
                         option: function(item, escape) {
                         return '<div class = \"position\"><span data-value = \"' + escape(item.value) + '\"></span>' + escape(item.label) + '</div>'
                        }
     }")),
-                     selected = input[["position"]] %||% default_position
+                       selected = init_position
+        ),
+        switch(init_position %in% names(pos_to_sub),
+               checkboxInput(ns('position_sub'),
+                             label = switch(pos_to_sub[[init_position]],
+                                            "fill" = "Normalize heights?",
+                                            "dodge2" = "Variable widths?"),
+                             value = input[["position_sub"]] %||% (default_position %in% names(sub_to_pos))),
+               NULL)
       )
     })
+  })
+
+  position_sub <- reactive({
+    req(input$position)
+    pos_to_sub[[ifelse(is.logical(input$position_sub) %||% NULL,
+                       ifelse(input$position_sub,
+                              input$position,
+                              NA),
+                       NA)]]
+  })
+
+  position <- reactive({
+    req(input$position)
+    position_sub() %||% input$position
+  })
+
+  additional_args <- reactive({
+    req(input$position)
+    pos_args <- formals(paste0("position_", input$position))
+    sub_args <- formals(paste0("position_", position_sub()))
+    sub_args[!(names(sub_args) %in% names(pos_args))]
   })
 
   # Change this from depends on ggdata() to reactive trigger
   #  in module_layer, create failure <- makeReactiveTrigger(FALSE)
   # This should only redraw when plot failure switches logical value
   output$position_options <- renderUI({
+    req(input$position)
+    refreshWidget$depend()
+
     if (isTruthy(ggdata())) {
-      switch(isTruthy(input[["position"]]),
-             purrr::imap(formals(paste0("position_", input[["position"]])), ~ tryCatch(
-               do.call(paste0(input[["position"]], '_', .y,'_ui'),
-                       list(value = .x, input = input, session = session, data = isolate(ggdata()))),
-               error = function(e) {
-                 tryCatch(
-                   do.call(paste0(.y,'_ui'),
-                           list(value = .x, input = input, session = session, data = isolate(ggdata()))),
-                   error = function(e) NULL
-                 )
-               })
-             ),
-             NULL)
+      isolate({
+        tagList(
+          # Main options
+          purrr::imap(formals(paste0("position_", input$position)), ~ {
+            tryCatch(
+              do.call(paste0(input$position, '_', .y, '_ui'),
+                      list(value = .x, input = input, session = session, data = isolate(ggdata()))),
+              error = function(e) {
+                tryCatch(
+                  do.call(paste0(.y,'_ui'),
+                          list(value = .x, input = input, session = session, data = isolate(ggdata()))),
+                  error = function(e) NULL
+                )
+              })
+          }
+          )
+        )
+      })
     } else {
       span("Please fix layer error before continuing.")
     }
   })
 
+  output$position_sub_options <- renderUI({
+    req(position_sub())
+
+    # Sub options
+    isolate({
+      tagList(
+        purrr::imap(additional_args(), ~ {
+          tryCatch(
+          do.call(paste0(position_sub(), '_', .y,'_ui'),
+                  list(value = .x, input = input, session = session, data = isolate(ggdata()))),
+          error = function(e) {
+            tryCatch(
+              do.call(paste0(.y,'_ui'),
+                      list(value = .x, input = input, session = session, data = isolate(ggdata()))),
+              error = function(e) NULL
+            )
+          })
+        })
+      )
+    })
+  })
+
   updateSelectizeInput(
     session, 'position', server = TRUE,
-    choices = c("Identity", "Jitter", "Dodge", "Jitter-Dodge", "Nudge", "Stack", "Fill")
+    choices = c("Identity", "Jitter", "Dodge", "Jitter-Dodge", "Nudge", "Stack")
   )
 
   position_code <- reactive({
     processed_position_code <- NULL
     if (isTruthy(input$position)) {
       # Process arguments
-      args <- purrr::imap(position_args(input$position), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
-        dropNulls() %>%
-        purrr::imap(~ modify_args(.y, .x, isolate(ggdata()))) %>%
-        purrr::imap(~ paste(stringr::str_split(.y, "_")[[1]][2], "=", .x)) %>%
-        paste(., collapse = ", ")
+      args <- process_args(input$position, input, ggdata)
+      subargs <- process_args(position_sub(), input, ggdata)
 
-      if ((input$position != default_position) || isTruthy(args)) {
-        processed_position_code <- paste0("position = position_", input$position, "(")
+      args <- paste(c(switch(isTruthy(args), args), switch(isTruthy(subargs), subargs)), collapse = ", ")
+
+      if ((position() != default_position) || isTruthy(args)) {
+        processed_position_code <- paste0("position = position_", position(), "(")
         processed_position_code <- paste0(processed_position_code, args)
         processed_position_code <- paste0(processed_position_code, ")")
       }
@@ -90,6 +166,22 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
 }
 
 # Option inputs  ----
+
+# > reusable ui ----
+
+reverse_ui <- function(id) {
+  function(value, input, session, data = NULL) {
+    if (is.null(value)) value = FALSE
+
+    checkboxInput(session$ns(id),
+                  label = "Reverse?",
+                  value = input[[id]] %||% value
+    )
+  }
+}
+
+# > jitter ----
+
 jitter_width_ui <- function(value, input, session, data = NULL) {
   if (is.null(value)) value = 0.4
 
@@ -130,6 +222,125 @@ jitter_seed_ui <- function(value, input, session, data = NULL) {
   )
 }
 
+jitter_server <- function(session, refreshWidget = NULL) {
+  return({
+    observeEvent(session$input[['jitter_seed_refresh']], {
+      updateNumericInput(session, 'jitter_seed', value = sample.int(.Machine$integer.max, 1L))
+    })
+  })
+}
+
+# > dodge ----
+
+dodge_width_ui <- function(value, input, session, data = NULL) {
+  value <- input[["dodge_width"]] %||% value
+
+  div(
+    class = "position-dodge-width",
+    div(
+      class = "dodge-width-switch",
+      shinyWidgets::switchInput(
+        session$ns("dodge_set_width"),
+        label = "Width",
+        value = isTruthy(value)
+      )
+    ),
+    div(
+      class = paste0("dodge-width-input", ifelse(isTruthy(value), "", " hidden")),
+      numericInput(session$ns("dodge_width"),
+                   label = "",
+                   value = value,
+                   min = 0,
+                   max = Inf
+      )
+    )
+  )
+}
+
+dodge_preserve_ui <- function(value, input, session, data = NULL) {
+  if (is.null(value) || (length(preserve) > 1)) value = "total"
+
+  radioButtons(session$ns("dodge_preserve"),
+               label = "Preserve:",
+               choices = c("total", "single"),
+               selected = input[["dodge_preserve"]] %||% value,
+               inline = TRUE)
+}
+
+dodge_server <- function(session, refreshWidget = NULL) {
+  return({
+    observeEvent(session$input$dodge_set_width, {
+      if (isTruthy(session$input$dodge_set_width)) {
+        shinyjs::js$toggleClass("hidden", paste0('#', session$ns("position_options"), ' .dodge-width-input'))
+        updateNumericInput(session, session$ns("dodge_width"), value = 0)
+      } else {
+        shinyjs::js$toggleClass("hidden", paste0('#', session$ns("position_options"), ' .dodge-width-input'))
+        session$sendCustomMessage(type = "nullify", message = session$ns("dodge_width"))
+      }
+    })
+
+    # Fire one event to refresh shinyWidget (current bug in shinyWidgets)
+    observeEvent(session$input$dodge_set_width, {
+      refreshWidget$trigger()
+    }, once = TRUE)
+  })
+}
+
+# > dodge2 ----
+
+dodge2_padding_ui <- function(value, input, session, data = NULL) {
+  if (is.null(value)) value = 0.1
+
+  sliderInput(session$ns("dodge2_padding"),
+              label = "Padding:",
+              min = 0,
+              max = 1,
+              value = input[["dodge2_padding"]] %||% value,
+              step = 0.05)
+}
+
+dodge2_reverse_ui <- reverse_ui("dodge2_reverse")
+
+# > stack/fill ----
+
+stack_vjust_ui <- function(value, input, session, data = NULL) {
+  if (is.null(value)) value = 1
+
+  sliderInput(session$ns("stack_vjust"),
+              label = "Vertical adjustment:",
+              min = 0,
+              max = 1,
+              value = input[["stack_vjust"]] %||% value,
+              step = 0.05
+  )
+}
+
+stack_reverse_ui <- reverse_ui("stack_reverse")
+
+# > nudge ----
+
+nudge_x_ui <- function(value, input, session, data = NULL) {
+  if (is.null(value)) value = 0
+
+  sliderInput(session$ns("nudge_x"),
+              label = "Horizontal Adjustment:",
+              min = -1,
+              max = 1,
+              value = input[["nudge_x"]] %||% value,
+              step = 0.02)
+}
+
+nudge_y_ui <- function(value, input, session, data = NULL) {
+  if (is.null(value)) value = 0
+
+  sliderInput(session$ns("nudge_y"),
+              label = "Vertical Adjustment:",
+              min = -1,
+              max = 1,
+              value = input[["nudge_y"]] %||% value,
+              step = 0.02)
+}
+
 # Utils ----
 
 # Get argument list for position function and set defaults
@@ -139,10 +350,21 @@ position_args <- function(position) {
     names(pargs) <- paste0(position, "_", names(pargs))
     pargs %>%
       purrr::modify_at(c("jitter_width", "jitter_height"), ~ 0.4) %>%
-      purrr::modify_at(c("dodge_width", "dodge2_width"), ~ 0)
+      purrr::modify_at(c("dodge_width", "dodge2_width"), ~ -1) %>%
+      purrr::modify_at(c("dodge_preserve", "dodge2_preserve"), ~ "total")
   } else {
     NULL
   }
+}
+
+process_args <- function(position, input, ggdata) {
+  if (is.null(position)) return(NULL)
+
+  purrr::imap(position_args(position), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
+    dropNulls() %>%
+    purrr::imap(~ modify_args(.y, .x, isolate(ggdata()))) %>%
+    purrr::imap(~ paste(stringr::str_split(.y, "_")[[1]][2], "=", .x)) %>%
+    paste(., collapse = ", ")
 }
 
 modify_args <- function(param, value, data) {
@@ -150,6 +372,8 @@ modify_args <- function(param, value, data) {
     switch(param,
            "jitter_width" = value*resolution(data$x, zero = FALSE),
            "jitter_height" = value*resolution(data$y, zero = FALSE),
+           "nudge_x" = value*(max(data$x) - min(data$x)),
+           "nudge_y" = value*(max(data$y) - min(data$y)),
            value
     )
   )
