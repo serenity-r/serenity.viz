@@ -15,7 +15,7 @@ dataVarUI <- function(id, var, default='') {
 
   tagList(
     tagList(
-      switch(class(var),
+      switch(class(var)[1], # FIX THIS!!!!  Turn into if-else to handle multiple classes
            'integer' = ,
            'numeric' = sliderInput(inputId = inputId,
                                    label = "",
@@ -23,6 +23,7 @@ dataVarUI <- function(id, var, default='') {
                                    max = init$max,
                                    step = (init$max - init$min)/100,
                                    value = c(init$min, init$max)),
+           'ordered' =,
            'factor' = selectizeInput(inputId = inputId,
                                      label = "",
                                      choices = init$levels,
@@ -59,7 +60,7 @@ dataVarServer <- function(input, output, session, var) {
              .,
              paste0("`", ., "`"))
       }
-      if (class(input$filter[1]) %in% c('integer', 'numeric')) {
+      if (any(class(input$filter[1]) %in% c('integer', 'numeric'))) {
         if (init$min < input$filter[1]) {
           arg$filter <- paste(input$filter[1], "<", var_name)
         }
@@ -121,10 +122,10 @@ var_wrap <- function(content, id, default='') {
 init_vals <- function(var) {
   init <- list()
 
-  if (class(var) %in% c("numeric","integer")) {
+  if (any(class(var) %in% c("numeric","integer"))) {
     init$min <- min(var, na.rm = TRUE)
     init$max <- max(var, na.rm = TRUE)
-  } else if (class(var) %in% c("factor")) {
+  } else if (any(class(var) %in% c("factor"))) {
     init$levels <- levels(var)
   }
 
