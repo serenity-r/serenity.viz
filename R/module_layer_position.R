@@ -124,7 +124,7 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
       tagList(
         purrr::imap(additional_args(), ~ {
           tryCatch(
-          do.call(paste0(position_sub(), '_', .y,'_ui'),
+          do.call(paste0(position_sub(), '_', .y, '_ui'),
                   list(value = .x, input = input, session = session, data = isolate(ggdata()))),
           error = function(e) {
             tryCatch(

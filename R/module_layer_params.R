@@ -42,26 +42,33 @@ layerParamsServer <- function(input, output, session, ggdata, default_position) 
                               ggdata = reactive({ ggdata() }),
                               default_position = default_position)
 
-  # Could of used a switch statement, but I was feeling the obfuscation bug...
+  # Change this from depends on ggdata() to reactive trigger
+  #  in module_layer, create failure <- makeReactiveTrigger(FALSE)
+  # This should only redraw when plot failure switches logical value.
+  # See similar code in module_layer_position
   output$params <- renderUI({
-    isolate({
-      tagList(
-        purrr::imap(pars(geom_fun), ~ tryCatch(
-          do.call(paste0(geom_fun, '_', .y,'_ui'),
-                  list(value = .x, input = input, session = session)),
-          error = function(e) {
-            tryCatch(
-              tagList(
-                switch(.y == "na.rm", hr(), NULL),
-                do.call(paste0(.y,'_ui'),
-                        list(value = .x, input = input, session = session))
-              ),
-              error = function(e) NULL
+    if (isTruthy(ggdata())) {
+      isolate({
+        tagList(
+          purrr::imap(pars(geom_fun), ~ tryCatch(
+            do.call(paste0(geom_fun, '_', .y,'_ui'),
+                    list(value = .x, input = input, session = session, data = ggdata())),
+            error = function(e) {
+              tryCatch(
+                tagList(
+                  switch(.y == "na.rm", hr(), NULL),
+                  do.call(paste0(.y,'_ui'),
+                          list(value = .x, input = input, session = session, data = ggdata()))
+                ),
+                error = function(e) NULL
               )
             })
           )
-      )
-    })
+        )
+      })
+    } else {
+      span("Please fix layer error before continuing.")
+    }
   })
 
   # _ Make sure params always update ====
@@ -92,35 +99,21 @@ layerParamsServer <- function(input, output, session, ggdata, default_position) 
 
 # Parameter UI ----
 
-inherit.aes_ui <- function(value, input, session) {
+# > General ----
+
+inherit.aes_ui <- function(value, input, session, data=NULL) {
   checkboxInput(session$ns('inherit.aes'),
                 label = 'Inherit aesthetics?',
                 value = input[['inherit.aes']] %||% value)
 }
 
-na.rm_ui <- function(value, input, session) {
+na.rm_ui <- function(value, input, session, data=NULL) {
   checkboxInput(session$ns('na.rm'),
                 label = 'Remove NA?',
                 value = input[['na.rm']] %||% value)
 }
 
-bins_ui <- function(value, input, session) {
-  numericInput(session$ns('bins'),
-               label = 'Number of bins:',
-               value = input[['bins']] %||% 30)
-}
-
-binwidth_ui <- function(value, input, session) {
-  if (is.null(value)) {
-    return(NULL)
-  }
-
-  numericInput(session$ns('binwidth'),
-               label = 'Width of bins:',
-               value = input[['binwidth']] %||% value)
-}
-
-show.legend_ui <- function(value, input, session) {
+show.legend_ui <- function(value, input, session, data=NULL) {
   if (is.na(value)) value = "auto"
   if (value == TRUE) value = "yes"
   if (value == FALSE) value = "no"
@@ -131,7 +124,44 @@ show.legend_ui <- function(value, input, session) {
                inline = TRUE)
 }
 
-geom_smooth_method_ui <- function(value, input, session) {
+bins_ui <- function(value, input, session, data=NULL) {
+  numericInput(session$ns('bins'),
+               label = 'Number of bins:',
+               value = input[['bins']] %||% 30)
+}
+
+binwidth_ui <- function(value, input, session, data=NULL) {
+  if (is.null(value)) {
+    return(NULL)
+  }
+
+  numericInput(session$ns('binwidth'),
+               label = 'Width of bins:',
+               value = input[['binwidth']] %||% value)
+}
+
+se_ui <- function(value, input, session, data=NULL) {
+  checkboxInput(session$ns('se'),
+                label = 'Show confidence bands?',
+                value = input[['se']] %||% value)
+}
+
+# > geom_bar ----
+
+geom_bar_width_ui <- function(value, input, session, data=NULL) {
+  if (is.null(value)) value = 0.9
+
+  sliderInput(session$ns("width"),
+              label = "Width:",
+              min = 0,
+              max = 1,
+              value = input[["width"]] %||% value,
+              step = 0.05)
+}
+
+# > geom_smooth ----
+
+geom_smooth_method_ui <- function(value, input, session, data=NULL) {
   selectInput(session$ns('method'),
               label = 'Regression type',
               choices = c("Auto" = "auto",
@@ -142,7 +172,9 @@ geom_smooth_method_ui <- function(value, input, session) {
               selected = input[['method']] %||% value)
 }
 
-geom_dotplot_method_ui <- function(value, input, session) {
+# > geom_dotplot ----
+
+geom_dotplot_method_ui <- function(value, input, session, data=NULL) {
   selectInput(session$ns('method'),
               label = 'Binning method',
               choices = c("Dot-density" = "dotdensity",
@@ -150,13 +182,9 @@ geom_dotplot_method_ui <- function(value, input, session) {
               selected = input[['method']] %||% value)
 }
 
-se_ui <- function(value, input, session) {
-  checkboxInput(session$ns('se'),
-                label = 'Show confidence bands?',
-                value = input[['se']] %||% value)
-}
+# > geom_boxplot ----
 
-geom_boxplot_varwidth_ui <- function(value, input, session) {
+geom_boxplot_varwidth_ui <- function(value, input, session, data=NULL) {
   checkboxInput(session$ns('varwidth'),
                 label = 'Use variable width boxes?',
                 value = input[['varwidth']] %||% value)
@@ -172,7 +200,8 @@ pars <- function(x) {
       .[c("na.rm", "show.legend", "inherit.aes")]
     )
   } %>%
-    purrr::modify_at("bins", ~ 30) # Default bins is 30
+    purrr::modify_at("bins", ~ 30) %>%
+    purrr::modify_at("width", ~ 0.9) # Default bins is 30
 }
 
 filter_out_defaults <- function(param, default, value) {
