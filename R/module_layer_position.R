@@ -169,7 +169,8 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
 
 # > reusable ui ----
 
-reverse_ui <- function(id) {
+reverse_ui <- function(position) {
+  id <- paste0(position, "_reverse")
   function(value, input, session, data = NULL) {
     if (is.null(value)) value = FALSE
 
@@ -180,47 +181,60 @@ reverse_ui <- function(id) {
   }
 }
 
+width_ui <- function(position, type=NULL, default=0.4) {
+  id <- paste0(c(position, ifelse(is.null(type), "width", type)), collapse = "_")
+  function(value, input, session, data = NULL) {
+    if (is.null(value)) value = default
+
+    sliderInput(session$ns(id),
+                label = paste(c(switch(!is.null(type), .firstCap(type)), "Width:"), collapse = " "),
+                value = input[[id]] %||% value,
+                min = 0,
+                max = 1,
+                step = 0.05)
+  }
+}
+
+height_ui <- function(position, type=NULL, default=0.4) {
+  id <- paste0(c(position, ifelse(is.null(type), "height", type)), collapse = "_")
+  function(value, input, session, data = NULL) {
+    if (is.null(value)) value = default
+
+    sliderInput(session$ns(id),
+                label = paste(c(switch(!is.null(type), .firstCap(type)), "Height:"), collapse = " "),
+                value = input[[id]] %||% value,
+                min = 0,
+                max = 1,
+                step = 0.05)
+  }
+}
+
+seed_ui <- function(position) {
+  id <- paste0(position, "_seed")
+  function(value, input, session, data = NULL) {
+    if (!isTruthy(value)) value = sample.int(.Machine$integer.max, 1L)
+
+    div(
+      class = "seed-ui",
+      numericInput(session$ns(id),
+                   label = 'Seed:',
+                   value = input[[id]] %||% value,
+                   min = 0,
+                   max = .Machine$integer.max,
+                   step = 1
+      ),
+      actionButton(session$ns(paste0(id, '_refresh')),
+                   label = '',
+                   icon = icon('redo'))
+    )
+  }
+}
+
 # > jitter ----
 
-jitter_width_ui <- function(value, input, session, data = NULL) {
-  if (is.null(value)) value = 0.4
-
-  sliderInput(session$ns('jitter_width'),
-              label = 'Width:',
-              value = input[['jitter_width']] %||% value,
-              min = 0,
-              max = 1,
-              step = 0.05)
-}
-
-jitter_height_ui <- function(value, input, session, data = NULL) {
-  if (is.null(value)) value = 0.4
-
-  sliderInput(session$ns('jitter_height'),
-               label = 'Height:',
-               value = input[['jitter_height']] %||% value,
-               min = 0,
-               max = 1,
-               step = 0.05)
-}
-
-jitter_seed_ui <- function(value, input, session, data = NULL) {
-  if (!isTruthy(value)) value = sample.int(.Machine$integer.max, 1L)
-
-  div(
-    class = "jitter-seed-ui",
-    numericInput(session$ns('jitter_seed'),
-                 label = 'Seed:',
-                 value = input[['jitter_seed']] %||% value,
-                 min = 0,
-                 max = .Machine$integer.max,
-                 step = 1
-    ),
-    actionButton(session$ns('jitter_seed_refresh'),
-                 label = '',
-                 icon = icon('redo'))
-  )
-}
+jitter_width_ui <- width_ui("jitter")
+jitter_height_ui <- height_ui("jitter")
+jitter_seed_ui <- seed_ui("jitter")
 
 jitter_server <- function(session, refreshWidget = NULL) {
   return({
@@ -299,7 +313,7 @@ dodge2_padding_ui <- function(value, input, session, data = NULL) {
               step = 0.05)
 }
 
-dodge2_reverse_ui <- reverse_ui("dodge2_reverse")
+dodge2_reverse_ui <- reverse_ui("dodge2")
 
 # > stack/fill ----
 
@@ -315,7 +329,7 @@ stack_vjust_ui <- function(value, input, session, data = NULL) {
   )
 }
 
-stack_reverse_ui <- reverse_ui("stack_reverse")
+stack_reverse_ui <- reverse_ui("stack")
 
 # > nudge ----
 
@@ -341,6 +355,22 @@ nudge_y_ui <- function(value, input, session, data = NULL) {
               step = 0.02)
 }
 
+# > jitterdodge ----
+
+jitterdodge_jitter.width_ui <- width_ui("jitterdodge", "jitter.width")
+jitterdodge_jitter.height_ui <- height_ui("jitterdodge", "jitter.height", default = 0)
+jitterdodge_seed_ui <- seed_ui("jitterdodge")
+jitterdodge_dodge.width_ui <- width_ui("jitterdodge", "dodge.width", 0.75)
+
+# Consider combining code with jitter_server
+jitterdodge_server <- function(session, refreshWidget = NULL) {
+  return({
+    observeEvent(session$input[['jitterdodge_seed_refresh']], {
+      updateNumericInput(session, 'jitterdodge_seed', value = sample.int(.Machine$integer.max, 1L))
+    })
+  })
+}
+
 # Utils ----
 
 # Get argument list for position function and set defaults
@@ -349,7 +379,9 @@ position_args <- function(position) {
   if (!is.null(pargs)) {
     names(pargs) <- paste0(position, "_", names(pargs))
     pargs %>%
-      purrr::modify_at(c("jitter_width", "jitter_height"), ~ 0.4) %>%
+      purrr::modify_at(c("jitter_width",
+                         "jitterdodge_jitter.width",
+                         "jitter_height"), ~ 0.4) %>%
       purrr::modify_at(c("dodge_width", "dodge2_width"), ~ -1) %>%
       purrr::modify_at(c("dodge_preserve", "dodge2_preserve"), ~ "total")
   } else {
@@ -370,11 +402,18 @@ process_args <- function(position, input, ggdata) {
 modify_args <- function(param, value, data) {
   return(
     switch(param,
-           "jitter_width" = value*resolution(data$x, zero = FALSE),
-           "jitter_height" = value*resolution(data$y, zero = FALSE),
+           "jitter_width" =,
+           "jitterdodge_jitter.width" = value*resolution(data$x, zero = FALSE),
+           "jitter_height" =,
+           "jitterdodge_jitter.height" = value*resolution(data$y, zero = FALSE),
            "nudge_x" = value*(max(data$x) - min(data$x)),
            "nudge_y" = value*(max(data$y) - min(data$y)),
            value
     )
   )
+}
+
+.firstCap <- function(x) {
+  s <- strsplit(x, "[.]")[[1]][1]
+  paste0(toupper(substring(s, 1, 1)), substring(s, 2))
 }

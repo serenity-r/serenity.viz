@@ -76,8 +76,8 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
                                                  choices = sapply(names(dataset), function(var_name) {
                                                    div(
                                                      class = paste("aeszone",
-                                                                   switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = 'numeric', 'factor' = 'factor')),
-                                                     switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = icon("signal"), 'factor' = icon("shapes")),
+                                                                   switch(class(dataset[[var_name]])[1], 'integer' =, 'numeric' = 'numeric', 'ordered' =, 'factor' = 'factor')),
+                                                     switch(class(dataset[[var_name]])[1], 'integer' =, 'numeric' = icon("signal"), 'ordered' =, 'factor' = icon("shapes")),
                                                      span(class = "varname", var_name)
                                                    )
                                                  }, simplify = FALSE, USE.NAMES = TRUE),
@@ -148,8 +148,8 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
                 htmltools::doRenderTags(
                   div(
                     class = paste("aeszone",
-                                  switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = 'numeric', 'factor' = 'factor')),
-                    switch(class(dataset[[var_name]]), 'integer' =, 'numeric' = icon("signal"), 'factor' = icon("shapes")),
+                                  switch(class(dataset[[var_name]])[1], 'integer' =, 'numeric' = 'numeric', 'ordered' =, 'factor' = 'factor')),
+                    switch(class(dataset[[var_name]])[1], 'integer' =, 'numeric' = icon("signal"), 'ordered' =, 'factor' = icon("shapes")),
                     span(class = "varname", var_name)
                   )
                 )
