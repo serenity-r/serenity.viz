@@ -111,6 +111,10 @@ body {
   margin-right: 25px;
 }
 
+.labels-wrap {
+  margin: 10px;
+}
+
 .position > span {
   width: 30px;
   height: 30px;
@@ -323,7 +327,14 @@ span.varname {
 
 .aes-select .fa {
   vertical-align: text-top;
-  margin-left: 4px;
+}
+
+.aes-select .fa-sliders-h {
+  margin-left: -4px;
+}
+
+.aes-select .form-group {
+  margin-right: 0 !important;
 }
 
 i.fa.inactive {
