@@ -272,7 +272,7 @@ dodge_width_ui <- function(value, input, session, data = NULL) {
 }
 
 dodge_preserve_ui <- function(value, input, session, data = NULL) {
-  if (is.null(value) || (length(preserve) > 1)) value = "total"
+  if (is.null(value) || (length(value) > 1)) value = "total"
 
   radioButtons(session$ns("dodge_preserve"),
                label = "Preserve:",

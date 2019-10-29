@@ -330,11 +330,17 @@ colours_tbl <- dplyr::tbl_df(t(crgb)) %>%
                 hex = rgb(red, green, blue, maxColorValue = 255)) %>%
   dplyr::select(name, hex, red, green, blue)
 
-# Colour translator
-#   Right now assume col is an R colour
+# Importing .data from rlang
+# https://community.rstudio.com/t/how-to-solve-no-visible-binding-for-global-variable-note/28887
+
+#' Colour translator
+#'
+#' @param col R color specification
+#'
+#' @importFrom rlang .data
 colour_to_hex <- function(col) {
   if (!grepl("^#[0-9a-fA-F]{6}", col)) {
-    return(dplyr::filter(colours_tbl, name == col)$hex)
+    return(dplyr::filter(colours_tbl, .data$name == col)$hex)
   } else {
     return(col)
   }

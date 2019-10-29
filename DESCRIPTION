@@ -9,6 +9,8 @@ Imports:
     shiny (>= 1.1.0),
     miniUI (>= 0.1.1),
     ggplot2 (>= 2.2.1),
+    rlang,
+    datasets,
     magrittr,
     purrr,
     dplyr,
@@ -21,7 +23,11 @@ Imports:
     phosphorr,
     dragulaSelectR,
     htmltools,
-    colourpicker
+    colourpicker,
+    crayon,
+    fansi,
+    prettycode,
+    markdown
 Remotes: 
     serenity-r/dragulaSelectR,
     serenity-r/phosphorr

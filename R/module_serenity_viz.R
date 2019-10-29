@@ -104,7 +104,7 @@ serenityVizServer <- function(input, output, session, dataset) {
                 icon = icon("layer-group"),
                 closable = FALSE) %>%
       addWidget(id = ns('widget-ggplot'),
-                refwidget = ns('widget-geoms-and-layers'),
+                refwidgetID = ns('widget-geoms-and-layers'),
                 insertmode = "split-right",
                 relsize = 0.6,
                 ui = tagList(
@@ -130,7 +130,7 @@ serenityVizServer <- function(input, output, session, dataset) {
                 icon = icon("image"),
                 closable = FALSE) %>%
       addWidget(id = ns("widget-code"),
-                refwidget = ns('widget-ggplot'),
+                refwidgetID = ns('widget-ggplot'),
                 insertmode = "split-bottom",
                 relsize = 0.25,
                 ui = widgetBody(uiOutput(ns("code"),
@@ -138,7 +138,7 @@ serenityVizServer <- function(input, output, session, dataset) {
                 title = "Code",
                 icon = icon("code")) %>%
       addWidget(id = ns("widget-vars"),
-                refwidget = ns("widget-geoms-and-layers"),
+                refwidgetID = ns("widget-geoms-and-layers"),
                 insertmode = "split-bottom",
                 relsize = 0.65,
                 ui = dataUI(id = ns(attributes(dataset)$df_name)),
@@ -146,21 +146,21 @@ serenityVizServer <- function(input, output, session, dataset) {
                 icon = icon("database"),
                 closable = FALSE) %>%
       addWidget(id = ns("aesthetics"),
-                refwidget = ns("widget-vars"),
+                refwidgetID = ns("widget-vars"),
                 insertmode = "split-right",
                 ui = uiOutput(ns("aesthetics")),
                 title = "Aesthetics",
                 icon = icon("paint-brush"),
                 closable = FALSE) %>%
       addWidget(id = ns("widget-messages"),
-                refwidget = ns("widget-code"),
+                refwidgetID = ns("widget-code"),
                 insertmode = "tab-after",
                 ui = widgetBody(uiOutput(ns("log"),
                                          class="terminal-dark-theme")),
                 title = "Messages",
                 icon = icon("info")) %>%
       addWidget(id = ns("widget-labels"),
-                refwidget = ns('widget-ggplot'),
+                refwidgetID = ns('widget-ggplot'),
                 insertmode = "tab-after",
                 ui = labelsUI(ns("labels")),
                 title = "Labels",
