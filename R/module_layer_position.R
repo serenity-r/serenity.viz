@@ -147,8 +147,8 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
     processed_position_code <- NULL
     if (isTruthy(input$position)) {
       # Process arguments
-      args <- process_args(input$position, input, ggdata)
-      subargs <- process_args(position_sub(), input, ggdata)
+      args <- process_position_args(input$position, input, ggdata)
+      subargs <- process_position_args(position_sub(), input, ggdata)
 
       args <- paste(c(switch(isTruthy(args), args), switch(isTruthy(subargs), subargs)), collapse = ", ")
 
@@ -389,17 +389,17 @@ position_args <- function(position) {
   }
 }
 
-process_args <- function(position, input, ggdata) {
+process_position_args <- function(position, input, ggdata) {
   if (is.null(position)) return(NULL)
 
   purrr::imap(position_args(position), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
     dropNulls() %>%
-    purrr::imap(~ modify_args(.y, .x, isolate(ggdata()))) %>%
+    purrr::imap(~ modify_position_args(.y, .x, isolate(ggdata()))) %>%
     purrr::imap(~ paste(stringr::str_split(.y, "_")[[1]][2], "=", .x)) %>%
     paste(., collapse = ", ")
 }
 
-modify_args <- function(param, value, data) {
+modify_position_args <- function(param, value, data) {
   return(
     switch(param,
            "jitter_width" =,

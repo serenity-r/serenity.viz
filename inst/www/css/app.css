@@ -646,17 +646,37 @@ i.fa.inactive {
 
 /* End: Style active layers */
 
-.position-dodge-width {
+.position-dodge-width,
+.switch-numeric-input,
+.switch-numeric-input .SNI-numeric .form-group {
   display: flex;
+  align-items: center;
 }
 
-.position-dodge-width .dodge-width-switch {
+.position-dodge-width .dodge-width-switch,
+.switch-numeric-input .SNI-switch {
   flex: 0 1 auto;
 }
 
-.position-dodge-width .dodge-width-input {
+.position-dodge-width .dodge-width-input,
+.switch-numeric-input .SNI-numeric {
   flex: 1 1 auto;
   margin-top: -20px;
+}
+
+.switch-numeric-input .SNI-numeric {
+  margin-top: 0;
+  margin-left: 15px;
+}
+
+.switch-numeric-input .SNI-switch .bootstrap-switch-label,
+.switch-numeric-input .SNI-numeric .form-group .control-label {
+  font-size: 12px;
+  line-height: 12px;
+}
+
+.switch-numeric-input .SNI-numeric .form-group .control-label {
+  margin-right: 5px;
 }
 
 /* Begin: Style layer chooser */
