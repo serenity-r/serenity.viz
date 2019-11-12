@@ -679,6 +679,14 @@ i.fa.inactive {
   margin-right: 5px;
 }
 
+.glm {
+  display: flex;
+}
+
+.glm > div {
+  flex: 1;
+}
+
 /* Begin: Style layer chooser */
 
 .widget-header .action-button.add-layer {

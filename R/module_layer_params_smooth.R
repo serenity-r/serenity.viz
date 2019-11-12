@@ -8,7 +8,25 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
   default_args <- list("method" = "auto",   # loess or gam
                        "se" = TRUE,         # Show confidence bands
                        "level" = 0.95,      # Confidence level
-                       "fullrange" = FALSE) # Span full range of plot?
+                       "fullrange" = FALSE, # Span full range of plot?
+                       "family" = "gaussian")
+
+  glm_link_functions <- list(
+    "gaussian" = c("Identity" = "identity",
+                   "Logarithmic" = "log",
+                   "Inverse" = "inverse"),
+    "binomial" = c("Logistic" = "logit",
+                   "Normal" = "probit",
+                   "Cauchy" = "cauchit",
+                   "Logarithmic" = "log",
+                   "Comp. Log-Log" = "cloglog"),
+    "Gamma" = c("Inverse" = "inverse",
+                "Identity" = "identity",
+                "Logarithmic" = "log"),
+    "poisson" = c("Logarithmic" = "log",
+                  "Identity" = "identity",
+                  "Square-root" = "sqrt")
+  )
 
   output$params <- renderUI({
     isolate({
@@ -21,6 +39,24 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
                                 "Generalized additive model" = "gam",
                                 "LOESS" = "loess"),
                     selected = input[['method']] %||% default_args[['method']]),
+        conditionalPanel(
+          condition = "input.method == 'glm'",
+          class = "glm",
+          ns = session$ns,
+          selectInput(session$ns('family'),
+                      label = 'Family',
+                      choices = c(
+                        "Gaussian" = "gaussian",
+                        "Binomial" = "binomial",
+                        "Gamma" = "Gamma",
+                        "Poisson" = "poisson"
+                      ),
+                      selected = input[['family']] %||% default_args[['family']]),
+          selectInput(session$ns('link'),
+                      label = 'Link',
+                      choices = glm_link_functions[[input[['family']] %||% default_args[['family']]]],
+                      selected = input[['link']] %||% glm_link_functions[[input[['family']] %||% default_args[['family']]]][1])
+        ),
         div(
           class = "switch-numeric-input",
           div(
@@ -48,6 +84,13 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
     })
   })
 
+  observeEvent(input$family, {
+    updateSelectInput(session, 'link',
+                      choices = glm_link_functions[[input$family]],
+                      selected = glm_link_functions[[input$family]][1]
+    )
+  })
+
   # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
@@ -60,7 +103,23 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
   })
 
   geom_params_code <- reactive({
-    processed_geom_params_code <- process_args(default_args, input, ggdata)
+    # Handle family separately
+    args <- default_args[setdiff(names(default_args), "family")]
+
+    processed_geom_params_code <- process_args(args, input, ggdata)
+
+    if (input$method == "glm") {
+      processed_geom_params_code <- paste(processed_geom_params_code,
+                                          ifelse(nchar(processed_geom_params_code) > 0, ",\n", ""),
+                                          paste0('method.args = list("family" = ',
+                                                 input$family,
+                                                 '(',
+                                                 ifelse(input$link != glm_link_functions[[input$family]][1],
+                                                        paste0('link = "', input$link, '"'),
+                                                        ''),
+                                                 '))')
+      )
+    }
 
     return(processed_geom_params_code)
   })
