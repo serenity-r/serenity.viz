@@ -9,7 +9,9 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
                        "se" = TRUE,         # Show confidence bands
                        "level" = 0.95,      # Confidence level
                        "fullrange" = FALSE, # Span full range of plot?
-                       "family" = "gaussian")
+                       "n" = 80,            # Number of points used
+                       "family" = "gaussian",
+                       "span" = 0.75)
 
   glm_link_functions <- list(
     "gaussian" = c("Identity" = "identity",
@@ -57,6 +59,16 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
                       choices = glm_link_functions[[input[['family']] %||% default_args[['family']]]],
                       selected = input[['link']] %||% glm_link_functions[[input[['family']] %||% default_args[['family']]]][1])
         ),
+        conditionalPanel(
+          condition = "input.method == 'loess'",
+          ns = session$ns,
+          sliderInput(session$ns('span'),
+                      label = 'Degree of smoothing',
+                      min = 0,
+                      max = 1,
+                      step = 0.05,
+                      value = input[['span']] %||% default_args[['span']])
+        ),
         div(
           class = "switch-numeric-input",
           div(
@@ -77,6 +89,11 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
                          max = 1)
           )
         ),
+        numericInput(session$ns('n'),
+                     label = 'Number of points',
+                     value = input[['n']] %||% default_args[['n']],
+                     min = 0,
+                     max = Inf),
         checkboxInput(session$ns('fullrange'),
                       label = 'Span full range of plot?',
                       value = input[['fullrange']] %||% default_args[['fullrange']])
@@ -104,7 +121,11 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
 
   geom_params_code <- reactive({
     # Handle family separately
-    args <- default_args[setdiff(names(default_args), "family")]
+    args <- default_args[setdiff(names(default_args),
+                                 c("family",
+                                   switch(input$method != "loess",
+                                          "span",
+                                          NULL)))]
 
     processed_geom_params_code <- process_args(args, input, ggdata)
 
