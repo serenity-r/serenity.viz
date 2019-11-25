@@ -99,11 +99,11 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
           purrr::imap(formals(paste0("position_", input$position)), ~ {
             tryCatch(
               do.call(paste0(input$position, '_', .y, '_ui'),
-                      list(value = .x, input = input, session = session, data = isolate(ggdata()))),
+                      list(value = .x, input = input, session = session, ggdata = isolate(ggdata()))),
               error = function(e) {
                 tryCatch(
                   do.call(paste0(.y,'_ui'),
-                          list(value = .x, input = input, session = session, data = isolate(ggdata()))),
+                          list(value = .x, input = input, session = session, ggdata = isolate(ggdata()))),
                   error = function(e) NULL
                 )
               })
@@ -125,11 +125,11 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
         purrr::imap(additional_args(), ~ {
           tryCatch(
           do.call(paste0(position_sub(), '_', .y, '_ui'),
-                  list(value = .x, input = input, session = session, data = isolate(ggdata()))),
+                  list(value = .x, input = input, session = session, ggdata = isolate(ggdata()))),
           error = function(e) {
             tryCatch(
               do.call(paste0(.y,'_ui'),
-                      list(value = .x, input = input, session = session, data = isolate(ggdata()))),
+                      list(value = .x, input = input, session = session, ggdata = isolate(ggdata()))),
               error = function(e) NULL
             )
           })
@@ -171,7 +171,7 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
 
 reverse_ui <- function(position) {
   id <- paste0(position, "_reverse")
-  function(value, input, session, data = NULL) {
+  function(value, input, session, ggdata = NULL) {
     if (is.null(value)) value = FALSE
 
     checkboxInput(session$ns(id),
@@ -183,7 +183,7 @@ reverse_ui <- function(position) {
 
 width_ui <- function(position, type=NULL, default=0.4) {
   id <- paste0(c(position, ifelse(is.null(type), "width", type)), collapse = "_")
-  function(value, input, session, data = NULL) {
+  function(value, input, session, ggdata = NULL) {
     if (is.null(value)) value = default
 
     sliderInput(session$ns(id),
@@ -197,7 +197,7 @@ width_ui <- function(position, type=NULL, default=0.4) {
 
 height_ui <- function(position, type=NULL, default=0.4) {
   id <- paste0(c(position, ifelse(is.null(type), "height", type)), collapse = "_")
-  function(value, input, session, data = NULL) {
+  function(value, input, session, ggdata = NULL) {
     if (is.null(value)) value = default
 
     sliderInput(session$ns(id),
@@ -211,7 +211,7 @@ height_ui <- function(position, type=NULL, default=0.4) {
 
 seed_ui <- function(position) {
   id <- paste0(position, "_seed")
-  function(value, input, session, data = NULL) {
+  function(value, input, session, ggdata = NULL) {
     if (!isTruthy(value)) value = sample.int(.Machine$integer.max, 1L)
 
     div(
@@ -246,7 +246,7 @@ jitter_server <- function(session, refreshWidget = NULL) {
 
 # > dodge ----
 
-dodge_width_ui <- function(value, input, session, data = NULL) {
+dodge_width_ui <- function(value, input, session, ggdata = NULL) {
   value <- input[["dodge_width"]] %||% value
 
   div(
@@ -271,7 +271,7 @@ dodge_width_ui <- function(value, input, session, data = NULL) {
   )
 }
 
-dodge_preserve_ui <- function(value, input, session, data = NULL) {
+dodge_preserve_ui <- function(value, input, session, ggdata = NULL) {
   if (is.null(value) || (length(value) > 1)) value = "total"
 
   radioButtons(session$ns("dodge_preserve"),
@@ -302,7 +302,7 @@ dodge_server <- function(session, refreshWidget = NULL) {
 
 # > dodge2 ----
 
-dodge2_padding_ui <- function(value, input, session, data = NULL) {
+dodge2_padding_ui <- function(value, input, session, ggdata = NULL) {
   if (is.null(value)) value = 0.1
 
   sliderInput(session$ns("dodge2_padding"),
@@ -317,7 +317,7 @@ dodge2_reverse_ui <- reverse_ui("dodge2")
 
 # > stack/fill ----
 
-stack_vjust_ui <- function(value, input, session, data = NULL) {
+stack_vjust_ui <- function(value, input, session, ggdata = NULL) {
   if (is.null(value)) value = 1
 
   sliderInput(session$ns("stack_vjust"),
@@ -333,7 +333,7 @@ stack_reverse_ui <- reverse_ui("stack")
 
 # > nudge ----
 
-nudge_x_ui <- function(value, input, session, data = NULL) {
+nudge_x_ui <- function(value, input, session, ggdata = NULL) {
   if (is.null(value)) value = 0
 
   sliderInput(session$ns("nudge_x"),
@@ -344,7 +344,7 @@ nudge_x_ui <- function(value, input, session, data = NULL) {
               step = 0.02)
 }
 
-nudge_y_ui <- function(value, input, session, data = NULL) {
+nudge_y_ui <- function(value, input, session, ggdata = NULL) {
   if (is.null(value)) value = 0
 
   sliderInput(session$ns("nudge_y"),
@@ -399,15 +399,15 @@ process_position_args <- function(position, input, ggdata) {
     paste(., collapse = ", ")
 }
 
-modify_position_args <- function(param, value, data) {
+modify_position_args <- function(param, value, ggdata) {
   return(
     switch(param,
            "jitter_width" =,
-           "jitterdodge_jitter.width" = value*resolution(data$x, zero = FALSE),
+           "jitterdodge_jitter.width" = value*resolution(ggdata$data$x, zero = FALSE),
            "jitter_height" =,
-           "jitterdodge_jitter.height" = value*resolution(data$y, zero = FALSE),
-           "nudge_x" = value*(max(data$x) - min(data$x)),
-           "nudge_y" = value*(max(data$y) - min(data$y)),
+           "jitterdodge_jitter.height" = value*resolution(ggdata$data$y, zero = FALSE),
+           "nudge_x" = value*(max(ggdata$data$x) - min(ggdata$data$x)),
+           "nudge_y" = value*(max(ggdata$data$y) - min(ggdata$data$y)),
            value
     )
   )

@@ -528,6 +528,7 @@ plot_names <- list(
 
 NA_defaults <- list(
   fill = "#000000",
+  colour = "#000000",
   alpha = 1
 )
 

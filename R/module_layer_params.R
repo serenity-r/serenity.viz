@@ -123,6 +123,7 @@ filter_out_defaults <- function(param, default, value) {
                                               (value == "no" && (default || is.na(default))),
                                             show.legend.key[[value]],
                                             NULL),
+                     "closed" = switch(value != default, "right", NULL),
                      switch(is.na(default) || (default != value), value, NULL)
   )
 
@@ -137,7 +138,7 @@ filter_out_defaults <- function(param, default, value) {
 #'
 #' @param default_args List of default arguments
 #' @param input Shiny inputs
-#' @param ggdata Reactive of computed layer data from ggplot
+#' @param ggdata Reactive of computed layer and scales data from ggplot
 #' @param modify_args Function that modifies arguments (if supplied - default NULL)
 #'
 #' @return Comma separated string of function arguments, with defaults removed
@@ -146,7 +147,7 @@ process_args <- function(default_args, input, ggdata, modify_args = NULL) {
   purrr::imap(default_args, ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
     dropNulls() %>%
     purrr::imap(~ ifelse(!is.null(modify_args),
-                         do.call(modify_args, list(param = .y, value = .x, data = isolate(ggdata()))),
+                         do.call(modify_args, list(param = .y, value = .x, ggdata = isolate(ggdata()))),
                          .x)) %>%
     purrr::imap(~ paste(.y, "=", .x)) %>%
     paste(., collapse = ", ")

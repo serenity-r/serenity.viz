@@ -101,15 +101,15 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
     })
   })
 
+  # _ Make sure params always update ====
+  outputOptions(output, "params", suspendWhenHidden = FALSE)
+
   observeEvent(input$family, {
     updateSelectInput(session, 'link',
                       choices = glm_link_functions[[input$family]],
                       selected = glm_link_functions[[input$family]][1]
     )
   })
-
-  # _ Make sure params always update ====
-  outputOptions(output, "params", suspendWhenHidden = FALSE)
 
   observeEvent(input$se, {
     if (input$se) {

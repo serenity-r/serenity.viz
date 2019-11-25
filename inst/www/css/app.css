@@ -658,6 +658,43 @@ i.fa.inactive {
   flex: 0 1 auto;
 }
 
+/* BEGIN: Override histogram closed parameter */
+.inline-switch-no-label span.bootstrap-switch-handle-off {
+  width: 60% !important;
+}
+
+.inline-switch-no-label .bootstrap-switch-on span.bootstrap-switch-handle-on {
+  width: 62% !important;
+}
+
+.inline-switch-no-label .bootstrap-switch-off span.bootstrap-switch-handle-on {
+  width: 40% !important;
+}
+
+.inline-switch-no-label .bootstrap-switch-label {
+  width: 0 !important;
+}
+
+.inline-switch-no-label .bootstrap-switch.bootstrap-switch-mini .bootstrap-switch-label,
+.inline-switch-no-label .bootstrap-switch.bootstrap-switch-mini .bootstrap-switch-primary {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.inline-switch-no-label .bootstrap-switch-mini {
+  width: 45px !important;
+}
+
+.inline-switch-no-label .bootstrap-switch-mini .bootstrap-switch-container {
+  width: 70px !important;
+  margin-left: 0px !important;
+}
+
+.inline-switch-no-label .bootstrap-switch-mini.bootstrap-switch-off .bootstrap-switch-container {
+  margin-left: -28px !important;
+}
+/* END: Override histogram closed parameter */
+
 .position-dodge-width .dodge-width-input,
 .switch-numeric-input .SNI-numeric {
   flex: 1 1 auto;

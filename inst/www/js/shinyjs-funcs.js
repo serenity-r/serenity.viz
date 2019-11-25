@@ -17,8 +17,8 @@ shinyjs.toggleClass = function(params) {
 
 shinyjs.myhide = function(params) {
   $(params[0]).hide();
-}
+};
 
 shinyjs.myshow = function(params) {
   $(params[0]).show();
-}
+};

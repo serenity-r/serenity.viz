@@ -11,7 +11,7 @@ process_args(default_args, input, ggdata, modify_args = NULL)
 
 \item{input}{Shiny inputs}
 
-\item{ggdata}{Reactive of computed layer data from ggplot}
+\item{ggdata}{Reactive of computed layer and scales data from ggplot}
 
 \item{modify_args}{Function that modifies arguments (if supplied - default NULL)}
 }

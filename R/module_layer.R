@@ -141,7 +141,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     tryCatch(
       withCallingHandlers(
         withRestarts(
-          print(gglayerobj()),
+          suppressMessages(print(gglayerobj())),
           muffleError = function() {
             failure <<- TRUE
             NULL
@@ -152,7 +152,8 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
         }),
       finally = {
         if (!failure) {
-          return(layer_data(gglayerobj(), 1))
+          return(reactiveValues(data = suppressMessages(layer_data(gglayerobj(), 1)),
+                                scales = suppressMessages(layer_scales(gglayerobj(), 1))))
         } else {
           return(NULL)
         }
