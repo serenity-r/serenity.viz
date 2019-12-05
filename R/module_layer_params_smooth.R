@@ -120,6 +120,8 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
   })
 
   geom_params_code <- reactive({
+    req(input$method)
+
     # Handle family separately
     args <- default_args[setdiff(names(default_args),
                                  c("family",

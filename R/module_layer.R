@@ -125,8 +125,10 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   gglayercode <- reactive({
     req({
       ggbase()
+      # layer_code()
       base_layer_code()
     })
+    # paste("dataset %>%", ggbase(), "+", layer_code())
     paste("dataset %>%", ggbase(), "+", paste0(base_layer_code(), ")"))
   })
 
@@ -152,8 +154,11 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
         }),
       finally = {
         if (!failure) {
-          return(reactiveValues(data = suppressMessages(layer_data(gglayerobj(), 1)),
-                                scales = suppressMessages(layer_scales(gglayerobj(), 1))))
+          return(
+            list(data = suppressMessages(layer_data(gglayerobj(), 1)),
+                 scales = suppressMessages(layer_scales(gglayerobj(), 1))
+            )
+          )
         } else {
           return(NULL)
         }
@@ -161,7 +166,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     )
   })
 
-  layer_params <- NULL
+  layer_params <- list(code = reactive({ "" }))
   if (geom_type != "geom-blank") {
     layer_params <- callModule(module = layerParamsServer,
                                id = 'params',
@@ -221,36 +226,23 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     # layer_aesthetics()
   })
 
-  # _ layer code ====
-  hasAesthetics <- reactive({
-    isTruthy(layer_aesthetics) && nchar(layer_aesthetics())
-  })
-
   base_layer_code <- reactive({
     processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
                                           "ggplot",
                                           stringr::str_replace(geom_type, "-", "_")), "(")
 
-    if (hasAesthetics()) {
-      processed_layer_code <- paste0(processed_layer_code,
-                                     layer_aesthetics())
-    }
+    processed_layer_code <- paste0(processed_layer_code,
+                                   layer_aesthetics())
 
     return(processed_layer_code)
   })
 
   layer_code <- reactive({
-    processed_layer_code <- base_layer_code()
-
-    if (isTruthy(layer_params) &&
-        isTruthy(layer_params$code) &&
-        nchar((layer_params$code()))) {
-      processed_layer_code <- paste0(processed_layer_code,
-                                     ifelse(hasAesthetics(), ",\n", ""),
-                                     layer_params$code())
-    }
-
-    processed_layer_code <- paste0(processed_layer_code, ")")
+    req(base_layer_code())
+    processed_layer_code <- paste0(base_layer_code(),
+                                   ifelse(nchar(layer_aesthetics()) && nchar(layer_params$code()), ",\n", ""),
+                                   layer_params$code(),
+                                   ")")
 
     return(processed_layer_code)
   })

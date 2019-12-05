@@ -252,35 +252,35 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
 
   # _ Aesthetic to code ====
   aesToCode <- reactive({
-    req(!is.null(input$switch))
-
     arg <- list(mappings = c(), values = c())
-    if (!input$switch) {
-      if (!is.null(input$mapping) &&
-          ((layer == "geom-blank") ||
-          !inheritable() ||
-          (inheritable() && (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]())))) {
-        arg$mappings <- paste(aesthetic, "=",
-                              ifelse(!stringr::str_detect(input$mapping, ' '),
-                                     input$mapping,
-                                     paste0("`", input$mapping, "`")))
-      } else if (is.null(input$mapping) && inheritable()) {
-        arg$mappings <- paste(aesthetic, "= NULL")
-      }
-    } else
-      if (!is.null(input$value)) {
-        if (is.na(default_aes) ||
-            (input$value != default_aes) ||
-            (inheritable())) {
-          arg$values <- paste(aesthetic, "=",
-                              switch(aesthetic,
-                                     "colour" = ,
-                                     "linetype" = ,
-                                     "fill" = paste0('"', input$value, '"'),
-                                     input$value)
-          )
+    if (!is.null(input$switch)) {
+      if (!input$switch) {
+        if (!is.null(input$mapping) &&
+            ((layer == "geom-blank") ||
+             !inheritable() ||
+             (inheritable() && (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]())))) {
+          arg$mappings <- paste(aesthetic, "=",
+                                ifelse(!stringr::str_detect(input$mapping, ' '),
+                                       input$mapping,
+                                       paste0("`", input$mapping, "`")))
+        } else if (is.null(input$mapping) && inheritable()) {
+          arg$mappings <- paste(aesthetic, "= NULL")
         }
-      }
+      } else
+        if (!is.null(input$value)) {
+          if (is.na(default_aes) ||
+              (input$value != default_aes) ||
+              (inheritable())) {
+            arg$values <- paste(aesthetic, "=",
+                                switch(aesthetic,
+                                       "colour" = ,
+                                       "linetype" = ,
+                                       "fill" = paste0('"', input$value, '"'),
+                                       input$value)
+            )
+          }
+        }
+    }
     arg
   })
 

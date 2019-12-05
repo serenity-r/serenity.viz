@@ -63,6 +63,8 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
       )
     })
   })
+  # _ Make sure position chooser always update ====
+  outputOptions(output, "position_chooser", suspendWhenHidden = FALSE)
 
   position_sub <- reactive({
     req(input$position)
@@ -92,29 +94,31 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
     req(input$position)
     refreshWidget$depend()
 
-    if (isTruthy(ggdata())) {
-      isolate({
+    isolate({
+      if (isTruthy(ggdata())) {
         tagList(
           # Main options
           purrr::imap(formals(paste0("position_", input$position)), ~ {
             tryCatch(
               do.call(paste0(input$position, '_', .y, '_ui'),
-                      list(value = .x, input = input, session = session, ggdata = isolate(ggdata()))),
+                      list(value = .x, input = input, session = session, ggdata = ggdata())),
               error = function(e) {
                 tryCatch(
                   do.call(paste0(.y,'_ui'),
-                          list(value = .x, input = input, session = session, ggdata = isolate(ggdata()))),
+                          list(value = .x, input = input, session = session, ggdata = ggdata())),
                   error = function(e) NULL
                 )
               })
           }
           )
         )
-      })
-    } else {
-      span("Please fix layer error before continuing.")
-    }
+      } else {
+        span("Please fix layer error before continuing.")
+      }
+    })
   })
+  # _ Make sure position chooser always update ====
+  outputOptions(output, "position_options", suspendWhenHidden = FALSE)
 
   output$position_sub_options <- renderUI({
     req(position_sub())
@@ -125,11 +129,11 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
         purrr::imap(additional_args(), ~ {
           tryCatch(
           do.call(paste0(position_sub(), '_', .y, '_ui'),
-                  list(value = .x, input = input, session = session, ggdata = isolate(ggdata()))),
+                  list(value = .x, input = input, session = session, ggdata = ggdata())),
           error = function(e) {
             tryCatch(
               do.call(paste0(.y,'_ui'),
-                      list(value = .x, input = input, session = session, ggdata = isolate(ggdata()))),
+                      list(value = .x, input = input, session = session, ggdata = ggdata())),
               error = function(e) NULL
             )
           })
@@ -137,6 +141,8 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
       )
     })
   })
+  # _ Make sure position chooser always update ====
+  outputOptions(output, "position_sub_options", suspendWhenHidden = FALSE)
 
   updateSelectizeInput(
     session, 'position', server = TRUE,
@@ -144,11 +150,11 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
   )
 
   position_code <- reactive({
-    processed_position_code <- NULL
+    processed_position_code <- ''
     if (isTruthy(input$position)) {
       # Process arguments
-      args <- process_position_args(input$position, input, ggdata)
-      subargs <- process_position_args(position_sub(), input, ggdata)
+      args <- process_position_args(input$position, input, isolate({ggdata()}))
+      subargs <- process_position_args(position_sub(), input, isolate({ggdata()}))
 
       args <- paste(c(switch(isTruthy(args), args), switch(isTruthy(subargs), subargs)), collapse = ", ")
 
@@ -394,7 +400,7 @@ process_position_args <- function(position, input, ggdata) {
 
   purrr::imap(position_args(position), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
     dropNulls() %>%
-    purrr::imap(~ modify_position_args(.y, .x, isolate(ggdata()))) %>%
+    purrr::imap(~ modify_position_args(.y, .x, ggdata)) %>%
     purrr::imap(~ paste(stringr::str_split(.y, "_")[[1]][2], "=", .x)) %>%
     paste(., collapse = ", ")
 }

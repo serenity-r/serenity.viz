@@ -37,19 +37,19 @@ layerParamsServer <- function(input, output, session, ggdata, default_position) 
   geom_fun <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="_")
 
   # Call geom param module (if exists)
-  geom_params_code <- NULL
+  geom_params_code <- reactive({ "" })
   geom_params_ui <- paste0("layerParams", snakeToCamel(geom_fun, capFirst = TRUE), "UI")
   geom_params_module <- paste0("layerParams", snakeToCamel(geom_fun, capFirst = TRUE), "Server")
   if (exists(geom_params_module)) {
     geom_params_code <- callModule(module = get(geom_params_module),
                                    id = geom_fun,
-                                   ggdata = reactive({ ggdata() }))
+                                   ggdata = ggdata)
   }
 
   # Call position module
   position_code <- callModule(module = layerPositionServer,
                               id = 'position',
-                              ggdata = reactive({ ggdata() }),
+                              ggdata = ggdata,
                               default_position = default_position)
 
   output$params <- renderUI({
@@ -60,13 +60,12 @@ layerParamsServer <- function(input, output, session, ggdata, default_position) 
       )
     })
   })
-
   # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
   params_code <- reactive({
     # Get specific geom params
-    processed_params_code <- ifelse(isTruthy(geom_params_code), geom_params_code(), "")
+    processed_params_code <- geom_params_code()
 
     # Get common layer params
     common_layer_code <- process_args(formals(geom_fun)[c("na.rm", "show.legend", "inherit.aes")], input, ggdata)
@@ -75,11 +74,9 @@ layerParamsServer <- function(input, output, session, ggdata, default_position) 
                                     common_layer_code)
 
     # Get position arguments
-    if (!is.null(position_code())) {
-      processed_params_code <- paste0(processed_params_code,
-                                      ifelse(nchar(processed_params_code) > 0, ",\n", ""),
-                                      position_code())
-    }
+    processed_params_code <- paste0(processed_params_code,
+                                    ifelse(nchar(processed_params_code) > 0 && nchar(position_code()) > 0, ",\n", ""),
+                                    position_code())
 
     return(processed_params_code)
   })
