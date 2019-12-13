@@ -248,7 +248,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
 
     # Add position arguments
     processed_layer_code <- paste0(base_layer_code(),
-                                   ifelse(nchar(base_layer_code()) && nchar(position_code()), ",\n", ""),
+                                   ifelse((nchar(layer_aesthetics()) || nchar(layer_params$code())) && nchar(position_code()), ",\n", ""),
                                    position_code(),
                                    ")")
 
