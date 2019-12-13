@@ -4,14 +4,14 @@
 \alias{process_args}
 \title{Process arguments}
 \usage{
-process_args(default_args, input, ggdata, modify_args = NULL)
+process_args(default_args, input, base_data, modify_args = NULL)
 }
 \arguments{
 \item{default_args}{List of default arguments}
 
 \item{input}{Shiny inputs}
 
-\item{ggdata}{Reactive of computed layer and scales data from ggplot}
+\item{base_data}{Computed layer and scales data from ggplot}
 
 \item{modify_args}{Function that modifies arguments (if supplied - default NULL)}
 }

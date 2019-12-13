@@ -4,7 +4,7 @@ layerParamsGeomDotplotUI <- function(id) {
   uiOutput(ns("params"))
 }
 
-layerParamsGeomDotplotServer <- function(input, output, session, ggdata) {
+layerParamsGeomDotplotServer <- function(input, output, session, base_data) {
   default_args <- list("method" = "dotdensity")
 
   output$params <- renderUI({
@@ -21,7 +21,7 @@ layerParamsGeomDotplotServer <- function(input, output, session, ggdata) {
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
   geom_params_code <- reactive({
-    processed_geom_params_code <- process_args(default_args, input, ggdata)
+    processed_geom_params_code <- process_args(default_args, input, base_data)
 
     return(processed_geom_params_code)
   })

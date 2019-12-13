@@ -115,7 +115,7 @@ serenityVizServer <- function(input, output, session, dataset) {
                     miniUI::miniContentPanel(
                       class = "ggplot",
                       style = "padding: 19px;",
-                      plotOutput(ns("viz"), height = "100%"),
+                      plotOutput(ns("viz"), height = "100%", click = "plot_click"),
                       shinyjs::hidden(
                         absolutePanel(id = ns("help-pane"),
                                       class = "help-pane",
@@ -362,9 +362,9 @@ serenityVizServer <- function(input, output, session, dataset) {
                                        selected_layer,
                                        geom_blank_inputs_to_reactives(),
                                        dataset = dataset,
-                                       ggbase = switch(. != "geom-blank-ds-1",
-                                                       layer_modules[["geom-blank-ds-1"]],
-                                                       reactive({ NULL }))
+                                       ggbase = switch(as.character(. != "geom-blank-ds-1"),
+                                                       "TRUE" = layer_modules[["geom-blank-ds-1"]],
+                                                       "FALSE" = reactive({ NULL }))
       )
     })
 

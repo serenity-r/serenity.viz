@@ -7,17 +7,7 @@
 layerParamsUI <- function(id) {
   ns <- NS(id)
 
-  tagList(
-    tabsetPanel(
-      type = "tabs",
-      tabPanel(span(icon(name = "sliders-h"), "Parameters"),
-               uiOutput(ns('params'))
-      ),
-      tabPanel(span(icon(name = "arrows-alt"), "Position"),
-               layerPositionUI(ns('position'))
-      )
-    )
-  )
+  uiOutput(ns('params'))
 }
 
 #' Server for layer parameters submodule
@@ -25,13 +15,12 @@ layerParamsUI <- function(id) {
 #' @param input   Shiny inputs
 #' @param output  Shiny outputs
 #' @param session Shiny user session
-#' @param ggdata Ggplot plot object
-#' @param default_position  Default layer position
+#' @param base_data Reactive values of ggplot plot object states (data and scales)
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerParamsServer <- function(input, output, session, ggdata, default_position) {
+layerParamsServer <- function(input, output, session, base_data) {
   ns <- session$ns
 
   geom_fun <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="_")
@@ -43,14 +32,8 @@ layerParamsServer <- function(input, output, session, ggdata, default_position) 
   if (exists(geom_params_module)) {
     geom_params_code <- callModule(module = get(geom_params_module),
                                    id = geom_fun,
-                                   ggdata = ggdata)
+                                   base_data = base_data)
   }
-
-  # Call position module
-  position_code <- callModule(module = layerPositionServer,
-                              id = 'position',
-                              ggdata = ggdata,
-                              default_position = default_position)
 
   output$params <- renderUI({
     isolate({
@@ -68,15 +51,10 @@ layerParamsServer <- function(input, output, session, ggdata, default_position) 
     processed_params_code <- geom_params_code()
 
     # Get common layer params
-    common_layer_code <- process_args(formals(geom_fun)[c("na.rm", "show.legend", "inherit.aes")], input, ggdata)
+    common_layer_code <- process_args(formals(geom_fun)[c("na.rm", "show.legend", "inherit.aes")], input, base_data)
     processed_params_code <- paste0(processed_params_code,
                                     ifelse(nchar(processed_params_code) > 0 && nchar(common_layer_code) > 0, ",\n", ""),
                                     common_layer_code)
-
-    # Get position arguments
-    processed_params_code <- paste0(processed_params_code,
-                                    ifelse(nchar(processed_params_code) > 0 && nchar(position_code()) > 0, ",\n", ""),
-                                    position_code())
 
     return(processed_params_code)
   })
@@ -135,16 +113,16 @@ filter_out_defaults <- function(param, default, value) {
 #'
 #' @param default_args List of default arguments
 #' @param input Shiny inputs
-#' @param ggdata Reactive of computed layer and scales data from ggplot
+#' @param base_data Computed layer and scales data from ggplot
 #' @param modify_args Function that modifies arguments (if supplied - default NULL)
 #'
 #' @return Comma separated string of function arguments, with defaults removed
 #'   and modified if necessary.
-process_args <- function(default_args, input, ggdata, modify_args = NULL) {
+process_args <- function(default_args, input, base_data, modify_args = NULL) {
   purrr::imap(default_args, ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
     dropNulls() %>%
     purrr::imap(~ ifelse(!is.null(modify_args),
-                         do.call(modify_args, list(param = .y, value = .x, ggdata = isolate(ggdata()))),
+                         do.call(modify_args, list(param = .y, value = .x, base_data = base_data)),
                          .x)) %>%
     purrr::imap(~ paste(.y, "=", .x)) %>%
     paste(., collapse = ", ")

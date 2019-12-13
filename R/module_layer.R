@@ -107,7 +107,7 @@ layerChoiceUI <- function(geom) {
 #' @import shiny ggplot2
 #'
 layerServer <- function(input, output, session, layers_selected, geom_blank_input, dataset, ggbase = NULL) {
-
+  ggdata <- reactiveValues(base_data = NULL)
   ns <- session$ns
 
   # _ Initialization and Setup ====
@@ -122,28 +122,18 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   # _ _ load parameters module ====
 
   # Ignoring subsetted data for now
-  gglayercode <- reactive({
-    req({
-      ggbase()
-      # layer_code()
-      base_layer_code()
-    })
-    # paste("dataset %>%", ggbase(), "+", layer_code())
-    paste("dataset %>%", ggbase(), "+", paste0(base_layer_code(), ")"))
+  ggbaselayerobj <- reactive({
+    switch(isTruthy(ggbase()) && isTruthy(base_layer_code()),
+           eval(parse(text=paste("dataset %>%", ggbase(), "+", paste0(base_layer_code(), ")")))),
+           NULL)
   })
 
-  gglayerobj <- reactive({
-    req(gglayercode())
-    eval(parse(text=gglayercode()))
-  })
-
-  gglayerdata <- reactive({
-    req(gglayerobj())
+  observeEvent(ggbaselayerobj(), {
     failure <- FALSE
     tryCatch(
       withCallingHandlers(
         withRestarts(
-          suppressMessages(print(gglayerobj())),
+          suppressMessages(print(ggbaselayerobj())),
           muffleError = function() {
             failure <<- TRUE
             NULL
@@ -154,13 +144,9 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
         }),
       finally = {
         if (!failure) {
-          return(
-            list(data = suppressMessages(layer_data(gglayerobj(), 1)),
-                 scales = suppressMessages(layer_scales(gglayerobj(), 1))
-            )
-          )
+          ggdata$base_data <- suppressMessages(layer_data(ggbaselayerobj(), 1))
         } else {
-          return(NULL)
+          ggdata$base_data <- NULL
         }
       }
     )
@@ -170,8 +156,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   if (geom_type != "geom-blank") {
     layer_params <- callModule(module = layerParamsServer,
                                id = 'params',
-                               ggdata = gglayerdata,
-                               default_position = tolower(stringr::str_remove(class(geom_proto$position)[1], "Position"))
+                               base_data = reactive({ ggdata$base_data })
     )
   }
 
@@ -201,7 +186,15 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
       div(
         class = "layer-params", # Parameters
         style = "display: none;",
-        layerParamsUI(ns('params'))
+        tabsetPanel(
+          type = "tabs",
+          tabPanel(span(icon(name = "sliders-h"), "Parameters"),
+                   layerParamsUI(ns('params'))
+          ),
+          tabPanel(span(icon(name = "arrows-alt"), "Position"),
+                   layerPositionUI(ns('position'))
+          )
+        )
       )
     )
   })
@@ -226,22 +219,37 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     # layer_aesthetics()
   })
 
+  # Call position module
+  # Only need isolated base_data for now
+  position_code <- callModule(module = layerPositionServer,
+                              id = 'position',
+                              base_data = reactive({ isolate(ggdata$base_data) }),
+                              default_position = tolower(stringr::str_remove(class(geom_proto$position)[1], "Position")))
+
   base_layer_code <- reactive({
     processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
                                           "ggplot",
                                           stringr::str_replace(geom_type, "-", "_")), "(")
 
+    # Layer aesthetics
     processed_layer_code <- paste0(processed_layer_code,
                                    layer_aesthetics())
+
+    # Layer parameters
+    processed_layer_code <- paste0(processed_layer_code,
+                                   ifelse(nchar(layer_aesthetics()) && nchar(layer_params$code()), ",\n", ""),
+                                   layer_params$code())
 
     return(processed_layer_code)
   })
 
   layer_code <- reactive({
     req(base_layer_code())
+
+    # Add position arguments
     processed_layer_code <- paste0(base_layer_code(),
-                                   ifelse(nchar(layer_aesthetics()) && nchar(layer_params$code()), ",\n", ""),
-                                   layer_params$code(),
+                                   ifelse(nchar(base_layer_code()) && nchar(position_code()), ",\n", ""),
+                                   position_code(),
                                    ")")
 
     return(processed_layer_code)

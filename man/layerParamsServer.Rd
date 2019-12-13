@@ -4,7 +4,7 @@
 \alias{layerParamsServer}
 \title{Server for layer parameters submodule}
 \usage{
-layerParamsServer(input, output, session, ggdata, default_position)
+layerParamsServer(input, output, session, base_data)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -13,9 +13,7 @@ layerParamsServer(input, output, session, ggdata, default_position)
 
 \item{session}{Shiny user session}
 
-\item{ggdata}{Ggplot plot object}
-
-\item{default_position}{Default layer position}
+\item{base_data}{Reactive values of ggplot plot object states (data and scales)}
 }
 \description{
 Server for layer parameters submodule

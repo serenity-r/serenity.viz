@@ -8,7 +8,18 @@ layerPositionUI <- function(id) {
   )
 }
 
-layerPositionServer <- function(input, output, session, ggdata, default_position) {
+#' Server function for position arguments
+#'
+#' @param input   Shiny inputs
+#' @param output  Shiny outputs
+#' @param session Shiny user session
+#' @param base_data Pre-isolated reactive to base layer data
+#' @param default_position  Default layer position
+#'
+#' @importFrom magrittr %>%
+#' @import shiny ggplot2
+#'
+layerPositionServer <- function(input, output, session, base_data, default_position) {
   positions <- c("identity", "jitter", "dodge", "dodge2", "jitterdodge", "nudge", "stack", "fill")
 
   # Need a reactive trigger to fix a shinyWidgets bug
@@ -87,25 +98,22 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
     sub_args[!(names(sub_args) %in% names(pos_args))]
   })
 
-  # Change this from depends on ggdata() to reactive trigger
-  #  in module_layer, create failure <- makeReactiveTrigger(FALSE)
-  # This should only redraw when plot failure switches logical value
   output$position_options <- renderUI({
     req(input$position)
     refreshWidget$depend()
 
     isolate({
-      if (isTruthy(ggdata())) {
+      if (isTruthy(base_data())) {
         tagList(
           # Main options
           purrr::imap(formals(paste0("position_", input$position)), ~ {
             tryCatch(
               do.call(paste0(input$position, '_', .y, '_ui'),
-                      list(value = .x, input = input, session = session, ggdata = ggdata())),
+                      list(value = .x, input = input, session = session, base_data = base_data)),
               error = function(e) {
                 tryCatch(
                   do.call(paste0(.y,'_ui'),
-                          list(value = .x, input = input, session = session, ggdata = ggdata())),
+                          list(value = .x, input = input, session = session, base_data = base_data)),
                   error = function(e) NULL
                 )
               })
@@ -129,11 +137,11 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
         purrr::imap(additional_args(), ~ {
           tryCatch(
           do.call(paste0(position_sub(), '_', .y, '_ui'),
-                  list(value = .x, input = input, session = session, ggdata = ggdata())),
+                  list(value = .x, input = input, session = session, base_data = base_data)),
           error = function(e) {
             tryCatch(
               do.call(paste0(.y,'_ui'),
-                      list(value = .x, input = input, session = session, ggdata = ggdata())),
+                      list(value = .x, input = input, session = session, base_data = base_data)),
               error = function(e) NULL
             )
           })
@@ -153,8 +161,8 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
     processed_position_code <- ''
     if (isTruthy(input$position)) {
       # Process arguments
-      args <- process_position_args(input$position, input, isolate({ggdata()}))
-      subargs <- process_position_args(position_sub(), input, isolate({ggdata()}))
+      args <- process_position_args(input$position, input, base_data)
+      subargs <- process_position_args(position_sub(), input, base_data)
 
       args <- paste(c(switch(isTruthy(args), args), switch(isTruthy(subargs), subargs)), collapse = ", ")
 
@@ -177,7 +185,7 @@ layerPositionServer <- function(input, output, session, ggdata, default_position
 
 reverse_ui <- function(position) {
   id <- paste0(position, "_reverse")
-  function(value, input, session, ggdata = NULL) {
+  function(value, input, session, base_data = NULL) {
     if (is.null(value)) value = FALSE
 
     checkboxInput(session$ns(id),
@@ -189,7 +197,7 @@ reverse_ui <- function(position) {
 
 width_ui <- function(position, type=NULL, default=0.4) {
   id <- paste0(c(position, ifelse(is.null(type), "width", type)), collapse = "_")
-  function(value, input, session, ggdata = NULL) {
+  function(value, input, session, base_data = NULL) {
     if (is.null(value)) value = default
 
     sliderInput(session$ns(id),
@@ -203,7 +211,7 @@ width_ui <- function(position, type=NULL, default=0.4) {
 
 height_ui <- function(position, type=NULL, default=0.4) {
   id <- paste0(c(position, ifelse(is.null(type), "height", type)), collapse = "_")
-  function(value, input, session, ggdata = NULL) {
+  function(value, input, session, base_data = NULL) {
     if (is.null(value)) value = default
 
     sliderInput(session$ns(id),
@@ -217,7 +225,7 @@ height_ui <- function(position, type=NULL, default=0.4) {
 
 seed_ui <- function(position) {
   id <- paste0(position, "_seed")
-  function(value, input, session, ggdata = NULL) {
+  function(value, input, session, base_data = NULL) {
     if (!isTruthy(value)) value = sample.int(.Machine$integer.max, 1L)
 
     div(
@@ -252,7 +260,7 @@ jitter_server <- function(session, refreshWidget = NULL) {
 
 # > dodge ----
 
-dodge_width_ui <- function(value, input, session, ggdata = NULL) {
+dodge_width_ui <- function(value, input, session, base_data = NULL) {
   value <- input[["dodge_width"]] %||% value
 
   div(
@@ -277,7 +285,7 @@ dodge_width_ui <- function(value, input, session, ggdata = NULL) {
   )
 }
 
-dodge_preserve_ui <- function(value, input, session, ggdata = NULL) {
+dodge_preserve_ui <- function(value, input, session, base_data = NULL) {
   if (is.null(value) || (length(value) > 1)) value = "total"
 
   radioButtons(session$ns("dodge_preserve"),
@@ -308,7 +316,7 @@ dodge_server <- function(session, refreshWidget = NULL) {
 
 # > dodge2 ----
 
-dodge2_padding_ui <- function(value, input, session, ggdata = NULL) {
+dodge2_padding_ui <- function(value, input, session, base_data = NULL) {
   if (is.null(value)) value = 0.1
 
   sliderInput(session$ns("dodge2_padding"),
@@ -323,7 +331,7 @@ dodge2_reverse_ui <- reverse_ui("dodge2")
 
 # > stack/fill ----
 
-stack_vjust_ui <- function(value, input, session, ggdata = NULL) {
+stack_vjust_ui <- function(value, input, session, base_data = NULL) {
   if (is.null(value)) value = 1
 
   sliderInput(session$ns("stack_vjust"),
@@ -339,7 +347,7 @@ stack_reverse_ui <- reverse_ui("stack")
 
 # > nudge ----
 
-nudge_x_ui <- function(value, input, session, ggdata = NULL) {
+nudge_x_ui <- function(value, input, session, base_data = NULL) {
   if (is.null(value)) value = 0
 
   sliderInput(session$ns("nudge_x"),
@@ -350,7 +358,7 @@ nudge_x_ui <- function(value, input, session, ggdata = NULL) {
               step = 0.02)
 }
 
-nudge_y_ui <- function(value, input, session, ggdata = NULL) {
+nudge_y_ui <- function(value, input, session, base_data = NULL) {
   if (is.null(value)) value = 0
 
   sliderInput(session$ns("nudge_y"),
@@ -395,25 +403,25 @@ position_args <- function(position) {
   }
 }
 
-process_position_args <- function(position, input, ggdata) {
+process_position_args <- function(position, input, base_data) {
   if (is.null(position)) return(NULL)
 
   purrr::imap(position_args(position), ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
     dropNulls() %>%
-    purrr::imap(~ modify_position_args(.y, .x, ggdata)) %>%
+    purrr::imap(~ modify_position_args(.y, .x, base_data)) %>%
     purrr::imap(~ paste(stringr::str_split(.y, "_")[[1]][2], "=", .x)) %>%
     paste(., collapse = ", ")
 }
 
-modify_position_args <- function(param, value, ggdata) {
+modify_position_args <- function(param, value, base_data) {
   return(
     switch(param,
            "jitter_width" =,
-           "jitterdodge_jitter.width" = value*resolution(ggdata$data$x, zero = FALSE),
+           "jitterdodge_jitter.width" = value*resolution(base_data()$x, zero = FALSE),
            "jitter_height" =,
-           "jitterdodge_jitter.height" = value*resolution(ggdata$data$y, zero = FALSE),
-           "nudge_x" = value*(max(ggdata$data$x) - min(ggdata$data$x)),
-           "nudge_y" = value*(max(ggdata$data$y) - min(ggdata$data$y)),
+           "jitterdodge_jitter.height" = value*resolution(base_data()$y, zero = FALSE),
+           "nudge_x" = value*(max(base_data()$x) - min(base_data()$x)),
+           "nudge_y" = value*(max(base_data()$y) - min(base_data()$y)),
            value
     )
   )

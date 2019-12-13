@@ -4,7 +4,7 @@ layerParamsGeomSmoothUI <- function(id) {
   uiOutput(ns("params"))
 }
 
-layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
+layerParamsGeomSmoothServer <- function(input, output, session, base_data) {
   default_args <- list("method" = "auto",   # loess or gam
                        "se" = TRUE,         # Show confidence bands
                        "level" = 0.95,      # Confidence level
@@ -129,7 +129,7 @@ layerParamsGeomSmoothServer <- function(input, output, session, ggdata) {
                                           "span",
                                           NULL)))]
 
-    processed_geom_params_code <- process_args(args, input, ggdata)
+    processed_geom_params_code <- process_args(args, input, base_data)
 
     if (input$method == "glm") {
       processed_geom_params_code <- paste(processed_geom_params_code,
