@@ -14,16 +14,24 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
                                  "varwidth" = FALSE, # Variable width boxes (weight by n)
                                  "coef" = 1.5,       # Whisker length as multiple of IQR
                                  "outlier.show" = TRUE,
+                                 "outlier.colour" = NA_defaults[["colour"]],
+                                 "outlier.fill" = NA_defaults[["fill"]],
+                                 "outlier.alpha" = NA_defaults[["alpha"]],
                                  "outlier.shape" = 19,
                                  "outlier.size" = 1.5,
-                                 "outlier.stroke" = 0.5,
-                                 "outlier.alpha" = 1)
+                                 "outlier.stroke" = 0.5)
 
   # Update defaults
   observeEvent(base_data(), {
-    default_args[["outlier.colour"]] <<- colour_to_hex(base_data()$colour)
-    default_args[["outlier.fill"]] <<- colour_to_hex(base_data()$fill)
-    default_args[["outlier.alpha"]] <<- ifelse(is.na(base_data()$alpha), 1, base_data()$alpha)
+    default_args[["outlier.colour"]] <<- ifelse(length(unique(base_data()$colour)) == 1,
+                                                colour_to_hex(unique(base_data()$colour)),
+                                                NA)
+    default_args[["outlier.fill"]] <<- ifelse(length(unique(base_data()$fill)) == 1,
+                                              colour_to_hex(unique(base_data()$fill)),
+                                              NA)
+    default_args[["outlier.alpha"]] <<- ifelse((length(unique(base_data()$alpha)) == 1) && !is.na(base_data()$alpha),
+                                               base_data()$alpha,
+                                               NA)
   })
 
   output$params <- renderUI({
@@ -84,12 +92,12 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
               .$attribs$class <- paste(.$attribs$class, "outlier-aesthetics")
               .
             } %>%
-            create_outlier_aes_input("colour", default_args$outlier.colour, input, session, collapsed = FALSE) %>%
-            create_outlier_aes_input("fill", default_args$outlier.fill, input, session) %>%
+            create_outlier_aes_input("colour", default_args$outlier.colour %T||% NA_defaults[["colour"]], input, session, collapsed = FALSE) %>%
+            create_outlier_aes_input("fill", default_args$outlier.fill %T||% NA_defaults[["fill"]], input, session) %>%
             create_outlier_aes_input("shape", default_args$outlier.shape, input, session) %>%
             create_outlier_aes_input("size", default_args$outlier.size, input, session) %>%
             create_outlier_aes_input("stroke", default_args$outlier.stroke, input, session) %>%
-            create_outlier_aes_input("alpha", default_args$outlier.alpha, input, session)
+            create_outlier_aes_input("alpha", default_args$outlier.alpha %T||% NA_defaults[["alpha"]], input, session)
         )
       })
     }
@@ -121,7 +129,9 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
       outlierId <- paste0('outlier.', aes)
       resetId <- paste0('outlier_', aes, '_reset')
       inheritId <- paste0('outlier_', aes, '_inherit')
-      if (!input[[inheritId]] && (input[[outlierId]] != default_args_list[[outlierId]])) {
+      if (!input[[inheritId]] &&
+          ((is.na(default_args_list[[outlierId]]) && (input[[outlierId]] != NA_defaults[[aes]])) ||
+          ((!is.na(default_args_list[[outlierId]]) && (input[[outlierId]] != default_args_list[[outlierId]]))))) {
         shinyjs::show(resetId)
       } else {
         shinyjs::hide(resetId)
@@ -131,13 +141,13 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
 
   # Reset aesthetic colour value to default
   observeEvent(input$outlier_colour_reset, {
-    update_aes_input(session, 'outlier.colour', 'colour', default_args$outlier.colour)
+    update_aes_input(session, 'outlier.colour', 'colour', default_args$outlier.colour %T||% NA_defaults[["colour"]])
   })
   observeEvent(input$outlier_fill_reset, {
-    update_aes_input(session, 'outlier.fill', 'fill', default_args$outlier.fill)
+    update_aes_input(session, 'outlier.fill', 'fill', default_args$outlier.fill %T||% NA_defaults[["fill"]])
   })
   observeEvent(input$outlier_alpha_reset, {
-    update_aes_input(session, 'outlier.alpha', 'alpha', default_args$outlier.alpha)
+    update_aes_input(session, 'outlier.alpha', 'alpha', default_args$outlier.alpha %T||% NA_defaults[["alpha"]])
   })
 
   geom_params_code <- reactive({
