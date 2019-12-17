@@ -17,11 +17,11 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
                                  "outlier.colour" = NA_defaults[["colour"]],
                                  "outlier.fill" = NA_defaults[["fill"]],
                                  "outlier.alpha" = NA_defaults[["alpha"]],
-                                 "outlier.shape" = 19,
-                                 "outlier.size" = 1.5,
-                                 "outlier.stroke" = 0.5)
+                                 "outlier.shape" = NA_defaults[["shape"]],
+                                 "outlier.size" = NA_defaults[["size"]],
+                                 "outlier.stroke" = NA_defaults[["stroke"]])
 
-  # Update defaults
+  # Update defaults for colour, fill, and alpha on base_data change
   observeEvent(base_data(), {
     default_args[["outlier.colour"]] <<- ifelse(length(unique(base_data()$colour)) == 1,
                                                 colour_to_hex(unique(base_data()$colour)),
@@ -94,9 +94,9 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
             } %>%
             create_outlier_aes_input("colour", default_args$outlier.colour %T||% NA_defaults[["colour"]], input, session, collapsed = FALSE) %>%
             create_outlier_aes_input("fill", default_args$outlier.fill %T||% NA_defaults[["fill"]], input, session) %>%
-            create_outlier_aes_input("shape", default_args$outlier.shape, input, session) %>%
-            create_outlier_aes_input("size", default_args$outlier.size, input, session) %>%
-            create_outlier_aes_input("stroke", default_args$outlier.stroke, input, session) %>%
+            create_outlier_aes_input("shape", default_args$outlier.shape %T||% NA_defaults[["shape"]], input, session) %>%
+            create_outlier_aes_input("size", default_args$outlier.size %T||% NA_defaults[["size"]], input, session) %>%
+            create_outlier_aes_input("stroke", default_args$outlier.stroke %T||% NA_defaults[["stroke"]], input, session) %>%
             create_outlier_aes_input("alpha", default_args$outlier.alpha %T||% NA_defaults[["alpha"]], input, session)
         )
       })
@@ -115,39 +115,29 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
     }
   })
 
-  # Show or hide aesthetic value reset button
-  observe({
-    req(!is.null(input$outlier_colour_reset),
-        !is.null(input$outlier_fill_reset),
-        !is.null(input$outlier_alpha_reset),
-        !is.null(input$outlier_colour_inherit),
-        !is.null(input$outlier_fill_inherit),
-        !is.null(input$outlier_alpha_inherit))
+  purrr::walk(c("colour", "fill", "alpha", "shape", "size", "stroke"), ~ {
+    resetId <- paste0("outlier_", ., "_reset")
+    outlierId <- paste0("outlier.", .)
+    inheritId <- paste0('outlier_', ., '_inherit')
+    return({
+      # Show or hide aesthetic value reset button
+      observe({
+        default_args_list <- reactiveValuesToList(default_args)
+        req(!is.null(input[[inheritId]]))
+        if (!input[[inheritId]] &&
+            ((is.na(default_args_list[[outlierId]]) && (input[[outlierId]] != NA_defaults[[.]])) ||
+             ((!is.na(default_args_list[[outlierId]]) && (input[[outlierId]] != default_args_list[[outlierId]]))))) {
+          shinyjs::show(resetId)
+        } else {
+          shinyjs::hide(resetId)
+        }
+      })
 
-    default_args_list <- reactiveValuesToList(default_args)
-    for (aes in c("colour", "fill", "alpha")) {
-      outlierId <- paste0('outlier.', aes)
-      resetId <- paste0('outlier_', aes, '_reset')
-      inheritId <- paste0('outlier_', aes, '_inherit')
-      if (!input[[inheritId]] &&
-          ((is.na(default_args_list[[outlierId]]) && (input[[outlierId]] != NA_defaults[[aes]])) ||
-          ((!is.na(default_args_list[[outlierId]]) && (input[[outlierId]] != default_args_list[[outlierId]]))))) {
-        shinyjs::show(resetId)
-      } else {
-        shinyjs::hide(resetId)
-      }
-    }
-  })
-
-  # Reset aesthetic colour value to default
-  observeEvent(input$outlier_colour_reset, {
-    update_aes_input(session, 'outlier.colour', 'colour', default_args$outlier.colour %T||% NA_defaults[["colour"]])
-  })
-  observeEvent(input$outlier_fill_reset, {
-    update_aes_input(session, 'outlier.fill', 'fill', default_args$outlier.fill %T||% NA_defaults[["fill"]])
-  })
-  observeEvent(input$outlier_alpha_reset, {
-    update_aes_input(session, 'outlier.alpha', 'alpha', default_args$outlier.alpha %T||% NA_defaults[["alpha"]])
+      # Reset aesthetic colour value to default
+      observeEvent(input[[resetId]], {
+        update_aes_input(session, outlierId, ., default_args[[outlierId]] %T||% NA_defaults[[.]])
+      })
+    })
   })
 
   geom_params_code <- reactive({
@@ -164,7 +154,7 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
                                                                                            c(switch(isTruthy(input$outlier_colour_inherit), "outlier.colour"),
                                                                                              switch(isTruthy(input$outlier_fill_inherit), "outlier.fill"),
                                                                                              switch(isTruthy(input$outlier_alpha_inherit), "outlier.alpha")
-                                                                                             ))], input, NULL) %>% {
+                                                                                             ))], input, modify_geom_boxplot_args) %>% {
           paste0(processed_geom_params_code,
                  ifelse(nchar(processed_geom_params_code) && nchar(.), ",\n", ""),
                  .)
@@ -191,42 +181,47 @@ create_outlier_aes_input <- function(bs_tag, aes, aes_default, input, session, c
                                  aes,
                                  input[[outlierId]] %||% aes_default)
   title <- tagList(aes, icon(""))
-  if (aes %in% c("colour", "fill", "alpha")) {
-    bs_tag <- bsplus::bs_append(bs_tag,
-                                title,
-                                content = tagList(
-                                  div(
-                                    class = 'outlier-aes-header',
-                                    shinyWidgets::materialSwitch(session$ns(inheritId),
-                                                                 "Inherit?",
-                                                                 input[[inheritId]] %||% TRUE,
-                                                                 status = "primary"),
-                                    actionLink(session$ns(paste0('outlier_', aes, '_reset')),
-                                               label = '',
-                                               style = ifelse(is.null(input[[inheritId]]) || isTruthy(input[[inheritId]]) || (input[[outlierId]] == aes_default), "display: none;", ""),
-                                               icon = icon("undo"))
-                                  ),
-                                  conditionalPanel(
-                                    condition = paste0("input.", inheritId, " === true"),
-                                    ns = session$ns,
-                                    span("Inheriting from boxplot aesthetics.")
-                                  ),
-                                  conditionalPanel(
-                                    condition = paste0("input.", inheritId, " === false"),
-                                    ns = session$ns,
-                                    aesContent
-                                  )
+  bs_tag <- bsplus::bs_append(bs_tag,
+                              title,
+                              content = tagList(
+                                div(
+                                  class = 'outlier-aes-header',
+                                  shinyWidgets::materialSwitch(session$ns(inheritId),
+                                                               "Inherit?",
+                                                               input[[inheritId]] %||% ifelse(aes %in% c("colour", "fill", "alpha"), TRUE, FALSE),
+                                                               status = "primary"),
+                                  actionLink(session$ns(paste0('outlier_', aes, '_reset')),
+                                             label = '',
+                                             class = "reset-aes",
+                                             style = ifelse(is.null(input[[inheritId]]) || isTruthy(input[[inheritId]]) || (input[[outlierId]] == aes_default), "display: none;", ""),
+                                             icon = icon("undo"))
+                                ),
+                                conditionalPanel(
+                                  condition = paste0("input.", inheritId, " === true"),
+                                  ns = session$ns,
+                                  span("Inheriting from boxplot aesthetics.")
+                                ),
+                                conditionalPanel(
+                                  condition = paste0("input.", inheritId, " === false"),
+                                  ns = session$ns,
+                                  aesContent
                                 )
-    )
-  } else {
-    bs_tag <- bsplus::bs_append(bs_tag,
-                                title,
-                                content = aesContent)
-  }
-  bs_tag %>% {
+                              )
+  ) %>% {
     .$children[[length(.$children)]]$children[[1]]$attribs$class <- paste(c(.$children[[1]]$children[[1]]$attribs$class,
                                                                             switch(collapsed, "collapsed")),
                                                                           collapse = " ")
     .
   }
+}
+
+modify_geom_boxplot_args <- function(param, value, base_data) {
+  return(
+    switch(param,
+           "outlier.shape" = ,
+           "outlier.size" = ,
+           "outlier.stroke" = switch(!is.na(value), value),
+           value
+    )
+  )
 }

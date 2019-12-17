@@ -785,8 +785,17 @@ i.fa.inactive {
 }
 
 .outlier-aes-header {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+}
+
+.outlier-aes-header.not-inheritable {
+  margin-bottom: 25px;
+}
+
+.outlier-aes-header a.reset-aes {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .outlier-aesthetics .aes-wrap {

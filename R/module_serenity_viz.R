@@ -529,7 +529,10 @@ plot_names <- list(
 NA_defaults <- list(
   fill = "#FFFFFF",
   colour = "#333333",
-  alpha = 1
+  alpha = 1,
+  shape = 19,
+  size = 1.5,
+  stroke = 0.5
 )
 
 help_panes <- lapply(geoms, function(x) {
