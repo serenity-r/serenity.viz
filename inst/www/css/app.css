@@ -783,6 +783,21 @@ i.fa.inactive {
 .outlier-aesthetics .panel-heading.collapsed i::before {
   content: "\f104";
 }
+
+.outlier-aes-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.outlier-aesthetics .aes-wrap {
+  margin: 0;
+}
+
+.outlier-aesthetics .aes-wrap > .form-group {
+  margin-bottom: 0;
+  margin-top: -20px;
+}
+
 /* Begin: Style layer chooser */
 
 .widget-header .action-button.add-layer {

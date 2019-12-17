@@ -16,13 +16,14 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
                                  "outlier.show" = TRUE,
                                  "outlier.shape" = 19,
                                  "outlier.size" = 1.5,
-                                 "outlier.stroke" = 0.5)
+                                 "outlier.stroke" = 0.5,
+                                 "outlier.alpha" = 1)
 
   # Update defaults
   observeEvent(base_data(), {
     default_args[["outlier.colour"]] <<- colour_to_hex(base_data()$colour)
     default_args[["outlier.fill"]] <<- colour_to_hex(base_data()$fill)
-    default_args[["outlier.alpha"]] <<- base_data()$alpha
+    default_args[["outlier.alpha"]] <<- ifelse(is.na(base_data()$alpha), 1, base_data()$alpha)
   })
 
   output$params <- renderUI({
@@ -87,7 +88,8 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
             create_outlier_aes_input("fill", default_args$outlier.fill, input, session) %>%
             create_outlier_aes_input("shape", default_args$outlier.shape, input, session) %>%
             create_outlier_aes_input("size", default_args$outlier.size, input, session) %>%
-            create_outlier_aes_input("stroke", default_args$outlier.stroke, input, session)
+            create_outlier_aes_input("stroke", default_args$outlier.stroke, input, session) %>%
+            create_outlier_aes_input("alpha", default_args$outlier.alpha, input, session)
         )
       })
     }
@@ -105,6 +107,39 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
     }
   })
 
+  # Show or hide aesthetic value reset button
+  observe({
+    req(!is.null(input$outlier_colour_reset),
+        !is.null(input$outlier_fill_reset),
+        !is.null(input$outlier_alpha_reset),
+        !is.null(input$outlier_colour_inherit),
+        !is.null(input$outlier_fill_inherit),
+        !is.null(input$outlier_alpha_inherit))
+
+    default_args_list <- reactiveValuesToList(default_args)
+    for (aes in c("colour", "fill", "alpha")) {
+      outlierId <- paste0('outlier.', aes)
+      resetId <- paste0('outlier_', aes, '_reset')
+      inheritId <- paste0('outlier_', aes, '_inherit')
+      if (!input[[inheritId]] && (input[[outlierId]] != default_args_list[[outlierId]])) {
+        shinyjs::show(resetId)
+      } else {
+        shinyjs::hide(resetId)
+      }
+    }
+  })
+
+  # Reset aesthetic colour value to default
+  observeEvent(input$outlier_colour_reset, {
+    update_aes_input(session, 'outlier.colour', 'colour', default_args$outlier.colour)
+  })
+  observeEvent(input$outlier_fill_reset, {
+    update_aes_input(session, 'outlier.fill', 'fill', default_args$outlier.fill)
+  })
+  observeEvent(input$outlier_alpha_reset, {
+    update_aes_input(session, 'outlier.alpha', 'alpha', default_args$outlier.alpha)
+  })
+
   geom_params_code <- reactive({
     default_args_list <- reactiveValuesToList(default_args)
     pos_outliers <- grepl("outlier", names(default_args_list))
@@ -115,7 +150,11 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
     # Second, outliers only
     if (!is.null(input$outlier.show)) {
       if (input$outlier.show) {
-        processed_geom_params_code <- process_args(default_args_list[pos_outliers], input, NULL) %>% {
+        processed_geom_params_code <- process_args(default_args_list[pos_outliers][setdiff(names(default_args_list[pos_outliers]),
+                                                                                           c(switch(isTruthy(input$outlier_colour_inherit), "outlier.colour"),
+                                                                                             switch(isTruthy(input$outlier_fill_inherit), "outlier.fill"),
+                                                                                             switch(isTruthy(input$outlier_alpha_inherit), "outlier.alpha")
+                                                                                             ))], input, NULL) %>% {
           paste0(processed_geom_params_code,
                  ifelse(nchar(processed_geom_params_code) && nchar(.), ",\n", ""),
                  .)
@@ -139,17 +178,24 @@ create_outlier_aes_input <- function(bs_tag, aes, aes_default, input, session, c
   inheritId <- paste0('outlier_', aes, '_inherit')
   outlierId <- paste0('outlier.', aes)
   aesContent <- create_aes_input(session$ns(outlierId),
-                              aes,
-                              input[[outlierId]] %||% aes_default)
+                                 aes,
+                                 input[[outlierId]] %||% aes_default)
   title <- tagList(aes, icon(""))
   if (aes %in% c("colour", "fill", "alpha")) {
     bs_tag <- bsplus::bs_append(bs_tag,
                                 title,
                                 content = tagList(
-                                  shinyWidgets::materialSwitch(session$ns(inheritId),
-                                                               "Inherit?",
-                                                               input[[inheritId]] %||% TRUE,
-                                                               status = "primary"),
+                                  div(
+                                    class = 'outlier-aes-header',
+                                    shinyWidgets::materialSwitch(session$ns(inheritId),
+                                                                 "Inherit?",
+                                                                 input[[inheritId]] %||% TRUE,
+                                                                 status = "primary"),
+                                    actionLink(session$ns(paste0('outlier_', aes, '_reset')),
+                                               label = '',
+                                               style = ifelse(is.null(input[[inheritId]]) || isTruthy(input[[inheritId]]) || (input[[outlierId]] == aes_default), "display: none;", ""),
+                                               icon = icon("undo"))
+                                  ),
                                   conditionalPanel(
                                     condition = paste0("input.", inheritId, " === true"),
                                     ns = session$ns,
