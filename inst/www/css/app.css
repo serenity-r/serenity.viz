@@ -759,6 +759,10 @@ i.fa.inactive {
   margin-right: 5px;
 }
 
+.switch-numeric-input .SNI-numeric .form-group span.irs-with-grid {
+  width: 100%;
+}
+
 .glm {
   display: flex;
 }
@@ -767,6 +771,18 @@ i.fa.inactive {
   flex: 1;
 }
 
+/* Boxplot */
+.outlier-aesthetics .panel-title i {
+  float: right;
+}
+
+.outlier-aesthetics .panel-heading i::before {
+  content: "\f107";
+}
+
+.outlier-aesthetics .panel-heading.collapsed i::before {
+  content: "\f104";
+}
 /* Begin: Style layer chooser */
 
 .widget-header .action-button.add-layer {
