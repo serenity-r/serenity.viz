@@ -115,12 +115,14 @@ filter_out_defaults <- function(param, default, value) {
 #' @param input Shiny inputs
 #' @param base_data Computed layer and scales data from ggplot
 #' @param modify_args Function that modifies arguments (if supplied - default NULL)
+#' @param allowNULL Arguments where NULL means something, so don't drop.  This
+#'   must be followed by a modify_args function that properly deals with NULLs.
 #'
-#' @return Comma separated string of function arguments, with defaults removed
-#'   and modified if necessary.
-process_args <- function(default_args, input, base_data, modify_args = NULL) {
+#' @return Comma separated string of function arguments, with defaults/NULLs
+#'   removed and modified if necessary.
+process_args <- function(default_args, input, base_data, modify_args = NULL, allowNULL = NULL) {
   purrr::imap(default_args, ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
-    dropNulls() %>%
+    dropNulls(allowNULL) %>%
     purrr::imap(~ ifelse(!is.null(modify_args),
                          do.call(modify_args, list(param = .y, value = .x, base_data = base_data)),
                          .x)) %>%

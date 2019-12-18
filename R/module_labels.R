@@ -79,7 +79,8 @@ labelsServer <- function(input, output, session, xlabel, ylabel) {
 
 # UTILS ----
 
-# Given a vector or list, drop all the NULL items in it
-dropNulls <- function(x) {
-  x[!vapply(x, is.null, FUN.VALUE=logical(1))]
+# Given a vector or list, drop all the NULL items in it except for
+#  NULL items given by \code{except}
+dropNulls <- function(x, except = NULL) {
+  x[unlist(mapply(function(key, value) { switch(!is.null(value) || (key %in% except), key) }, names(x), x))]
 }

@@ -21,17 +21,25 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
                                  "outlier.size" = NA_defaults[["size"]],
                                  "outlier.stroke" = NA_defaults[["stroke"]])
 
-  # Update defaults for colour, fill, and alpha on base_data change
+  outlier.aesthetics <- c("colour", "fill", "alpha", "shape", "size", "stroke")
+
+  # Used for overrides
+  outlier.state <- list(
+    "outlier.shape" = NA_defaults[["shape"]],
+    "outlier.size" = NA_defaults[["size"]]
+  )
+
+  # Update defaults for aesthetics on base_data change (colour, fill, alpha)
   observeEvent(base_data(), {
-    default_args[["outlier.colour"]] <<- ifelse(length(unique(base_data()$colour)) == 1,
-                                                colour_to_hex(unique(base_data()$colour)),
-                                                NA)
-    default_args[["outlier.fill"]] <<- ifelse(length(unique(base_data()$fill)) == 1,
-                                              colour_to_hex(unique(base_data()$fill)),
-                                              NA)
-    default_args[["outlier.alpha"]] <<- ifelse((length(unique(base_data()$alpha)) == 1) && !is.na(base_data()$alpha),
-                                               base_data()$alpha,
-                                               NA)
+    for (aes in c("colour", "fill", "alpha")) {
+      outlierId <- paste0("outlier.", aes)
+      default_aes <- base_data()[[aes]]
+      default_args[[outlierId]] <<- ifelse(length(unique(default_aes)) == 1,
+                                                  switch(as.character(aes %in% c("colour", "fill")),
+                                                         "TRUE" = colour_to_hex(unique(default_aes)),
+                                                         "FALSE" = unique(default_aes)),
+                                                  NA)
+    }
   })
 
   output$params <- renderUI({
@@ -115,7 +123,8 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
     }
   })
 
-  purrr::walk(c("colour", "fill", "alpha", "shape", "size", "stroke"), ~ {
+  # Aesthetic observers to handle resetting to default values
+  purrr::walk(outlier.aesthetics, ~ {
     resetId <- paste0("outlier_", ., "_reset")
     outlierId <- paste0("outlier.", .)
     inheritId <- paste0('outlier_', ., '_inherit')
@@ -123,7 +132,8 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
       # Show or hide aesthetic value reset button
       observe({
         default_args_list <- reactiveValuesToList(default_args)
-        req(!is.null(input[[inheritId]]))
+        req(!is.null(input[[inheritId]]),
+            !is.null(input[[outlierId]]))
         if (!input[[inheritId]] &&
             ((is.na(default_args_list[[outlierId]]) && (input[[outlierId]] != NA_defaults[[.]])) ||
              ((!is.na(default_args_list[[outlierId]]) && (input[[outlierId]] != default_args_list[[outlierId]]))))) {
@@ -140,6 +150,21 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
     })
   })
 
+  purrr::walk(c("shape", "size"), ~ {
+    outlierId <- paste0("outlier.", .)
+    inheritId <- paste0('outlier_', ., '_inherit')
+    return(
+      observeEvent(input[[inheritId]], {
+        if (input[[inheritId]]) {
+          outlier.state[[outlierId]] <- input[[outlierId]]
+          session$sendCustomMessage(type = "nullify", message = session$ns(outlierId))
+        } else {
+          updateSliderInput(session, outlierId, value = outlier.state[[outlierId]])
+        }
+      })
+    )
+  })
+
   geom_params_code <- reactive({
     default_args_list <- reactiveValuesToList(default_args)
     pos_outliers <- grepl("outlier", names(default_args_list))
@@ -150,15 +175,25 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
     # Second, outliers only
     if (!is.null(input$outlier.show)) {
       if (input$outlier.show) {
+        exclude_aesthetics <- purrr::map(c("colour", "fill", "alpha"), ~ {
+          inheritId <- paste0("outlier_", ., "_inherit")
+          outlierId <- paste0("outlier.", .)
+          switch(isTruthy(input[[inheritId]]), outlierId)
+        }) %>% unlist()
+        allowNULL <- purrr::map(c("shape", "size"), ~ {
+          inheritId <- paste0("outlier_", ., "_inherit")
+          outlierId <- paste0("outlier.", .)
+          switch(isTruthy(input[[inheritId]]), outlierId)
+        }) %>% unlist()
+
         processed_geom_params_code <- process_args(default_args_list[pos_outliers][setdiff(names(default_args_list[pos_outliers]),
-                                                                                           c(switch(isTruthy(input$outlier_colour_inherit), "outlier.colour"),
-                                                                                             switch(isTruthy(input$outlier_fill_inherit), "outlier.fill"),
-                                                                                             switch(isTruthy(input$outlier_alpha_inherit), "outlier.alpha")
-                                                                                             ))], input, modify_geom_boxplot_args) %>% {
-          paste0(processed_geom_params_code,
-                 ifelse(nchar(processed_geom_params_code) && nchar(.), ",\n", ""),
-                 .)
-        }
+                                                                                           exclude_aesthetics)], input, NULL, modify_geom_boxplot_args, allowNULL) %>%
+          {
+
+            paste0(processed_geom_params_code,
+                   ifelse(nchar(processed_geom_params_code) && nchar(.), ",\n", ""),
+                   .)
+          }
       } else {
         processed_geom_params_code <- paste0(processed_geom_params_code,
                                              ifelse(nchar(processed_geom_params_code), ",\n", ""),
@@ -189,7 +224,11 @@ create_outlier_aes_input <- function(bs_tag, aes, aes_default, input, session, c
                                   shinyWidgets::materialSwitch(session$ns(inheritId),
                                                                "Inherit?",
                                                                input[[inheritId]] %||% ifelse(aes %in% c("colour", "fill", "alpha"), TRUE, FALSE),
-                                                               status = "primary"),
+                                                               status = "primary") %>%
+                                    {
+                                      if (aes == "stroke") .$attribs$style <- "visibility:hidden;"
+                                      .
+                                    },
                                   actionLink(session$ns(paste0('outlier_', aes, '_reset')),
                                              label = '',
                                              class = "reset-aes",
@@ -219,8 +258,7 @@ modify_geom_boxplot_args <- function(param, value, base_data) {
   return(
     switch(param,
            "outlier.shape" = ,
-           "outlier.size" = ,
-           "outlier.stroke" = switch(!is.na(value), value),
+           "outlier.size" = ifelse(!is.null(value), value, "NULL"),
            value
     )
   )
