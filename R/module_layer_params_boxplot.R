@@ -156,10 +156,10 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
     return(
       observeEvent(input[[inheritId]], {
         if (input[[inheritId]]) {
-          outlier.state[[outlierId]] <- input[[outlierId]]
+          outlier.state[[outlierId]] <<- input[[outlierId]]
           session$sendCustomMessage(type = "nullify", message = session$ns(outlierId))
         } else {
-          updateSliderInput(session, outlierId, value = outlier.state[[outlierId]])
+          update_aes_input(session, outlierId, ., outlier.state[[outlierId]])
         }
       })
     )
@@ -254,6 +254,9 @@ create_outlier_aes_input <- function(bs_tag, aes, aes_default, input, session, c
   }
 }
 
+# For outlier shape and size, NULL should be explicitly specified
+#  to inherit from layer.  Used in conjunction with the allowNULL
+#  argument to process_args (by default, NULLs get stripped).
 modify_geom_boxplot_args <- function(param, value, base_data) {
   return(
     switch(param,
