@@ -21,6 +21,14 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
                                  "outlier.size" = NA_defaults[["size"]],
                                  "outlier.stroke" = NA_defaults[["stroke"]])
 
+  # Note: Outlier aesthetics fall into 3 categories based on their behavior
+  #  (1) colour, fill, alpha:  These three aesthetics do not have defaults and
+  #      inherit their default values from the layer aesthetics (or NA_defaults).
+  #  (2) shape, size:  These two aesthetics have default values.  In order to
+  #      inherit aesthetics from the layer, they must be explicitly specified
+  #      as NULL.
+  #  (3) stroke:  This aesthetic doesn't have a layer aesthetic to inherit, but
+  #      it does have a default value.
   outlier.aesthetics <- c("colour", "fill", "alpha", "shape", "size", "stroke")
 
   # Used for overrides
@@ -150,6 +158,7 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
     })
   })
 
+  # Observe events to handle inheritance for shape and size (sets to NULL)
   purrr::walk(c("shape", "size"), ~ {
     outlierId <- paste0("outlier.", .)
     inheritId <- paste0('outlier_', ., '_inherit')
@@ -186,8 +195,8 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
           switch(isTruthy(input[[inheritId]]), outlierId)
         }) %>% unlist()
 
-        processed_geom_params_code <- process_args(default_args_list[pos_outliers][setdiff(names(default_args_list[pos_outliers]),
-                                                                                           exclude_aesthetics)], input, NULL, modify_geom_boxplot_args, allowNULL) %>%
+        processed_geom_params_code <- process_args(default_args_list[pos_outliers][setdiff(names(default_args_list[pos_outliers]), exclude_aesthetics)],
+                                                   input, NULL, modify_geom_boxplot_args, allowNULL) %>%
           {
 
             paste0(processed_geom_params_code,

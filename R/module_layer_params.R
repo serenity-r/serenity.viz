@@ -117,6 +117,7 @@ filter_out_defaults <- function(param, default, value) {
 #' @param modify_args Function that modifies arguments (if supplied - default NULL)
 #' @param allowNULL Arguments where NULL means something, so don't drop.  This
 #'   must be followed by a modify_args function that properly deals with NULLs.
+#'   See module_layer_params_boxplot.R for an example.
 #'
 #' @return Comma separated string of function arguments, with defaults/NULLs
 #'   removed and modified if necessary.

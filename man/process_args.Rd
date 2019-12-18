@@ -4,7 +4,8 @@
 \alias{process_args}
 \title{Process arguments}
 \usage{
-process_args(default_args, input, base_data, modify_args = NULL)
+process_args(default_args, input, base_data, modify_args = NULL,
+  allowNULL = NULL)
 }
 \arguments{
 \item{default_args}{List of default arguments}
@@ -14,10 +15,14 @@ process_args(default_args, input, base_data, modify_args = NULL)
 \item{base_data}{Computed layer and scales data from ggplot}
 
 \item{modify_args}{Function that modifies arguments (if supplied - default NULL)}
+
+\item{allowNULL}{Arguments where NULL means something, so don't drop.  This
+must be followed by a modify_args function that properly deals with NULLs.
+See module_layer_params_boxplot.R for an example.}
 }
 \value{
-Comma separated string of function arguments, with defaults removed
-  and modified if necessary.
+Comma separated string of function arguments, with defaults/NULLs
+  removed and modified if necessary.
 }
 \description{
 Process arguments
