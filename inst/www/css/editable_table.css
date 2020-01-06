@@ -1,0 +1,73 @@
+.disabled {
+  cursor: not-allowed;
+  background-color: grey;
+  opacity: 0.5;
+  pointer-events:none;
+}
+
+.editable_table_panel {
+  height: 200px;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.editable_table_panel .editable_table_icons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  position: sticky;
+  position: -webkit-sticky;
+  top: 0;
+  z-index: 1;
+  height: 30px;
+  padding: 0 5px;
+  background-color: #F5F5F5;
+  border-bottom: 1px solid #E3E3E3;
+}
+
+.editable_table_panel .editable_table_icons button {
+  background-color: inherit;
+  border: transparent;
+  padding: 0;
+  margin-right: 5px;
+}
+
+.editable_table_panel .editable_table_icons button.regular > i {
+  font-weight: 400;
+}
+
+.editable_table_panel .datatables {
+  margin-top: -20px;
+}
+
+.add-values-inline-form {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-end;
+}
+
+.add-values-inline-form .form-group {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+}
+
+.add-values-inline-form .form-group > label {
+  min-width: 40px;
+}
+
+.add-values-inline-form .form-group > input {
+  margin-left: 5px;
+}
+
+.add-values-inline-form .form-group > .checkbox {
+  margin-left: 25px;
+}
+
+.show-from-to-values {
+  max-height: 100px;
+  overflow-y: auto;
+  border: 1px solid #777777;
+  padding: 5px 10px;
+}
+}
