@@ -705,37 +705,7 @@ i.fa.inactive {
 
 .layer-wrap.layer.params .well.histogram_breaks_panel {
   height: 200px;
-  overflow-y: auto;
   padding: 0;
-}
-
-.layer-wrap.layer.params .well.histogram_breaks_panel .histogram_breaks_icons {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  position: sticky;
-  position: -webkit-sticky;
-  top: 0;
-  z-index: 1;
-  height: 30px;
-  padding: 0 5px;
-  background-color: #F5F5F5;
-  border-bottom: 1px solid #E3E3E3;
-}
-
-.layer-wrap.layer.params .well.histogram_breaks_panel .histogram_breaks_icons button {
-  background-color: inherit;
-  border: transparent;
-  padding: 0;
-  margin-right: 5px;
-}
-
-.layer-wrap.layer.params .well.histogram_breaks_panel .histogram_breaks_icons button.regular > i {
-  font-weight: 400;
-}
-
-.layer-wrap.layer.params .well.histogram_breaks_panel .datatables {
-  margin-top: -20px;
 }
 
 .position-dodge-width .dodge-width-input,
