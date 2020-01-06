@@ -13,10 +13,10 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
                        "use_breaks" = FALSE) # Don't use breaks by default
 
   # Not a built-in input (handled via datatable)
-  layer_data <- reactiveValues(breaks = NULL)
+  layer_data <- reactiveValues(breaks = NULL,
+                               bin_width_base_data = NULL)
 
-  # Store non-reactive bin_width base_data - used for resetting in breaks
-  bin_width_base_data <- NULL
+  refreshDT <- makeReactiveTrigger()
 
   # Only these inputs should trigger an update to the layer code
   reactive_inputs <- reactive({
@@ -27,9 +27,6 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
           input$closed,
           input$use_breaks)
   })
-
-  # Need this to trigger datatable when breaks are selected
-  refreshDT <- makeReactiveTrigger()
 
   # Gets range data for bins
   rng <- reactive({
@@ -97,37 +94,7 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
             class = paste(c("histogram_breaks_panel",
                             switch(!(input[['use_breaks']] %||% default_args[['use_breaks']]),
                                    "hidden")), collapse = " "),
-            tagList(
-              div(
-                class = "histogram_breaks_icons",
-                actionButton(session$ns('select_all_breaks'),
-                             label = "",
-                             icon = icon("check-square")
-                ),
-                actionButton(session$ns('unselect_all_breaks'),
-                             label = "",
-                             icon = icon("check-square"),
-                             class = "regular"
-                ),
-                shinyjs::disabled(
-                  actionButton(session$ns('add_breaks'),
-                               label = "",
-                               icon = icon("plus")
-                  )
-                ),
-                shinyjs::disabled(
-                  actionButton(session$ns('remove_breaks'),
-                               label = "",
-                               icon = icon("minus")
-                  )
-                ),
-                actionButton(session$ns('get_breaks'),
-                             label = "",
-                             icon = icon("sync-alt")
-                )
-              ),
-              DT::DTOutput(session$ns('breaks'))
-            )
+            editableTableUI(session$ns('breaks'))
           )
         )
       } else {
@@ -138,6 +105,18 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
 
   # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
+
+  breaks <- callModule(module = editableTableServer,
+                       id = "breaks",
+                       init = reactive({ data.frame(
+                         values = c(layer_data$bin_width_base_data$xmin,
+                                    layer_data$bin_width_base_data[nrow(layer_data$bin_width_base_data), "xmax"])
+                       ) }),
+                       refreshDT = refreshDT,
+                       unique_values = TRUE,
+                       default_from = reactive({ layer_data$bin_width_base_data[1, "xmin"] }),
+                       default_to = reactive({ layer_data$bin_width_base_data[nrow(layer_data$bin_width_base_data), "xmax"] }),
+                       session = session)
 
   observeEvent(input$bins_width, {
     if (input$bins_width && isTruthy(input$binwidth)) {
@@ -155,27 +134,13 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
       }
   })
 
-  output$breaks <- DT::renderDataTable({
-    refreshDT$depend()
-    layer_data$breaks},
-    options = list(dom = "t",
-                   ordering = FALSE,
-                   paging = FALSE
-    ),
-    server = TRUE,
-    editable = "cell",
-    rownames = FALSE,
-    colnames = NULL
-  )
-  outputOptions(output, "breaks", suspendWhenHidden = FALSE)
-
   observeEvent(input$use_breaks, {
     if (input$use_breaks) {
       shinyjs::disable("bins")
       shinyjs::disable("binwidth")
       shinyjs::js$addClass("disabled", paste0("#", session$ns("params"), " .SNI-switch .bootstrap-switch"))
       shinyjs::js$removeClass("hidden", '.histogram_breaks_panel')
-      bin_width_base_data <<- base_data()
+      layer_data$bin_width_base_data <<- base_data()
       refreshDT$trigger() # Need the trigger for some reason
     } else {
       shinyjs::enable("bins")
@@ -185,111 +150,10 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
     }
   })
 
-  observeEvent(input$get_breaks, {
-    if (is.null(layer_data$breaks)) {
-      layer_data$breaks <- data.frame(
-        breaks = rng() # Start with just boundaries
-      )
-    } else {
-      layer_data$breaks <- data.frame(
-        breaks = c(bin_width_base_data$xmin, bin_width_base_data[nrow(bin_width_base_data), "xmax"])
-      )
-    }
-  }, ignoreNULL = FALSE, ignoreInit = TRUE) # Make sure it only runs once when NULL on init
-
-  observeEvent(input$breaks_rows_selected, {
-    # Only allow adding breaks when one row selected
-    if (!is.null(input$breaks_rows_selected) &&
-        (length(input$breaks_rows_selected) == 1) &&
-        (input$breaks_rows_selected != nrow(layer_data$breaks))) {
-      shinyjs::enable('add_breaks')
-    } else {
-      shinyjs::disable('add_breaks')
-    }
-
-    # Make sure you don't delete too many breaks - need at least 2
-    if (!is.null(input$breaks_rows_selected) && (nrow(layer_data$breaks) - length(input$breaks_rows_selected) >= 2)) {
-      shinyjs::enable('remove_breaks')
-    } else {
-      shinyjs::disable('remove_breaks')
-    }
-  }, ignoreNULL = FALSE)
-
-  observeEvent(input$remove_breaks, {
-    # Need to subset directly on column since subsetting a data frame with one
-    #   column will return a vector
-    layer_data$breaks <<- data.frame(
-      breaks = layer_data$breaks$breaks[setdiff(1:nrow(layer_data$breaks),input$breaks_rows_selected)]
+  observeEvent(breaks(), {
+    layer_data$breaks <- data.frame(
+      breaks = breaks()$values
     )
-  })
-
-  addBreaksModal <- function(failed = FALSE) {
-    modalDialog(
-      numericInput(session$ns('num_breaks'),
-                   "Add how many points?",
-                   value = 1,
-                   min = 1,
-                   step = 1
-      ),
-      if (failed)
-        div(tags$b("Please choose an integer greater than 0", style = "color: red;")),
-      footer = tagList(
-        modalButton("Cancel"),
-        actionButton(session$ns("ok"), "OK")
-      ),
-      size = "s",
-      easyClose = FALSE,
-      fade = TRUE
-    )
-  }
-
-  observeEvent(input$add_breaks, {
-    showModal(addBreaksModal())
-  })
-
-  observeEvent(input$ok, {
-    if (is.integer(input$num_breaks) && input$num_breaks >= 1) {
-      # Selected row will NOT be last, so we know we have row+1
-      row <- input$breaks_rows_selected
-      layer_data$breaks <<- data.frame(
-        breaks = c(layer_data$breaks$breaks[1:row],
-                   seq(from = layer_data$breaks$breaks[row],
-                       to = layer_data$breaks$breaks[row+1],
-                       length.out = input$num_breaks + 2)[2:(input$num_breaks+1)],
-                   layer_data$breaks$breaks[(row+1):nrow(layer_data$breaks)])
-      )
-      removeModal()
-    } else {
-      showModal(addBreaksModal(failed = TRUE))
-    }
-  })
-
-  observeEvent(input$select_all_breaks, {
-    DT::dataTableProxy('breaks') %>%
-      DT::selectRows(1:nrow(layer_data$breaks))
-  })
-
-  observeEvent(input$unselect_all_breaks, {
-    DT::dataTableProxy('breaks') %>%
-      DT::selectRows(NULL)
-  })
-
-  observeEvent(input$breaks_cell_edit, {
-    row <- input$breaks_cell_edit$row
-    value <- as.numeric(input$breaks_cell_edit$value)
-
-    # Make sure edited value lies between left and right break points
-    if (((row == 1) || (layer_data$breaks$breaks[row-1] < value)) &&
-        ((row == nrow(layer_data$breaks)) || (value < layer_data$breaks$breaks[row+1]))) {
-      # Could just do this manually
-      layer_data$breaks <<- DT::editData(layer_data$breaks,
-                                         input$breaks_cell_edit,
-                                         'breaks',
-                                         rownames = FALSE)
-    } else {
-      # Need to refresh client table with server info
-      refreshDT$trigger()
-    }
   })
 
   # This reactive needs to be isolated since we have inputs that don't need

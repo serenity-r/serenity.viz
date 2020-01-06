@@ -42,8 +42,8 @@ editableTableServer <- function(input, output, session = getDefaultReactiveDomai
                                 unique_values = FALSE,
                                 min_values = 0,
                                 default_num = 2,
-                                default_from = 0,
-                                default_to = 1) {
+                                default_from = reactive({ 0 }),
+                                default_to = reactive({ 1 })) {
   # Not a built-in input (handled via datatable)
   table_data <- reactiveValues(values = NULL)
 
@@ -86,11 +86,11 @@ editableTableServer <- function(input, output, session = getDefaultReactiveDomai
 
   addValuesModal <- function(init_num = default_num,
                              init_from = switch(as.character(num_selected()),
-                                                "0" = default_from,
+                                                "0" = default_from(),
                                                 table_data$values$values[sort(input$table_rows_selected)[1]]),
                              init_to = switch(as.character(num_selected()),
                                               "0" = ,
-                                              "1" = default_to,
+                                              "1" = default_to(),
                                               table_data$values$values[sort(input$table_rows_selected)[num_selected()]]),
                              include_from = (num_selected() == 0),
                              include_to = (num_selected() <= 1),
@@ -160,14 +160,14 @@ editableTableServer <- function(input, output, session = getDefaultReactiveDomai
         length.out = mod_num_values())
   })
 
-  from_to_values_filtered <- reactive({
+  from_to_values_new <- reactive({
     from_to_values()[ifelse(input$include_from, 1, 2):ifelse(input$include_to, mod_num_values(), mod_num_values()-1)] %>%
-      { switch(as.character(unique_values), "TRUE" = setdiff(unique(.), table_data$values$values), "FALSE" = .) }
+      { switch(as.character(unique_values), "TRUE" = dsetdiff(unique(.), table_data$values$values), "FALSE" = .) }
   })
 
   output$show_from_to_values <- renderText({
     paste(purrr::map_chr(from_to_values(),
-                         ~ ifelse(. %in% from_to_values_filtered(), ., paste0("<span style='color:red'>", ., "</span>"))),
+                         ~ ifelse(. %din% from_to_values_new(), ., paste0("<span style='color:red'>", ., "</span>"))),
           collapse = " ")
   })
 
@@ -190,7 +190,7 @@ editableTableServer <- function(input, output, session = getDefaultReactiveDomai
       )
     } else {
       table_data$values <<- data.frame(
-        values = sort(c(table_data$values$values, from_to_values_filtered()))
+        values = sort(c(table_data$values$values, from_to_values_new()))
       )
       removeModal()
     }
@@ -210,11 +210,12 @@ editableTableServer <- function(input, output, session = getDefaultReactiveDomai
     row <- input$table_cell_edit$row
     value <- as.numeric(input$table_cell_edit$value)
 
-    if (!unique_values || !(value %in% table_data$values$values)) {
+    if (!unique_values || !(value %din% table_data$values$values)) {
       table_data$values <<- DT::editData(table_data$values,
                                          input$table_cell_edit,
                                          'values',
-                                         rownames = FALSE)
+                                         rownames = FALSE) %>%
+        dplyr::arrange(values)
     } else {
       # Need to refresh client table with server info
       refreshDT$trigger()

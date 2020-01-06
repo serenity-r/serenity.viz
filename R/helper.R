@@ -32,3 +32,16 @@ widgetBody <- function(..., class = NULL, .list = NULL)
   items <- c(list(...), .list)
   tags$section(class = paste0(c("widget-body", class), collapse = " "), items)
 }
+
+`%din%` <- function(x, y) {
+  sapply(x, function(x, y) { any(abs(x-y) < 1e-14) }, y = y)
+}
+
+dsetdiff <- function (x, y)
+{
+  x <- as.vector(x)
+  y <- as.vector(y)
+  unique(if (length(x) || length(y))
+    x[x %din% y == 0L]
+    else x)
+}
