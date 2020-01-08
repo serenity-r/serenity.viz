@@ -17,8 +17,11 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
                                bin_width_base_data = NULL)
 
   refreshDT <- makeReactiveTrigger()
+  initBreaks <- makeReactiveTrigger()
 
   # Only these inputs should trigger an update to the layer code
+  # Refactor: Probably don't need to do this anymore now that the
+  #  editable table is a module
   reactive_inputs <- reactive({
     paste(input$bins_width,
           input$bins,
@@ -106,17 +109,30 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
   # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
-  breaks <- callModule(module = editableTableServer,
-                       id = "breaks",
-                       init = reactive({ data.frame(
-                         values = c(layer_data$bin_width_base_data$xmin,
-                                    layer_data$bin_width_base_data[nrow(layer_data$bin_width_base_data), "xmax"])
-                       ) }),
-                       refreshDT = refreshDT,
-                       unique_values = TRUE,
-                       default_from = reactive({ layer_data$bin_width_base_data[1, "xmin"] }),
-                       default_to = reactive({ layer_data$bin_width_base_data[nrow(layer_data$bin_width_base_data), "xmax"] }),
-                       session = session)
+  # Need to make sure bin_width_base_data is initialized before calling module
+  breaks <- reactive({ NULL })
+  observeEvent(layer_data$bin_width_base_data, {
+    breaks <<- callModule(module = editableTableServer,
+                          id = "breaks",
+                          init = reactive({
+                            c(layer_data$bin_width_base_data$xmin,
+                              layer_data$bin_width_base_data[nrow(layer_data$bin_width_base_data), "xmax"])
+                          }),
+                          refreshDT = refreshDT,
+                          unique_values = TRUE,
+                          default_from = reactive({ layer_data$bin_width_base_data[1, "xmin"] }),
+                          default_to = reactive({ layer_data$bin_width_base_data[nrow(layer_data$bin_width_base_data), "xmax"] }),
+                          session = session)
+    initBreaks$trigger() # Since updating breaks reactive, need to trigger
+  }, ignoreNULL = TRUE, once = TRUE)
+
+  # Initialize and update breaks
+  observe({
+    initBreaks$depend()
+    layer_data$breaks <- data.frame(
+      breaks = switch(length(breaks()$values) != 0, breaks()$values) # Editable table module returns numeric(0)
+    )
+  })
 
   observeEvent(input$bins_width, {
     if (input$bins_width && isTruthy(input$binwidth)) {
@@ -148,12 +164,6 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
       shinyjs::js$removeClass("disabled", paste0("#", session$ns("params"), " .SNI-switch .bootstrap-switch"))
       shinyjs::js$addClass("hidden", '.histogram_breaks_panel')
     }
-  })
-
-  observeEvent(breaks(), {
-    layer_data$breaks <- data.frame(
-      breaks = breaks()$values
-    )
   })
 
   # This reactive needs to be isolated since we have inputs that don't need
