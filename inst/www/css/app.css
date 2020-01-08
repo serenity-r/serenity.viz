@@ -703,8 +703,9 @@ i.fa.inactive {
 
 /* END: Override histogram closed parameter */
 
-.layer-wrap.layer.params .well.histogram_breaks_panel {
-  height: 200px;
+.layer-wrap.layer.params .well.histogram_breaks_panel,
+.layer-wrap.layer.params .well.violin_quantiles_panel {
+  max-height: 200px;
   padding: 0;
 }
 
@@ -741,19 +742,19 @@ i.fa.inactive {
   flex: 1;
 }
 
-/* Boxplot */
-.outlier-aesthetics .panel-title i {
+.serenity-accordion .panel-title i {
   float: right;
 }
 
-.outlier-aesthetics .panel-heading i::before {
+.serenity-accordion .panel-heading i::before {
   content: "\f107";
 }
 
-.outlier-aesthetics .panel-heading.collapsed i::before {
+.serenity-accordion .panel-heading.collapsed i::before {
   content: "\f104";
 }
 
+/* Boxplot */
 .outlier-aes-header {
   position: relative;
 }
@@ -768,11 +769,11 @@ i.fa.inactive {
   right: 0;
 }
 
-.outlier-aesthetics .aes-wrap {
+.serenity-accordion .aes-wrap {
   margin: 0;
 }
 
-.outlier-aesthetics .aes-wrap > .form-group {
+.serenity-accordion .aes-wrap > .form-group {
   margin-bottom: 0;
   margin-top: -20px;
 }

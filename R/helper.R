@@ -33,10 +33,12 @@ widgetBody <- function(..., class = NULL, .list = NULL)
   tags$section(class = paste0(c("widget-body", class), collapse = " "), items)
 }
 
+# Set inclusion for double vectors
 `%din%` <- function(x, y) {
   sapply(x, function(x, y) { any(abs(x-y) < 1e-14) }, y = y)
 }
 
+# Set difference for double vectors
 dsetdiff <- function (x, y)
 {
   x <- as.vector(x)
@@ -44,4 +46,12 @@ dsetdiff <- function (x, y)
   unique(if (length(x) || length(y))
     x[x %din% y == 0L]
     else x)
+}
+
+bs_accordion <- function(id, panel_type = "default", use_heading_link = TRUE) {
+  bsplus::bs_accordion(id) %>%
+    bsplus::bs_set_opts(panel_type, use_heading_link = use_heading_link) %>% {
+      .$attribs$class <- paste(.$attribs$class, "serenity-accordion")
+      .
+    }
 }

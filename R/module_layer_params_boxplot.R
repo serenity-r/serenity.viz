@@ -103,11 +103,7 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
       isolate({
         tagList(
           h5("Outlier Aesthetics"),
-          bsplus::bs_accordion(session$ns("outlier_aesthetics")) %>%
-            bsplus::bs_set_opts("default", use_heading_link = TRUE) %>% {
-              .$attribs$class <- paste(.$attribs$class, "outlier-aesthetics")
-              .
-            } %>%
+          serenity.viz::bs_accordion(session$ns("outlier_aesthetics")) %>%
             create_outlier_aes_input("colour", default_args$outlier.colour %T||% NA_defaults[["colour"]], input, session, collapsed = FALSE) %>%
             create_outlier_aes_input("fill", default_args$outlier.fill %T||% NA_defaults[["fill"]], input, session) %>%
             create_outlier_aes_input("shape", default_args$outlier.shape %T||% NA_defaults[["shape"]], input, session) %>%
