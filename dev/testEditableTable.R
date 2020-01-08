@@ -17,7 +17,7 @@ server <- function(input, output, session) {
                        session = session)
 
   output$table_values <- renderPrint({
-    values()
+    attributes(values())
   })
 }
 

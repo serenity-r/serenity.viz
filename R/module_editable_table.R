@@ -1,4 +1,4 @@
-editableTableUI <- function(id) {
+editableTableUI <- function(id, refreshIcon = "sync-alt") {
   ns <- NS(id)
 
   div(
@@ -29,7 +29,7 @@ editableTableUI <- function(id) {
       ),
       actionButton(ns('get_values'),
                    label = "",
-                   icon = icon("sync-alt")
+                   icon = icon(refreshIcon)
       )
     ),
     DT::DTOutput(ns('table'))
@@ -37,7 +37,7 @@ editableTableUI <- function(id) {
 }
 
 editableTableServer <- function(input, output, session = getDefaultReactiveDomain(),
-                                init = reactive({ NULL }),
+                                init = reactive({ numeric(0) }),
                                 refreshDT = makeReactiveTrigger(),
                                 unique_values = FALSE,
                                 min_values = 0,
@@ -45,7 +45,7 @@ editableTableServer <- function(input, output, session = getDefaultReactiveDomai
                                 default_from = reactive({ 0 }),
                                 default_to = reactive({ 1 })) {
   # Not a built-in input (handled via datatable)
-  table_data <- reactiveValues(values = NULL)
+  table_data <- reactiveValues(values = data.frame(values=numeric(0)))
 
   output$table <- DT::renderDataTable({
     refreshDT$depend()

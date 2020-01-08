@@ -6,7 +6,7 @@
 }
 
 .editable_table_panel {
-  height: 200px;
+  max-height: 200px;
   overflow-y: auto;
   padding: 0;
 }
