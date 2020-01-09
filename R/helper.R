@@ -48,10 +48,10 @@ dsetdiff <- function (x, y)
     else x)
 }
 
-bs_accordion <- function(id, panel_type = "default", use_heading_link = TRUE) {
+bs_accordion <- function(id, panel_type = "default", use_heading_link = TRUE, class = NULL) {
   bsplus::bs_accordion(id) %>%
     bsplus::bs_set_opts(panel_type, use_heading_link = use_heading_link) %>% {
-      .$attribs$class <- paste(.$attribs$class, "serenity-accordion")
+      .$attribs$class <- paste(c(.$attribs$class, "serenity-accordion", class), collapse = " ")
       .
     }
 }

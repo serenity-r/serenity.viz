@@ -96,12 +96,7 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
                                     numericInput(session$ns('bw_numeric'),
                                                  label = '',
                                                  value = input[['bw_numeric']] %||% default_args[['bw_numeric']],
-                                    ) %>%
-                                      {
-                                        switch(as.character(input[['bw_override']] %||% default_args[['bw_override']]),
-                                               "TRUE" = shinyjs::disabled(.),
-                                               "FALSE" = .)
-                                      }
+                                    )
                                   )
                                 ),
                                 sliderInput(session$ns('adjust'),
@@ -140,17 +135,13 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
     if (input$bw_override) {
       shinyjs::disable("bw_algorithm")
       shinyjs::enable("bw_numeric")
-      # shinyjs::disable("binwidth")
-      # shinyjs::js$addClass("disabled", paste0("#", session$ns("params"), " .SNI-switch .bootstrap-switch"))
-      # shinyjs::js$removeClass("hidden", '.histogram_breaks_panel')
-      # layer_data$bin_width_base_data <<- base_data()
-      # refreshDT$trigger() # Need the trigger for some reason
     } else {
       shinyjs::enable("bw_algorithm")
       shinyjs::disable("bw_numeric")
     }
   })
 
+  # Refactor:  Should just be an observe, yes?
   observeEvent({
     paste(input$bw_override, input$bw_algorithm, input$bw_numeric)
   }, {

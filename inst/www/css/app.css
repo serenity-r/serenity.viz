@@ -734,6 +734,17 @@ i.fa.inactive {
   width: 100%;
 }
 
+.dotplot-stack-groups {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  align-items: baseline;
+}
+
+.dotplot-stack-groups > div {
+  margin-left: 10px;
+}
+
 .glm {
   display: flex;
 }
