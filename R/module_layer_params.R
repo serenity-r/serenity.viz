@@ -99,6 +99,11 @@ filter_out_defaults <- function(param, default, value) {
                                             show.legend.key[[value]],
                                             NULL),
                      "closed" = switch(value != default, "right", NULL),
+                     "sides" = switch(as.character(length(value)),
+                                      "0" = "",
+                                      switch((length(value) != length(default)) || any(!(value %in% default)),
+                                             paste(sort(value), collapse = ""), NULL)
+                     ),
                      switch(is.na(default) || (default != value), value, NULL)
   )
 
