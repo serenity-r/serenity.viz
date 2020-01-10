@@ -734,6 +734,7 @@ i.fa.inactive {
   width: 100%;
 }
 
+.inline-switch-with-label,
 .dotplot-stack-groups {
   display: flex;
   flex-wrap: nowrap;
@@ -741,6 +742,7 @@ i.fa.inactive {
   align-items: baseline;
 }
 
+.inline-switch-with-label > div,
 .dotplot-stack-groups > div {
   margin-left: 10px;
 }
