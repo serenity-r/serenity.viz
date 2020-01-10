@@ -734,16 +734,14 @@ i.fa.inactive {
   width: 100%;
 }
 
-.inline-switch-with-label,
-.dotplot-stack-groups {
+.inline-switch-with-label {
   display: flex;
   flex-wrap: nowrap;
   flex-direction: row;
   align-items: baseline;
 }
 
-.inline-switch-with-label > div,
-.dotplot-stack-groups > div {
+.inline-switch-with-label > div {
   margin-left: 10px;
 }
 

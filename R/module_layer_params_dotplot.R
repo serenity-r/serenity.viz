@@ -102,7 +102,7 @@ layerParamsGeomDotplotServer <- function(input, output, session, base_data) {
                                              selected = input[['binpositions']] %||% default_args[['binpositions']],
                                              inline = TRUE),
                                 div(
-                                  class = "dotplot-stack-groups",
+                                  class = "inline-switch-with-label",
                                   h5("Group Stacking"),
                                   switchInput(session$ns('stackgroups'),
                                               value = input[['stackgroups']] %||% default_args[['stackgroups']],
