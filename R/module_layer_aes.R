@@ -128,6 +128,9 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
     })
   })
 
+  # _ Make sure inputs always update ====
+  outputOptions(output, "aes_ui", suspendWhenHidden = FALSE)
+
   # Can't isolate majority of this or get infinite loop with mapping inputs
   output$`aes-section-header` <- renderUI({
     ns <- session$ns
@@ -246,9 +249,6 @@ layerAesServer <- function(input, output, session, triggerAesUpdate, geom_blank_
   observeEvent(input$`aes-reset-mapping`, {
     dragulaSelectR::updateDropZoneInput(session, 'mapping', geom_blank_input[[geom_blank_ns("mapping")]]())
   })
-
-  # _ Make sure inputs always update ====
-  outputOptions(output, "aes_ui", suspendWhenHidden = FALSE)
 
   # _ Aesthetic to code ====
   aesToCode <- reactive({

@@ -50,7 +50,7 @@ layerAestheticsServer <- function(input, output, session, layers_selected, geom_
     if (layers_selected() == layer_id) {
       triggerAesUpdate$trigger()
     }
-  })
+  }, ignoreInit = TRUE)
 
   # MAIN ----
 
@@ -77,7 +77,7 @@ layerAestheticsServer <- function(input, output, session, layers_selected, geom_
                                                   renderNum = renderNumSource()))
 
   # _ process subset arguments ====
-  aes_code <- reactive({
+  aes_code <- eventReactive(paste(purrr::map(aes_args, ~ .())), {
     # Evaluate reactives
     args <- purrr::map(aes_args, ~ .())
 
@@ -102,7 +102,7 @@ layerAestheticsServer <- function(input, output, session, layers_selected, geom_
     }
 
     return(processed_aes_code)
-  })
+  }, ignoreInit = TRUE)
 
   return(aes_code)
 }
