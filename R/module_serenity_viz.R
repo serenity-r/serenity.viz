@@ -328,19 +328,18 @@ serenityVizServer <- function(input, output, session, dataset) {
     layerAestheticsUI(id = paste0(session$ns(selected_layer()),'-aesthetics'))
   })
 
-  all_layers <- reactive({
-    req(input$base_layer)
+  all_layers <- eventReactive(input$layers, {
     c(input$base_layer, input$layers)
-  })
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
-  selected_layer <- reactive({
+  selected_layer <- eventReactive(input$layers_selected, {
     input$layers_selected %||% "geom-blank-ds-1"
-  })
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   # Get the names of the visible layers
-  visible_layers <- reactive({
+  visible_layers <- eventReactive(paste(all_layers(), input$layers_invisible), {
     setdiff(all_layers(), input$layers_invisible)
-  })
+  }, ignoreInit = TRUE)
 
   # Preps geom_blank dropzone inputs for layer modules
   geom_blank_inputs_to_reactives <- function() {
@@ -374,12 +373,14 @@ serenityVizServer <- function(input, output, session, dataset) {
 
   # Get layer code
   layer_code <- reactive({
-    req(visible_layers())
+    req(visible_layers(),
+        purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .()))
     paste(purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .()), collapse = "+\n")
   })
 
   # _ Plot ====
   output$viz <- renderPlot({
+    req(ggobj())
     failure <- FALSE
     # Try to plot.  If unsuccessful, pass error message to help pane.
     # We need the print statement here or we can't capture errors
