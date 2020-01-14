@@ -58,11 +58,9 @@ layerAestheticsServer <- function(input, output, session, layers_selected, geom_
   output$layer_aesthetics <- renderUI({
     triggerAesUpdate$depend()
 
-    ns <- session$ns
-
     tagList(
       lapply(aesthetics, function(aes) {
-        layerAesUI(id = ns(aes))
+        layerAesUI(id = session$ns(aes))
       })
     )
   })

@@ -104,10 +104,10 @@ layerParamsGeomDotplotServer <- function(input, output, session, base_data) {
                                 div(
                                   class = "inline-switch-with-label",
                                   h5("Group Stacking"),
-                                  switchInput(session$ns('stackgroups'),
-                                              value = input[['stackgroups']] %||% default_args[['stackgroups']],
-                                              size = "mini",
-                                              inline = TRUE)
+                                  shinyWidgets::switchInput(session$ns('stackgroups'),
+                                                            value = input[['stackgroups']] %||% default_args[['stackgroups']],
+                                                            size = "mini",
+                                                            inline = TRUE)
                                 )
                               ),
                               span(

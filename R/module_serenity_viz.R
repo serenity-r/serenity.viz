@@ -117,8 +117,8 @@ serenityVizServer <- function(input, output, session, dataset) {
                       style = "padding: 19px;",
                       plotOutput(ns("viz"), height = "100%", click = "plot_click"),
                       shinyjs::hidden(
-                        absolutePanel(id = ns("help-pane"),
-                                      class = "help-pane",
+                        absolutePanel(id = ns("error-pane"),
+                                      class = "error-pane",
                                       top = "20px",
                                       draggable = FALSE
                         )
@@ -308,12 +308,12 @@ serenityVizServer <- function(input, output, session, dataset) {
   })
 
   observeEvent(input$maximize, {
-    ns <- session$ns
-
     if (input$maximize) {
-      phosphorr::phosphorrProxy(ns('pjsbox')) %>% phosphorr::maximizeWidget(ns('widget-ggplot'))
+      phosphorr::phosphorrProxy(session$ns('pjsbox')) %>%
+        phosphorr::maximizeWidget(session$ns('widget-ggplot'))
     } else {
-      phosphorr::phosphorrProxy(ns('pjsbox')) %>% phosphorr::minimizeWidget(ns('widget-ggplot'))
+      phosphorr::phosphorrProxy(session$ns('pjsbox')) %>%
+        phosphorr::minimizeWidget(session$ns('widget-ggplot'))
     }
   })
 
@@ -405,13 +405,13 @@ serenityVizServer <- function(input, output, session, dataset) {
         error = function(e) {
           if (nchar(e$message)) {
             isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:#CC0000'>**Error**</span>: ", e$message, "<br/>", ggplot2_log())))
-            shinyjs::show(id = "help-pane", anim = FALSE)
-            shinyjs::html(id = "help-pane", html = e$message)
+            shinyjs::show(id = "error-pane", anim = FALSE)
+            shinyjs::html(id = "error-pane", html = e$message)
           }
           invokeRestart("muffleError")
         }),
       finally = {
-        if (!failure) shinyjs::hide(id = "help-pane", anim = FALSE)
+        if (!failure) shinyjs::hide(id = "error-pane", anim = FALSE)
       }
     )
   })
