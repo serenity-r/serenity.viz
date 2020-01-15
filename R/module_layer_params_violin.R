@@ -33,6 +33,8 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
   })
 
   output$params <- renderUI({
+    req(base_data())
+
     isolate({
       if (isTruthy(base_data())) {
         # UI

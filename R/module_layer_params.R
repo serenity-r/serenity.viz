@@ -47,6 +47,8 @@ layerParamsServer <- function(input, output, session, base_data) {
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
   params_code <- reactive({
+    req(!is.null(geom_params_code()))
+
     # Get specific geom params
     processed_params_code <- geom_params_code()
 

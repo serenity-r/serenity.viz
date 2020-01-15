@@ -171,6 +171,8 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
   })
 
   geom_params_code <- reactive({
+    req(!is.null(input$outlier.show))
+
     default_args_list <- reactiveValuesToList(default_args)
     pos_outliers <- grepl("outlier", names(default_args_list))
 

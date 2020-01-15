@@ -8,16 +8,14 @@ layerParamsGeomBarServer <- function(input, output, session, base_data) {
   default_args <- list("width" = 0.9)
 
   output$params <- renderUI({
-    if (isTruthy(base_data())) {
-      isolate({
-        sliderInput(session$ns("width"),
-                    label = "Bar Width:",
-                    value = input[["width"]] %||% default_args[["width"]],
-                    min = 0,
-                    max = 1,
-                    step = 0.05)
-      })
-    }
+    isolate({
+      sliderInput(session$ns("width"),
+                  label = "Bar Width:",
+                  value = input[["width"]] %||% default_args[["width"]],
+                  min = 0,
+                  max = 1,
+                  step = 0.05)
+    })
   })
 
   # _ Make sure params always update ====
