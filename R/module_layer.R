@@ -225,7 +225,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
                               base_data = reactive({ ggdata$base_data }),
                               default_position = tolower(stringr::str_remove(class(geom_proto$position)[1], "Position")))
 
-  base_layer_code <- reactive({
+  base_layer_code <- dedupe(reactive({
     req(!is.null(layer_aesthetics()))
 
     processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
@@ -242,7 +242,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
                                    layer_params$code())
 
     return(processed_layer_code)
-  })
+  }))
 
   layer_code <- reactive({
     req(!is.null(base_layer_code()),

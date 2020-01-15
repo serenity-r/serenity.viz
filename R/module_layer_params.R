@@ -46,7 +46,7 @@ layerParamsServer <- function(input, output, session, base_data) {
   # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
-  params_code <- reactive({
+  params_code <- dedupe(reactive({
     req(!is.null(geom_params_code()))
 
     # Get specific geom params
@@ -59,7 +59,7 @@ layerParamsServer <- function(input, output, session, base_data) {
                                     common_layer_code)
 
     return(processed_params_code)
-  })
+  }))
 
   return(
     list(

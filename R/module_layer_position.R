@@ -155,7 +155,7 @@ layerPositionServer <- function(input, output, session, base_data, default_posit
     choices = c("Identity", "Jitter", "Dodge", "Jitter-Dodge", "Nudge", "Stack")
   )
 
-  position_code <- reactive({
+  position_code <- dedupe(reactive({
     processed_position_code <- ''
     if (isTruthy(input$position)) {
       # Process arguments
@@ -172,7 +172,7 @@ layerPositionServer <- function(input, output, session, base_data, default_posit
     }
 
     return(processed_position_code)
-  })
+  }))
 
   return(position_code)
 }
