@@ -23,6 +23,7 @@ dataVarUI <- function(id, var, default='') {
                                    max = init$max,
                                    step = (init$max - init$min)/100,
                                    value = c(init$min, init$max)),
+           'character' =,
            'ordered' =,
            'factor' = selectizeInput(inputId = inputId,
                                      label = "",
@@ -127,6 +128,8 @@ init_vals <- function(var) {
     init$max <- max(var, na.rm = TRUE)
   } else if (any(class(var) %in% c("factor"))) {
     init$levels <- levels(var)
+  } else if (any(class(var) %in% c("character"))) {
+    init$levels <- unique(var)
   }
 
   return(init)

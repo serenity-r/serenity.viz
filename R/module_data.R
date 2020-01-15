@@ -31,19 +31,17 @@ dataServer <- function(input, output, session, dataset) {
   var_names <- names(dataset)
 
   output$dataset_vars <- renderUI({
-    ns <- session$ns
-
     dragulaSelectR::dragZone(
-      id = ns('datazone'),
+      id = session$ns('datazone'),
       choices = sapply(var_names, function(var_name) {
         div(
           class = paste("varzone",
-                        switch(class(dataset[[var_name]])[1], 'integer' =, 'numeric' = 'numeric', 'ordered' =, 'factor' = 'factor')),
-          switch(class(dataset[[var_name]])[1], 'integer' =, 'numeric' = icon("signal"), 'ordered' =, 'factor' = icon("shapes")),
+                        dataTypeToUI(dataset[[var_name]])),
+          dataTypeToUI(dataset[[var_name]], .icon = TRUE),
           span(class = "varname", var_name),
           shinyWidgets::dropdownButton(
-            dataVarUI(id = ns(var_name), var = dataset[[var_name]]),
-            inputId = ns("data-filter-btn"),
+            dataVarUI(id = session$ns(var_name), var = dataset[[var_name]]),
+            inputId = session$ns("data-filter-btn"),
             status = "header-icon",
             icon = icon("filter"),
             size = "xs",
