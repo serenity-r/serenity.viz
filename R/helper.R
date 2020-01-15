@@ -55,3 +55,25 @@ bs_accordion <- function(id, panel_type = "default", use_heading_link = TRUE, cl
       .
     }
 }
+
+# Data UI
+dataTypeToUI <- function(var, .icon = FALSE) {
+  switch(class(var)[1],
+         'integer' =,
+         'numeric' = switch(as.character(.icon),
+                            'FALSE' = 'numeric',
+                            'TRUE' = icon("signal")),
+         'character' =,
+         'ordered' =,
+         'factor' = switch(as.character(.icon),
+                           'FALSE' = 'factor',
+                           'TRUE' = icon("shapes"))
+  )
+}
+
+# Useful to make sure code strings don't get invalidated if they don't change
+dedupe <- function(r) {
+  makeReactiveBinding("val")
+  observe(val <<- r(), priority = 10)
+  reactive(val)
+}
