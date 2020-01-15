@@ -123,9 +123,8 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
 
   # Ignoring subsetted data for now
   ggbaselayerobj <- reactive({
-    switch(isTruthy(ggbase()) && isTruthy(base_layer_code()),
-           eval(parse(text=paste("dataset %>%", ggbase(), "+", paste0(base_layer_code(), ")")))),
-           NULL)
+    req(ggbase(), base_layer_code())
+    eval(parse(text=paste("dataset %>%", ggbase(), "+", paste0(base_layer_code(), ")"))))
   })
 
   observeEvent(ggbaselayerobj(), {
@@ -223,10 +222,12 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   # Only need isolated base_data for now
   position_code <- callModule(module = layerPositionServer,
                               id = 'position',
-                              base_data = reactive({ isolate(ggdata$base_data) }),
+                              base_data = reactive({ ggdata$base_data }),
                               default_position = tolower(stringr::str_remove(class(geom_proto$position)[1], "Position")))
 
   base_layer_code <- reactive({
+    req(!is.null(layer_aesthetics()))
+
     processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
                                           "ggplot",
                                           stringr::str_replace(geom_type, "-", "_")), "(")
@@ -244,7 +245,9 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   })
 
   layer_code <- reactive({
-    req(base_layer_code())
+    req(!is.null(base_layer_code()),
+        !is.null(layer_params$code()),
+        !is.null(position_code()))
 
     # Add position arguments
     processed_layer_code <- paste0(base_layer_code(),

@@ -43,12 +43,10 @@ layerPositionServer <- function(input, output, session, base_data, default_posit
   )
 
   output$position_chooser <- renderUI({
-    ns <- session$ns
-
     init_position <- input$position %||% sub_to_pos[[default_position]] %||% default_position
     isolate({
       tagList(
-        selectizeInput(ns('position'),
+        selectizeInput(session$ns('position'),
                        label = NULL,
                        choices = list("Identity" = "identity",
                                       "Jitter" = "jitter",
@@ -65,7 +63,7 @@ layerPositionServer <- function(input, output, session, base_data, default_posit
                        selected = init_position
         ),
         switch(init_position %in% names(pos_to_sub),
-               checkboxInput(ns('position_sub'),
+               checkboxInput(session$ns('position_sub'),
                              label = switch(pos_to_sub[[init_position]],
                                             "fill" = "Normalize heights?",
                                             "dodge2" = "Variable widths?"),
@@ -99,7 +97,7 @@ layerPositionServer <- function(input, output, session, base_data, default_posit
   })
 
   output$position_options <- renderUI({
-    req(input$position)
+    req(input$position, base_data())
     refreshWidget$depend()
 
     isolate({

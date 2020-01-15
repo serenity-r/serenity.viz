@@ -4,8 +4,8 @@
 \alias{layerAesServer}
 \title{Server for layer aesthetic submodule}
 \usage{
-layerAesServer(input, output, session, triggerAesUpdate, geom_blank_input,
-  inherit.aes, default_aes, dataset, renderNum)
+layerAesServer(input, output, session, aesUpdateDependency,
+  geom_blank_input, inherit.aes, default_aes, dataset, renderNum)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -14,7 +14,7 @@ layerAesServer(input, output, session, triggerAesUpdate, geom_blank_input,
 
 \item{session}{Shiny user session}
 
-\item{triggerAesUpdate}{Trigger update on layer change}
+\item{aesUpdateDependency}{Trigger update on layer change}
 
 \item{geom_blank_input}{Need geom_blank values to check for inheritance}
 
