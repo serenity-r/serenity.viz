@@ -33,86 +33,80 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
   })
 
   output$params <- renderUI({
-    req(base_data())
-
     isolate({
-      if (isTruthy(base_data())) {
-        # UI
-        tagList(
-          checkboxInput(session$ns('trim'),
-                        label = "Trim tails to range of data",
-                        value = input[['trim']] %||% default_args[['trim']]),
-          selectInput(session$ns('scale'),
-                      label = 'Scale',
-                      choices = c(
-                        "Equal areas" = "area",
-                        "Proportional" = "count",
-                        "Equal width" = "width"
-                      ),
-                      selected = input[['scale']] %||% default_args[['scale']]),
-          serenity.viz::bs_accordion(session$ns('kernel_params')) %>%
-            bsplus::bs_append(tagList("Quantiles", icon("")),
-                              content = wellPanel(
-                                class = "violin_quantiles_panel",
-                                editableTableUI(session$ns('quantiles'),
-                                                refreshIcon = "trash")
-                              )
-            ) %>%
-            bsplus::bs_append(tagList("Kernel Parameters", icon("")),
-                              content = tagList(
-                                selectInput(session$ns('kernel'),
-                                            label = 'Kernel',
-                                            choices = c("Gaussian" = "gaussian",
-                                                        "Epanechnikov" = "epanechnikov",
-                                                        "Rectangular" = "rectangular",
-                                                        "Triangular" = "triangular",
-                                                        "Biweight" = "biweight",
-                                                        "Cosine" = "cosine",
-                                                        "Optcosine" = "optcosine"),
-                                            selected = input[['kernel']] %||% default_args[['kernel']]
-                                ),
-                                selectInput(session$ns('bw_algorithm'),
-                                            label = 'Bandwidth',
-                                            choices = c("Rule-of-Thumb" = "nrd0",
-                                                        "Scott (1992)" = "nrd",
-                                                        "Unbiased cross-validation" = "ucv",
-                                                        "Biased cross-validation" = "bcv",
-                                                        "Sheather & Jones (STE)" = "sj-ste",
-                                                        "Sheather & Jones (DPI)" = "sj-dpi"),
-                                            selected = input[['bw_algorithm']] %||% default_args[['bw_algorithm']]
-                                ),
-                                h5('Override bandwidth?'),
+      # UI
+      tagList(
+        checkboxInput(session$ns('trim'),
+                      label = "Trim tails to range of data",
+                      value = input[['trim']] %||% default_args[['trim']]),
+        selectInput(session$ns('scale'),
+                    label = 'Scale',
+                    choices = c(
+                      "Equal areas" = "area",
+                      "Proportional" = "count",
+                      "Equal width" = "width"
+                    ),
+                    selected = input[['scale']] %||% default_args[['scale']]),
+        serenity.viz::bs_accordion(session$ns('kernel_params')) %>%
+          bsplus::bs_append(tagList("Quantiles", icon("")),
+                            content = wellPanel(
+                              class = "violin_quantiles_panel",
+                              editableTableUI(session$ns('quantiles'),
+                                              refreshIcon = "trash")
+                            )
+          ) %>%
+          bsplus::bs_append(tagList("Kernel Parameters", icon("")),
+                            content = tagList(
+                              selectInput(session$ns('kernel'),
+                                          label = 'Kernel',
+                                          choices = c("Gaussian" = "gaussian",
+                                                      "Epanechnikov" = "epanechnikov",
+                                                      "Rectangular" = "rectangular",
+                                                      "Triangular" = "triangular",
+                                                      "Biweight" = "biweight",
+                                                      "Cosine" = "cosine",
+                                                      "Optcosine" = "optcosine"),
+                                          selected = input[['kernel']] %||% default_args[['kernel']]
+                              ),
+                              selectInput(session$ns('bw_algorithm'),
+                                          label = 'Bandwidth',
+                                          choices = c("Rule-of-Thumb" = "nrd0",
+                                                      "Scott (1992)" = "nrd",
+                                                      "Unbiased cross-validation" = "ucv",
+                                                      "Biased cross-validation" = "bcv",
+                                                      "Sheather & Jones (STE)" = "sj-ste",
+                                                      "Sheather & Jones (DPI)" = "sj-dpi"),
+                                          selected = input[['bw_algorithm']] %||% default_args[['bw_algorithm']]
+                              ),
+                              h5('Override bandwidth?'),
+                              div(
+                                class = "switch-numeric-input",
                                 div(
-                                  class = "switch-numeric-input",
-                                  div(
-                                    class = "SNI-switch",
-                                    shinyWidgets::switchInput(session$ns('bw_override'),
-                                                              label = '',
-                                                              value = input[['bw_override']] %||% default_args[['bw_override']],
-                                                              onLabel = "Yes",
-                                                              offLabel = "No"
-                                    )
-                                  ),
-                                  div(
-                                    class = "SNI-numeric",
-                                    numericInput(session$ns('bw_numeric'),
-                                                 label = '',
-                                                 value = input[['bw_numeric']] %||% default_args[['bw_numeric']],
-                                    )
+                                  class = "SNI-switch",
+                                  shinyWidgets::switchInput(session$ns('bw_override'),
+                                                            label = '',
+                                                            value = input[['bw_override']] %||% default_args[['bw_override']],
+                                                            onLabel = "Yes",
+                                                            offLabel = "No"
                                   )
                                 ),
-                                sliderInput(session$ns('adjust'),
-                                            label = 'Adjustment',
-                                            min = 0,
-                                            max = 1,
-                                            value = input[['adjust']] %||% default_args[['adjust']]
+                                div(
+                                  class = "SNI-numeric",
+                                  numericInput(session$ns('bw_numeric'),
+                                               label = '',
+                                               value = input[['bw_numeric']] %||% default_args[['bw_numeric']],
+                                  )
                                 )
+                              ),
+                              sliderInput(session$ns('adjust'),
+                                          label = 'Adjustment',
+                                          min = 0,
+                                          max = 1,
+                                          value = input[['adjust']] %||% default_args[['adjust']]
                               )
-            )
-        )
-      } else {
-        span("Please fix layer error before continuing.")
-      }
+                            )
+          )
+      )
     })
   })
   # _ Make sure params always update ====
@@ -136,10 +130,10 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
   observeEvent(input$bw_override, {
     if (input$bw_override) {
       shinyjs::disable("bw_algorithm")
-      shinyjs::enable("bw_numeric")
+      shinyjs::show("bw_numeric")
     } else {
       shinyjs::enable("bw_algorithm")
-      shinyjs::disable("bw_numeric")
+      shinyjs::hide("bw_numeric")
     }
   })
 
@@ -152,13 +146,18 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
                             "FALSE" = input$bw_numeric)
   })
 
-  observeEvent(input$bw_algorithm, {
-    req(base_data())
-
-    xs <- split(base_data()$y, base_data()$group)
-    bws <- vapply(xs, paste0("bw.", input$bw_algorithm), numeric(1))
-    updateNumericInput(session, "bw_numeric", value =signif(mean(bws), 3))
-  }, ignoreNULL = TRUE)
+  observe({
+    req(base_data(), !is.null(input$bw_override))
+    # Only update numeric bw if not currently overriding
+    if (!input$bw_override && nrow(base_data()) > 0) {
+      xs <- split(base_data()$y, base_data()$group)
+      bws <- switch(input$bw_algorithm,
+                    "sj-ste" = ,
+                    "sj-dpi" = vapply(xs, "bw.SJ", numeric(1), method = strsplit(input$bw_algorithm, "-")[[1]][2]),
+                    vapply(xs, paste0("bw.", input$bw_algorithm), numeric(1)))
+      isolate(updateNumericInput(session, "bw_numeric", value = signif(mean(bws), 3)))
+    }
+  })
 
   geom_params_code <- reactive({
     reactive_inputs()
