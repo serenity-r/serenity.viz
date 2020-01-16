@@ -114,8 +114,6 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
       })
     }
   })
-
-  # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
   outputOptions(output, "outliers", suspendWhenHidden = FALSE)
 

@@ -59,8 +59,6 @@ layerParamsGeomRugServer <- function(input, output, session, base_data) {
       })
     }
   })
-
-  # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
   rug_length <- callModule(unitChooserServer, "length")

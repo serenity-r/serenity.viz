@@ -4,6 +4,7 @@ layerParamsGeomHistogramUI <- function(id) {
   uiOutput(ns("params"))
 }
 
+# Refactor: Duplicate plotting when changing between bins and binwidth
 layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
   default_args <- list("bins_width" = TRUE,  # Number of bins (TRUE) or binwidth (FALSE)
                        "bins" = 30,          # Default number of bins

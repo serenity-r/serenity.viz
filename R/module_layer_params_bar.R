@@ -17,8 +17,6 @@ layerParamsGeomBarServer <- function(input, output, session, base_data) {
                   step = 0.05)
     })
   })
-
-  # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
   geom_params_code <- reactive({

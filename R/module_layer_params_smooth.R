@@ -100,8 +100,6 @@ layerParamsGeomSmoothServer <- function(input, output, session, base_data) {
       )
     })
   })
-
-  # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
   observeEvent(input$family, {
