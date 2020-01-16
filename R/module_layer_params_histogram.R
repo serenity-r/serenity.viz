@@ -36,77 +36,78 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
     c(base_data()[1, "xmin"], base_data()[nrow(base_data()), "xmax"])
   })
 
+  # Avoid NA warning
+  observeEvent(rng(), {
+    default_args$binwidth <- diff(rng())/default_args$bins
+    if (is.na(input$binwidth)) {
+      updateNumericInput(session, 'binwidth',
+                         value = default_args$binwidth,
+                         max = diff(rng()))
+    }
+  }, once = TRUE)
+
   output$params <- renderUI({
     isolate({
-      if (isTruthy(base_data())) {
-        # Set default binwidth
-        if (is.na(default_args$binwidth)) {
-          default_args$binwidth <- diff(rng())/default_args$bins
-        }
-
-        # UI
-        tagList(
+      # UI
+      tagList(
+        div(
+          class = "switch-numeric-input",
           div(
-            class = "switch-numeric-input",
-            div(
-              class = "SNI-switch",
-              shinyWidgets::switchInput(session$ns('bins_width'),
-                                        label = 'Bins',
-                                        value = input[['bins_width']] %||% default_args[['bins_width']],
-                                        onLabel = "Number",
-                                        offLabel = "Width",
-                                        offStatus = "primary"
-              )
-            ),
-            div(
-              class = paste0("SNI-numeric bins", ifelse(default_args[['bins_width']], "", " hidden")),
-              numericInput(session$ns('bins'),
-                           label = '',
-                           value = input[['bins']] %||% default_args[['bins']],
-                           min = 1,
-                           max = Inf)
-            ),
-            div(
-              class = paste0("SNI-numeric binwidth", ifelse(default_args[['bins_width']], " hidden", "")),
-              numericInput(session$ns('binwidth'),
-                           label = '',
-                           value = input[['binwidth']] %||% default_args[['binwidth']],
-                           min = 0,
-                           max = diff(rng())) # Might cause problems since isolated - wait and see
+            class = "SNI-switch",
+            shinyWidgets::switchInput(session$ns('bins_width'),
+                                      label = 'Bins',
+                                      value = input[['bins_width']] %||% default_args[['bins_width']],
+                                      onLabel = "Number",
+                                      offLabel = "Width",
+                                      offStatus = "primary"
             )
           ),
           div(
-            class = "inline-switch-no-label",
-            tagList(
-              span("Bins are"),
-              shinyWidgets::switchInput(session$ns('closed'),
-                                        value = input[['closed']] %||% default_args[['closed']],
-                                        onLabel = "left",
-                                        offLabel = "right",
-                                        offStatus = "primary",
-                                        labelWidth = "0",
-                                        size = "mini",
-                                        inline = TRUE),
-              span("closed.")
-            )
+            class = paste0("SNI-numeric bins", ifelse(default_args[['bins_width']], "", " hidden")),
+            numericInput(session$ns('bins'),
+                         label = '',
+                         value = input[['bins']] %||% default_args[['bins']],
+                         min = 1,
+                         max = Inf)
           ),
-          checkboxInput(session$ns('use_breaks'),
-                        label = "Specify breaks?",
-                        value = input[['use_breaks']] %||% default_args[['use_breaks']]),
-          wellPanel(
-            class = paste(c("histogram_breaks_panel",
-                            switch(!(input[['use_breaks']] %||% default_args[['use_breaks']]),
-                                   "hidden")), collapse = " "),
-            editableTableUI(session$ns('breaks'))
+          div(
+            class = paste0("SNI-numeric binwidth", ifelse(default_args[['bins_width']], " hidden", "")),
+            numericInput(session$ns('binwidth'),
+                         label = '',
+                         value = input[['binwidth']] %||% default_args[['binwidth']],
+                         min = 0,
+                         max = switch(as.character(isTruthy(rng())),
+                                      "TRUE" = diff(rng()),
+                                      "FALSE" = NA))
           )
+        ),
+        div(
+          class = "inline-switch-no-label",
+          tagList(
+            span("Bins are"),
+            shinyWidgets::switchInput(session$ns('closed'),
+                                      value = input[['closed']] %||% default_args[['closed']],
+                                      onLabel = "left",
+                                      offLabel = "right",
+                                      offStatus = "primary",
+                                      labelWidth = "0",
+                                      size = "mini",
+                                      inline = TRUE),
+            span("closed.")
+          )
+        ),
+        checkboxInput(session$ns('use_breaks'),
+                      label = "Specify breaks?",
+                      value = input[['use_breaks']] %||% default_args[['use_breaks']]),
+        wellPanel(
+          class = paste(c("histogram_breaks_panel",
+                          switch(!(input[['use_breaks']] %||% default_args[['use_breaks']]),
+                                 "hidden")), collapse = " "),
+          editableTableUI(session$ns('breaks'))
         )
-      } else {
-        span("Please fix layer error before continuing.")
-      }
+      )
     })
   })
-
-  # _ Make sure params always update ====
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
   # Need to make sure bin_width_base_data is initialized before calling module
@@ -148,7 +149,7 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
                            value = diff(rng())/input$bins,
                            max = diff(rng()))
       }
-  })
+  }, ignoreInit = TRUE)
 
   observeEvent(input$use_breaks, {
     if (input$use_breaks) {
