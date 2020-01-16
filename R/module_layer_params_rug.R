@@ -4,6 +4,7 @@ layerParamsGeomRugUI <- function(id) {
   uiOutput(ns("params"))
 }
 
+# Refactor: Unnecessary plotting occurs sometimes on base_data change
 layerParamsGeomRugServer <- function(input, output, session, base_data) {
   # Reactive since sides defaults changes based on data
   default_args <- reactiveValues("sides" = c("b", "l"),
@@ -25,39 +26,34 @@ layerParamsGeomRugServer <- function(input, output, session, base_data) {
   })
 
   output$params <- renderUI({
-    if (isTruthy(base_data())) {
-      isolate({
-        tagList(
-          shinyWidgets::checkboxGroupButtons(
-            session$ns('sides_original'),
-            label = "Which sides?",
-            choices = c(switch(!is.null(base_data()$x),
-                               c("Bottom" = "b",
-                                 "Top" = "t")),
-                        switch(!is.null(base_data()$y),
-                               c("Left" = "l",
-                                 "Right" = "r"))
-            ),
-            selected = input[['sides_original']] %||% default_args[['sides']],
-            status = "default",
-            size = "xs",
-            checkIcon = list(
-              yes = icon("ok", lib = "glyphicon"),
-              no = icon("remove", lib = "glyphicon")
-            )
-          ),
-          unitChooserUI(session$ns('length'), "Rug length"),
-          div(
-            class = "inline-switch-with-label",
-            h5("Outside plot"),
-            switchInput(session$ns('outside'),
-                        value = input[['outside']] %||% default_args[['outside']],
-                        size = "mini",
-                        inline = TRUE)
+    isolate({
+      tagList(
+        shinyWidgets::checkboxGroupButtons(
+          session$ns('sides_original'),
+          label = "Which sides?",
+          choices = c("Bottom" = "b",
+                      "Top" = "t",
+                      "Left" = "l",
+                      "Right" = "r"),
+          selected = input[['sides_original']] %||% default_args[['sides']],
+          status = "default",
+          size = "xs",
+          checkIcon = list(
+            yes = icon("ok", lib = "glyphicon"),
+            no = icon("remove", lib = "glyphicon")
           )
+        ),
+        unitChooserUI(session$ns('length'), "Rug length"),
+        div(
+          class = "inline-switch-with-label",
+          h5("Outside plot"),
+          shinyWidgets::switchInput(session$ns('outside'),
+                                    value = input[['outside']] %||% default_args[['outside']],
+                                    size = "mini",
+                                    inline = TRUE)
         )
-      })
-    }
+      )
+    })
   })
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
@@ -95,7 +91,7 @@ layerParamsGeomRugServer <- function(input, output, session, base_data) {
                                                no = icon("remove", lib = "glyphicon")
                                              )
     )
-  }, ignoreNULL = FALSE)
+  })
 
   geom_params_code <- reactive({
     reactive_inputs()
