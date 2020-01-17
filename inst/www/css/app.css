@@ -376,12 +376,6 @@ i.fa.inactive {
   margin-left: 15px;
 }
 
-.ds-toggle-visible {
-  margin: -3px 0 0 -3px;
-  line-height: 0;
-  float: left;
-}
-
 /* ************************ */
 /* PHOSPHORR WIDGET CONTENT */
 /* ************************ */
@@ -489,8 +483,8 @@ i.fa.inactive {
 /* Set layer-settings-and-params to 200px for params */
 
 .layer-wrap.layer {
-  min-height:60px;
-  height:60px;
+  min-height:95px;
+  height:95px;
   position:relative;
 }
 
@@ -512,14 +506,13 @@ i.fa.inactive {
 
 .layer-wrap.layer .layer-title {
   display: inline-block;
-  width: 30%;
   vertical-align: top;
 }
 
 .layer-wrap.layer .geom-layer-title {
   font-size: 20px;
   font-weight: 500;
-  margin-top: 10px;
+  margin-top: 5px;
   display: flex;
   flex-direction: row;
 }
@@ -542,7 +535,7 @@ i.fa.inactive {
 
 .layer-wrap.layer .layer-settings-and-params {
   display:inline-block;
-  width: 60%;
+  width: 100%;
   height: 50px;
   margin: 5px 0;
   padding: 5px;
@@ -568,22 +561,22 @@ i.fa.inactive {
   position:absolute;
   right:0;
   top:5px;
-  bottom: 0;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  flex-direction: row;
+  justify-content: flex-end;
   align-items: center;
 }
 
 .layer-wrap.layer .layer-icons > div {
   flex: 0 1 auto;
-  margin-bottom: 2px !important;
+  margin-right: 5px !important;
 }
 
 /* Override shiny input style formatting */
 .layer-wrap.layer .layer-icons > .form-group {
-  margin-right: -5px !important;
+  margin-right: -1px !important;
   margin-bottom: 0;
+  margin-top: 3px;
 }
 
 /* End: Style active layers */
@@ -817,8 +810,7 @@ i.fa.inactive {
 }
 
 .layer-icons > .ds-toggle-visible {
-  margin-left: 0;
-  float: unset;
+  margin: 0;
 }
 
 /* Geom Picker */

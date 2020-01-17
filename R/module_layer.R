@@ -12,7 +12,7 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
   geom_type <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="-")
 
   if (geom_type == "geom-blank") {
-    geom_name <- tagList("Base", br(), "Layer")
+    geom_name <- tagList("Base Layer")
   } else {
     geom_name <- plot_names[[geom_type]]
   }
@@ -25,18 +25,12 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
         tagList(
           div(
             class = "geom-layer-title",
-            icon("sort", class = "ds-handle"),
+            switch(geom_type != "geom-blank", icon("sort", class = "ds-handle")),
             div(class = paste("geom-icon", geom_type)),
             span(class = "geom-name", geom_name)
           ),
           switch(geom_type != "geom-blank", span("Other stuff", class="hidden"), NULL)
         )
-      ),
-      wellPanel(
-        class = "layer-settings-and-params",
-        switch(as.character(server),
-               "TRUE" = uiOutput(ns("settings-or-params")),
-               "FALSE" = "Client stuff to say")
       ),
       div(
         class = "layer-icons",
@@ -61,6 +55,12 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
           div(icon("question"))
         )
       )
+    ),
+    wellPanel(
+      class = "layer-settings-and-params",
+      switch(as.character(server),
+             "TRUE" = uiOutput(ns("settings-or-params")),
+             "FALSE" = "Client stuff to say")
     )
   )
 }
