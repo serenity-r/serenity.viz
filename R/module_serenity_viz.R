@@ -159,7 +159,7 @@ serenityVizServer <- function(input, output, session, dataset) {
                 title = "Messages",
                 icon = icon("info")) %>%
       addWidget(id = session$ns("widget-labels"),
-                refwidgetID = session$ns('widget-ggplot'),
+                refwidgetID = session$ns('aesthetics'),
                 insertmode = "tab-after",
                 ui = labelsUI(session$ns("labels")),
                 title = "Labels",
