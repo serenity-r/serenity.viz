@@ -170,8 +170,8 @@ serenityVizServer <- function(input, output, session, dataset) {
     tagList(
       div(
         class = "layers-wrapper",
-        bsplus::bs_collapse(
-          id = session$ns("base_layer_panel"),
+        div(
+          class = "base-layer",
           isolate({ # See Example 22 in DragulaSelectR
             dragulaSelectR::dropZoneInput(
               session$ns("base_layer"),
@@ -188,11 +188,6 @@ serenityVizServer <- function(input, output, session, dataset) {
             )
           })
         ),
-        bsplus::bs_button(
-          icon("caret-down"),
-          class = "toggle-base-layer"
-        ) %>% bsplus::bs_embed_tooltip(title = "Base Layer") %>%
-          bsplus::bs_attach_collapse(session$ns("base_layer_panel")),
         dragulaSelectR::dropZoneInput(
           session$ns("layers"),
           class = "layers",
@@ -259,15 +254,7 @@ serenityVizServer <- function(input, output, session, dataset) {
         icon_on = icon("window-minimize"),
         icon_off = icon("window-maximize"),
         inline = TRUE
-      ),
-      shinyWidgets::dropdownButton(
-        HTML("Hello, World!"),
-        inputId = session$ns("plot-params-btn"),
-        status = "header-icon",
-        icon = icon("gear"),
-        size = "xs",
-        right = TRUE,
-        tooltip = shinyWidgets::tooltipOptions(title = "Plot Parameters", placement = "left"))
+      )
     )
   })
 

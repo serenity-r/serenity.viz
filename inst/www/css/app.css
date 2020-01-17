@@ -457,8 +457,7 @@ i.fa.inactive {
   margin: 8px;
 }
 
-.widget-geoms-and-layers div.layers-wrapper > .collapse,
-.widget-geoms-and-layers div.layers-wrapper > .collapsing {
+.widget-geoms-and-layers div.layers-wrapper > .base-layer {
   padding: 8px;
   background: grey;
 }
@@ -473,34 +472,12 @@ i.fa.inactive {
 
 /* Begin: Style base layer */
 
-.widget-geoms-and-layers div.layers-wrapper > .collapse > .ds-dropzone,
-.widget-geoms-and-layers div.layers-wrapper > .collapsing > .ds-dropzone{
+.widget-geoms-and-layers div.layers-wrapper > .base-layer > .ds-dropzone {
   background: white;
 }
 
-.widget-geoms-and-layers div.layers-wrapper > .collapse .ds-dropoption,
-.widget-geoms-and-layers div.layers-wrapper > .collapsing .ds-dropoption{
+.widget-geoms-and-layers div.layers-wrapper > .base-layer .ds-dropoption {
   border-style: unset;
-}
-
-.widget-geoms-and-layers div.layers-wrapper > button {
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  margin-left: auto;
-  margin-right: auto;
-  display: block;
-  height: 6px;
-  width: 12px;
-  position: relative;
-}
-
-.widget-geoms-and-layers div.layers-wrapper > button > i {
-  position: absolute;
-  transform: translate(-50%, -50%);
-}
-
-.widget-geoms-and-layers div.layers-wrapper > .collapse.in + button > i.fa-caret-down:before {
-  content: '\f0d8';
 }
 
 /* End: Style base layer */
