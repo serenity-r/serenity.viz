@@ -525,6 +525,11 @@ i.fa.inactive {
   flex: auto 0 1;
 }
 
+/* Small adjustment for blank icon */
+.layer-wrap.layer .geom-layer-title > .geom-icon.geom-blank {
+  margin-top: 5px;
+}
+
 .layer-wrap.layer .geom-layer-title > .geom-icon {
   flex-shrink: 0;
 }
