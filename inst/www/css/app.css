@@ -386,19 +386,19 @@ i.fa.inactive {
 /* PHOSPHORR WIDGET CONTENT */
 /* ************************ */
 
-.widget-content.p-Widget {
+.widget-content.lm-Widget {
   display: flex;
   flex-direction: column;
   padding: 0;
 }
 
-.widget-content.p-Widget > .widget-body {
+.widget-content.lm-Widget > .widget-body {
   flex: 1 1 auto;
   overflow: auto;
   padding: 8px;
 }
 
-.widget-content.p-Widget > .widget-header {
+.widget-content.lm-Widget > .widget-header {
   min-height: 24px;
   max-height: 24px;
   border-bottom: 1px solid #C0C0C0;

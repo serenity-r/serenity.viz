@@ -20,7 +20,7 @@ Imports:
     shinyjs,
     shinyWidgets,
     bsplus,
-    phosphorr,
+    luminophor,
     dragulaSelectR,
     htmltools,
     colourpicker,
@@ -30,7 +30,7 @@ Imports:
     markdown
 Remotes: 
     serenity-r/dragulaSelectR,
-    serenity-r/phosphorr
+    serenity-r/luminophor
 URL: https://github.com/serenity-r/serenity
 BugReports: https://github.com/serenity-r/serenity.viz/issues
 License: GPL-3

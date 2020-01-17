@@ -8,7 +8,7 @@
 #'
 #' @return UI for Serenity Viz module
 #'
-#' @import shiny phosphorr
+#' @import shiny luminophor
 #' @export
 #'
 serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height = NULL) {
@@ -29,7 +29,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
                                   left = miniUI::miniTitleBarCancelButton(ns("cancel")),
                                   right = miniUI::miniTitleBarButton(ns("done"), "Done", primary = TRUE)),
            NULL),
-    phosphorrOutput(ns("pjsbox"), height="100%")
+    luminophorOutput(ns("luminobox"), height="100%")
   )
 }
 
@@ -41,7 +41,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
 #' @param dataset Passed in dataset for visualization
 #'
 #' @importFrom magrittr %>%
-#' @import shiny ggplot2 dplyr forcats phosphorr
+#' @import shiny ggplot2 dplyr forcats luminophor
 #' @export
 #'
 serenityVizServer <- function(input, output, session, dataset) {
@@ -59,30 +59,28 @@ serenityVizServer <- function(input, output, session, dataset) {
   # Store log for warnings
   ggplot2_log <- reactiveVal("")
 
-  output$pjsbox <- renderPhosphorr({
-    ns <- session$ns
-
-    phosphorr() %>%
-      addWidget(id = ns("widget-geoms-and-layers"),
+  output$luminobox <- renderLuminophor({
+    luminophor() %>%
+      addWidget(id = session$ns("widget-geoms-and-layers"),
                 ui = tagList(
                   widgetHeader(
                     div(
                       style = "display: flex; flex-direction: row; justify-content: flex-end;",
                       actionButton(
-                        inputId = ns("add-layer-button"),
+                        inputId = session$ns("add-layer-button"),
                         label = "Add Layer",
                         icon = icon("plus"),
                         style = "padding: 0; display: none;",
                         class = "add-layer"
                       ),
                       actionButton(
-                        inputId = ns("remove-layer"),
+                        inputId = session$ns("remove-layer"),
                         label = "",
                         icon = icon("minus"),
                         style = "border: transparent; padding: 0;"
                       ),
                       prettyToggle(
-                        inputId = ns("layer-chooser"),
+                        inputId = session$ns("layer-chooser"),
                         label_on = "",
                         label_off = "",
                         status_on = "default",
@@ -97,27 +95,27 @@ serenityVizServer <- function(input, output, session, dataset) {
                   ),
                   widgetBody(
                     class = "widget-geoms-and-layers",
-                    uiOutput(ns("widget-layers-body"))
+                    uiOutput(session$ns("widget-layers-body"))
                   )
                 ),
                 title = "Layers",
                 icon = icon("layer-group"),
                 closable = FALSE) %>%
-      addWidget(id = ns('widget-ggplot'),
-                refwidgetID = ns('widget-geoms-and-layers'),
+      addWidget(id = session$ns('widget-ggplot'),
+                refwidgetID = session$ns('widget-geoms-and-layers'),
                 insertmode = "split-right",
                 relsize = 0.6,
                 ui = tagList(
                   widgetHeader(
-                    uiOutput(ns('widget-ggplot-header'))
+                    uiOutput(session$ns('widget-ggplot-header'))
                   ),
                   widgetBody(
                     miniUI::miniContentPanel(
                       class = "ggplot",
                       style = "padding: 19px;",
-                      plotOutput(ns("viz"), height = "100%", click = "plot_click"),
+                      plotOutput(session$ns("viz"), height = "100%", click = "plot_click"),
                       shinyjs::hidden(
-                        absolutePanel(id = ns("error-pane"),
+                        absolutePanel(id = session$ns("error-pane"),
                                       class = "error-pane",
                                       top = "20px",
                                       draggable = FALSE
@@ -129,56 +127,54 @@ serenityVizServer <- function(input, output, session, dataset) {
                 title = "Plot",
                 icon = icon("image"),
                 closable = FALSE) %>%
-      addWidget(id = ns("widget-code"),
-                refwidgetID = ns('widget-ggplot'),
+      addWidget(id = session$ns("widget-code"),
+                refwidgetID = session$ns('widget-ggplot'),
                 insertmode = "split-bottom",
                 relsize = 0.25,
-                ui = widgetBody(uiOutput(ns("code"),
+                ui = widgetBody(uiOutput(session$ns("code"),
                                          class="terminal-dark-theme")),
                 title = "Code",
                 icon = icon("code")) %>%
-      addWidget(id = ns("widget-vars"),
-                refwidgetID = ns("widget-geoms-and-layers"),
+      addWidget(id = session$ns("widget-vars"),
+                refwidgetID = session$ns("widget-geoms-and-layers"),
                 insertmode = "split-bottom",
                 relsize = 0.65,
-                ui = dataUI(id = ns(attributes(dataset)$df_name)),
+                ui = dataUI(id = session$ns(attributes(dataset)$df_name)),
                 title = "Variables",
                 icon = icon("database"),
                 closable = FALSE) %>%
-      addWidget(id = ns("aesthetics"),
-                refwidgetID = ns("widget-vars"),
+      addWidget(id = session$ns("aesthetics"),
+                refwidgetID = session$ns("widget-vars"),
                 insertmode = "split-right",
-                ui = uiOutput(ns("aesthetics")),
+                ui = uiOutput(session$ns("aesthetics")),
                 title = "Aesthetics",
                 icon = icon("paint-brush"),
                 closable = FALSE) %>%
-      addWidget(id = ns("widget-messages"),
-                refwidgetID = ns("widget-code"),
+      addWidget(id = session$ns("widget-messages"),
+                refwidgetID = session$ns("widget-code"),
                 insertmode = "tab-after",
-                ui = widgetBody(uiOutput(ns("log"),
+                ui = widgetBody(uiOutput(session$ns("log"),
                                          class="terminal-dark-theme")),
                 title = "Messages",
                 icon = icon("info")) %>%
-      addWidget(id = ns("widget-labels"),
-                refwidgetID = ns('widget-ggplot'),
+      addWidget(id = session$ns("widget-labels"),
+                refwidgetID = session$ns('widget-ggplot'),
                 insertmode = "tab-after",
-                ui = labelsUI(ns("labels")),
+                ui = labelsUI(session$ns("labels")),
                 title = "Labels",
                 icon = icon("tags"),
                 closable = FALSE)
   })
 
   output$`widget-layers-body` <- renderUI({
-    ns <- session$ns
-
     tagList(
       div(
         class = "layers-wrapper",
         bsplus::bs_collapse(
-          id = ns("base_layer_panel"),
+          id = session$ns("base_layer_panel"),
           isolate({ # See Example 22 in DragulaSelectR
             dragulaSelectR::dropZoneInput(
-              ns("base_layer"),
+              session$ns("base_layer"),
               class = "layers",
               choices = list(
                 'geom-blank' = layerUI("geom-blank")
@@ -196,9 +192,9 @@ serenityVizServer <- function(input, output, session, dataset) {
           icon("caret-down"),
           class = "toggle-base-layer"
         ) %>% bsplus::bs_embed_tooltip(title = "Base Layer") %>%
-          bsplus::bs_attach_collapse(ns("base_layer_panel")),
+          bsplus::bs_attach_collapse(session$ns("base_layer_panel")),
         dragulaSelectR::dropZoneInput(
-          ns("layers"),
+          session$ns("layers"),
           class = "layers",
           choices = sapply(geoms, function(geom) { layerUI(geom) }, simplify = FALSE, USE.NAMES = TRUE),
           server = layerUI,
@@ -212,7 +208,7 @@ serenityVizServer <- function(input, output, session, dataset) {
       div(
         class = "layer-chooser-wrapper",
         style = "display: none;",
-        dragulaSelectR::dropZoneInput(ns("ds-layer-chooser"), choices = sapply(geoms, function(geom) { layerChoiceUI(geom) }, simplify = FALSE),
+        dragulaSelectR::dropZoneInput(session$ns("ds-layer-chooser"), choices = sapply(geoms, function(geom) { layerChoiceUI(geom) }, simplify = FALSE),
                                       class = "layer-chooser",
                                       flex = TRUE,
                                       selectable = TRUE,
@@ -225,20 +221,18 @@ serenityVizServer <- function(input, output, session, dataset) {
   })
 
   observeEvent(input$`layer-chooser`, {
-    ns <- session$ns
-
     dragulaSelectR::unselect(session, "ds-layer-chooser")
     if (input$`layer-chooser`) {
       # Toggle header views
-      shinyjs::js$myhide(paste0('#', ns("remove-layer")))
+      shinyjs::js$myhide(paste0('#', session$ns("remove-layer")))
 
       # Toggle body views
       shinyjs::js$myhide('.layers-wrapper')
       shinyjs::js$myshow('.layer-chooser-wrapper')
     } else {
       # Toggle header views
-      shinyjs::js$myshow(paste0('#', ns("remove-layer")))
-      shinyjs::js$myhide(paste0('#', ns("add-layer-button")))
+      shinyjs::js$myshow(paste0('#', session$ns("remove-layer")))
+      shinyjs::js$myhide(paste0('#', session$ns("add-layer-button")))
 
       # Toggle body views
       shinyjs::js$myshow('.layers-wrapper')
@@ -247,19 +241,15 @@ serenityVizServer <- function(input, output, session, dataset) {
   })
 
   observeEvent(input$`ds-layer-chooser_selected`, {
-    ns <- session$ns
-
     if (!is.null(input$`ds-layer-chooser_selected`)) {
-      shinyjs::js$myshow(paste0('#', ns("add-layer-button")))
+      shinyjs::js$myshow(paste0('#', session$ns("add-layer-button")))
     }
   })
 
   output$`widget-ggplot-header` <- renderUI({
-    ns <- session$ns
-
     tagList(
       prettyToggle(
-        inputId = ns("maximize"),
+        inputId = session$ns("maximize"),
         label_on = "",
         label_off = "",
         status_on = "default",
@@ -272,7 +262,7 @@ serenityVizServer <- function(input, output, session, dataset) {
       ),
       shinyWidgets::dropdownButton(
         HTML("Hello, World!"),
-        inputId = ns("plot-params-btn"),
+        inputId = session$ns("plot-params-btn"),
         status = "header-icon",
         icon = icon("gear"),
         size = "xs",
@@ -309,11 +299,11 @@ serenityVizServer <- function(input, output, session, dataset) {
 
   observeEvent(input$maximize, {
     if (input$maximize) {
-      phosphorr::phosphorrProxy(session$ns('pjsbox')) %>%
-        phosphorr::maximizeWidget(session$ns('widget-ggplot'))
+      luminophor::luminophorProxy(session$ns('luminobox')) %>%
+        luminophor::maximizeWidget(session$ns('widget-ggplot'))
     } else {
-      phosphorr::phosphorrProxy(session$ns('pjsbox')) %>%
-        phosphorr::minimizeWidget(session$ns('widget-ggplot'))
+      luminophor::luminophorProxy(session$ns('luminobox')) %>%
+        luminophor::minimizeWidget(session$ns('widget-ggplot'))
     }
   })
 
