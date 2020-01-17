@@ -103,8 +103,8 @@ serenityVizServer <- function(input, output, session, dataset) {
                 closable = FALSE) %>%
       addWidget(id = session$ns('widget-ggplot'),
                 refwidgetID = session$ns('widget-geoms-and-layers'),
-                insertmode = "split-right",
-                relsize = 0.6,
+                insertmode = "split-left",
+                relsize = 0.66,
                 ui = tagList(
                   widgetHeader(
                     uiOutput(session$ns('widget-ggplot-header'))
@@ -127,6 +127,22 @@ serenityVizServer <- function(input, output, session, dataset) {
                 title = "Plot",
                 icon = icon("image"),
                 closable = FALSE) %>%
+      addWidget(id = session$ns("widget-vars"),
+                refwidgetID = session$ns("widget-ggplot"),
+                insertmode = "split-left",
+                relsize = 0.33,
+                ui = dataUI(id = session$ns(attributes(dataset)$df_name)),
+                title = "Variables",
+                icon = icon("database"),
+                closable = FALSE) %>%
+      addWidget(id = session$ns("aesthetics"),
+                refwidgetID = session$ns("widget-vars"),
+                insertmode = "split-bottom",
+                relsize = 0.66,
+                ui = uiOutput(session$ns("aesthetics")),
+                title = "Aesthetics",
+                icon = icon("paint-brush"),
+                closable = FALSE) %>%
       addWidget(id = session$ns("widget-code"),
                 refwidgetID = session$ns('widget-ggplot'),
                 insertmode = "split-bottom",
@@ -135,21 +151,6 @@ serenityVizServer <- function(input, output, session, dataset) {
                                          class="terminal-dark-theme")),
                 title = "Code",
                 icon = icon("code")) %>%
-      addWidget(id = session$ns("widget-vars"),
-                refwidgetID = session$ns("widget-geoms-and-layers"),
-                insertmode = "split-bottom",
-                relsize = 0.65,
-                ui = dataUI(id = session$ns(attributes(dataset)$df_name)),
-                title = "Variables",
-                icon = icon("database"),
-                closable = FALSE) %>%
-      addWidget(id = session$ns("aesthetics"),
-                refwidgetID = session$ns("widget-vars"),
-                insertmode = "split-right",
-                ui = uiOutput(session$ns("aesthetics")),
-                title = "Aesthetics",
-                icon = icon("paint-brush"),
-                closable = FALSE) %>%
       addWidget(id = session$ns("widget-messages"),
                 refwidgetID = session$ns("widget-code"),
                 insertmode = "tab-after",
