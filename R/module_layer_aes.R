@@ -60,6 +60,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
   })
 
   output$aes_header_ui <- renderUI({
+    aesUpdateDependency()
+
     isolate({
       tags$header(
         class = "aes-header",
@@ -203,11 +205,11 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
 
   observeEvent(input$switch, {
     if (input$switch) {
-      shinyjs::js$addClass('inactive', paste(paste0('#', session$ns('aes_ui')), '.aes-select', '.fa-database'))
-      shinyjs::js$removeClass('inactive', paste(paste0('#', session$ns('aes_ui')), '.aes-select', '.fa-sliders-h'))
+      shinyjs::js$addClass('inactive', paste(paste0('#', session$ns('aes_header_ui')), '.aes-select', '.fa-database'))
+      shinyjs::js$removeClass('inactive', paste(paste0('#', session$ns('aes_header_ui')), '.aes-select', '.fa-sliders-h'))
     } else {
-      shinyjs::js$removeClass('inactive', paste(paste0('#', session$ns('aes_ui')), '.aes-select', '.fa-database'))
-      shinyjs::js$addClass('inactive', paste(paste0('#', session$ns('aes_ui')), '.aes-select', '.fa-sliders-h'))
+      shinyjs::js$removeClass('inactive', paste(paste0('#', session$ns('aes_header_ui')), '.aes-select', '.fa-database'))
+      shinyjs::js$addClass('inactive', paste(paste0('#', session$ns('aes_header_ui')), '.aes-select', '.fa-sliders-h'))
     }
   }, ignoreInit = TRUE)
 
