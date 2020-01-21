@@ -110,6 +110,9 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
       # Icons
       if (!isTruthy(input$switch)) {
         icons <- tagList(
+          span(
+            class = switch(inheritable() && !is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]()), "inherited")
+          ),
           shinyWidgets::dropdown(
             shinyWidgets::pickerInput(
               inputId = session$ns("aes-choose-data"),
@@ -230,8 +233,10 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
 
     if (inheritable() && (is.null(input$mapping) || (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]()))) {
       shinyjs::show("aes-reset-mapping")
+      shinyjs::js$removeClass('inherited', paste(paste0('#', session$ns('aes_content_ui')), ' > section > span'))
     } else {
       shinyjs::hide("aes-reset-mapping")
+      shinyjs::js$addClass('inherited', paste(paste0('#', session$ns('aes_content_ui')), ' > section > span'))
     }
   })
 

@@ -16,10 +16,13 @@ body {
 }
 
 .inherited::after {
-  content: 'inherited';
-  float: right;
-  font-size: 0.8em;
-  color: red;
+  content: 'Inherited';
+  position: absolute;
+  top: 6px;
+  left: 12px;
+  font-style: italic;
+  font-size: 0.9em;
+  color: blue;
 }
 
 .default::after {
@@ -222,6 +225,7 @@ span.varname {
 }
 
 .aesthetic section {
+  position: relative;
   border: 1px solid #979797;
   box-sizing: border-box;
   height: 100px;
