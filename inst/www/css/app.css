@@ -128,8 +128,7 @@ body {
 
 /* Need to attach class to dragitem mirror */
 .varzone,
-.aeszone,
-.ds-dragitem.gu-mirror {
+.aeszone {
   background: #EEEEEE;
   border: 1px solid #979797;
   box-sizing: border-box;
