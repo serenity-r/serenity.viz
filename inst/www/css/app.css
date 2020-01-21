@@ -463,8 +463,9 @@ i.fa.inactive {
   background-color: transparent !important;
 }
 
-.widget-geoms-and-layers div.layers-wrapper .ds-selected .layer-settings-and-params {
+.widget-geoms-and-layers div.layers-wrapper .ds-selected {
   border-color: red;
+  border-radius: 5px;
 }
 
 /* Begin: Style base layer */
@@ -473,26 +474,27 @@ i.fa.inactive {
   background: white;
 }
 
-.widget-geoms-and-layers div.layers-wrapper > .base-layer .ds-dropoption {
-  border-style: unset;
-}
-
 /* End: Style base layer */
 
 /* Begin: Style active layers */
 
 /* Set well to 220px for params */
 /* Well overflow-y auto (maybe can do overflow dependent on tab selected) */
-/* Set layer-settings-and-params to 200px for params */
 
-.layer-wrap.layer {
-  min-height:95px;
-  height:95px;
+.layer-wrap.layer,
+.layer-wrap.layer .well.layer-params {
+  min-height:40px;
+  height:auto;
   position:relative;
+}
+
+.layer-wrap.layer .well.layer-params {
+  border-color: #444;
 }
 
 .layers.ds-dropzone .ds-dropoption {
   cursor: default;
+  border-width: 1.5px;
 }
 
 .layers.ds-dropzone .ds-dropoption .ds-handle {
@@ -500,11 +502,6 @@ i.fa.inactive {
   font-size: 24px;
   margin-left: 5px;
   margin-right: 10px !important;
-}
-
-.layer-wrap.layer.params,
-.layer-wrap.layer.params .well {
-  height:auto;
 }
 
 .layer-wrap.layer .layer-title {
@@ -541,7 +538,7 @@ i.fa.inactive {
   width: 30px;
 }
 
-.layer-wrap.layer .layer-settings-and-params {
+.layer-wrap.layer .layer-params {
   display:inline-block;
   width: 100%;
   height: 50px;
@@ -549,18 +546,18 @@ i.fa.inactive {
   padding: 5px;
 }
 
-.layer-wrap.layer .layer-settings-and-params .layer-params .tab-content {
+.layer-wrap.layer .layer-params .tab-content {
   padding: 10px 5px 0px 5px;
   margin-bottom: -10px;
 }
 
-.layer-wrap.layer .layer-settings-and-params .layer-params hr {
+.layer-wrap.layer .layer-params hr {
   margin-top: 10px;
   margin-bottom: 10px;
   border-top: 1px solid #aaa;
 }
 
-.layer-wrap.layer .layer-settings-and-params .layer-params .seed-ui > .form-group {
+.layer-wrap.layer .layer-params .seed-ui > .form-group {
   display: inline-block;
   width: calc(100% - 45px);
 }
@@ -568,7 +565,7 @@ i.fa.inactive {
 .layer-wrap.layer .layer-icons {
   position:absolute;
   right:0;
-  top:5px;
+  top:9px;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
@@ -646,8 +643,8 @@ i.fa.inactive {
 
 /* END: Override histogram closed parameter */
 
-.layer-wrap.layer.params .well.histogram_breaks_panel,
-.layer-wrap.layer.params .well.violin_quantiles_panel {
+.layer-wrap.layer .well.histogram_breaks_panel,
+.layer-wrap.layer .well.violin_quantiles_panel {
   max-height: 200px;
   padding: 0;
 }

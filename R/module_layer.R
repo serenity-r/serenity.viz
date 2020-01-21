@@ -37,7 +37,7 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
         tagList(
           switch(geom_type != "geom-blank",
                  prettyToggle(
-                   inputId = ns("toggle-settings-or-params"),
+                   inputId = ns("toggle_settings_or_params"),
                    label_on = "",
                    label_off = "",
                    status_on = "default",
@@ -56,12 +56,7 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
         )
       )
     ),
-    wellPanel(
-      class = "layer-settings-and-params",
-      switch(as.character(server),
-             "TRUE" = uiOutput(ns("settings-or-params")),
-             "FALSE" = "Client stuff to say")
-    )
+    uiOutput(ns("params"))
   )
 }
 
@@ -174,41 +169,30 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
                                  dataset,
                                  inherit.aes)
 
-  # _ settings or params UI ====
-  # Doesn't really need to be a renderUI at the moment but keeping for ease of reading
-  output$`settings-or-params` <- renderUI({
-    tagList(
-      div(
-        class = "layer-settings", # Settings
-        verbatimTextOutput(ns("summary"), placeholder = TRUE)
-      ),
-      div(
-        class = "layer-params", # Parameters
-        style = "display: none;",
-        tabsetPanel(
-          type = "tabs",
-          tabPanel(span(icon(name = "sliders-h"), "Parameters"),
-                   layerParamsUI(ns('params'))
-          ),
-          tabPanel(span(icon(name = "arrows-alt"), "Position"),
-                   layerPositionUI(ns('position'))
-          )
+  # Could be conditionalPanel, but shinyWidget switch wasn't rendering correctly
+  output$params <- renderUI({
+    wellPanel(
+      class = "layer-params",
+      style = switch(!(input$toggle_settings_or_params %||% FALSE), "display:none;"),
+      tabsetPanel(
+        type = "tabs",
+        tabPanel(span(icon(name = "sliders-h"), "Parameters"),
+                 layerParamsUI(ns('params'))
+        ),
+        tabPanel(span(icon(name = "arrows-alt"), "Position"),
+                 layerPositionUI(ns('position'))
         )
       )
     )
   })
 
   # _ _ toggle hide/show of settings or params ====
-  observeEvent(input$`toggle-settings-or-params`, {
+  observeEvent(input$`toggle_settings_or_params`, {
     # Toggle class for params
-    if (input$`toggle-settings-or-params`) {
-      shinyjs::js$myhide(paste0('#', ns("settings-or-params"), ' .layer-settings'))
-      shinyjs::js$myshow(paste0('#', ns("settings-or-params"), ' .layer-params'))
-      shinyjs::js$addClass('params', paste0('.ds-dropoption[data-value="', geom_type, '"][data-instance="', layer_instance, '"] .layer-wrap'))
+    if (input$`toggle_settings_or_params`) {
+      shinyjs::js$myshow(paste0('#', ns("layer-params")))
     } else {
-      shinyjs::js$myshow(paste0('#', ns("settings-or-params"), ' .layer-settings'))
-      shinyjs::js$myhide(paste0('#', ns("settings-or-params"), ' .layer-params'))
-      shinyjs::js$removeClass('params', paste0('.ds-dropoption[data-value="', geom_type, '"][data-instance="', layer_instance, '"] .layer-wrap'))
+      shinyjs::js$myhide(paste0('#', ns("layer-params")))
     }
   })
 
