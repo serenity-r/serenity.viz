@@ -41,6 +41,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
   aesthetic <- stringr::str_split(session$ns(''), '-')[[1]] %>% { .[length(.)-1] }
   layer <- paste(stringr::str_split(session$ns(''), '-')[[1]][2:3], collapse="-")
   geom_blank_ns <- geom_blank_NS(session$ns)
+  entangled <- FALSE
 
   # Convert default colour values to hex (if applicable)
   if ((aesthetic %in% c('colour', 'fill')) && isTruthy(default_aes)) {
@@ -113,37 +114,6 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
           span(
             class = switch(inheritable() && !is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]()), "inherited")
           ),
-          shinyWidgets::dropdown(
-            shinyWidgets::pickerInput(
-              inputId = session$ns("aes-choose-data"),
-              label = "Select variable",
-              selected = init_mapping,
-              choices = names(dataset),
-              choicesOpt = list(
-                content = sapply(names(dataset), function(var_name) {
-                  htmltools::doRenderTags(
-                    div(
-                      class = paste("aeszone",
-                                    dataTypeToUI(dataset[[var_name]])),
-                      dataTypeToUI(dataset[[var_name]], .icon = TRUE),
-                      span(class = "varname", var_name)
-                    )
-                  )
-                })
-              ),
-              options = list(
-                title = "Nothing selected",
-                size = 6,
-                `live-search` = ifelse(length(names(dataset)) > 6, TRUE, FALSE),
-                `dropup-auto` = FALSE
-              )
-            ),
-            inputId = session$ns("aes-choose-dropdown"),
-            status = "header-icon",
-            size = "xs",
-            right = TRUE,
-            tooltip = shinyWidgets::tooltipOptions(title = "Choose variables", placement = "left")
-          ),
           actionLink(session$ns("aes-reset-mapping"),
                      label = '',
                      style = ifelse(!inheritable() || (!is.null(init_mapping) && (init_mapping == geom_blank_input[[geom_blank_ns("mapping")]]())), "display: none;", ""),
@@ -163,19 +133,50 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
       # Content
       if (!isTruthy(input$switch)) {
         # Mapping exists (or) first time loading
-        content <- dragulaSelectR::dropZoneInput(session$ns("mapping"),
-                                                 choices = sapply(names(dataset), function(var_name) {
-                                                   div(
-                                                     class = paste("aeszone",
-                                                                   dataTypeToUI(dataset[[var_name]])),
-                                                     dataTypeToUI(dataset[[var_name]], .icon = TRUE),
-                                                     span(class = "varname", var_name)
-                                                   )
-                                                 }, simplify = FALSE, USE.NAMES = TRUE),
-                                                 presets = init_mapping,
-                                                 placeholder = "Drag or select variable",
-                                                 maxInput = 1,
-                                                 replaceOnDrop = TRUE)
+        content <- div(
+          class = "aes-content",
+          dragulaSelectR::dropZoneInput(session$ns("mapping"),
+                                        choices = sapply(names(dataset), function(var_name) {
+                                          div(
+                                            class = paste("aeszone",
+                                                          dataTypeToUI(dataset[[var_name]])),
+                                            dataTypeToUI(dataset[[var_name]], .icon = TRUE),
+                                            span(class = "varname", var_name)
+                                          )
+                                        }, simplify = FALSE, USE.NAMES = TRUE),
+                                        presets = init_mapping,
+                                        placeholder = "Drag or select variable",
+                                        maxInput = 1,
+                                        replaceOnDrop = TRUE),
+          shinyWidgets::pickerInput(
+            inputId = session$ns("aes-choose-data"),
+            label = NULL,
+            selected = init_mapping,
+            choices = c("", names(dataset)),
+            choicesOpt = list(
+              content = c(htmltools::doRenderTags(em("Clear variable")),
+                          sapply(names(dataset), function(var_name) {
+                            htmltools::doRenderTags(
+                              div(
+                                class = paste("aeszone",
+                                              dataTypeToUI(dataset[[var_name]])),
+                                dataTypeToUI(dataset[[var_name]], .icon = TRUE),
+                                span(class = "varname", var_name)
+                              )
+                            )
+                          })
+              )),
+            options = list(
+              title = "Nothing selected",
+              size = 6,
+              `live-search` = ifelse(length(names(dataset)) > 6, TRUE, FALSE),
+              `dropup-auto` = FALSE
+            )
+          ) %>% {
+            .$attribs$class <- paste(.$attribs$class, "aes-choose-data")
+            .
+          }
+        )
       } else if (!is.null(default_aes)) {
         content <- create_aes_input(session$ns('value'),
                                     aesthetic,
@@ -194,17 +195,39 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
 
   # Entangle aesthetic picker and dropzone
   observeEvent(input$`aes-choose-data`, {
-    if (!isTRUE(all.equal(ifelse(is.null(input$`aes-choose-data`), "", input$`aes-choose-data`),
+    if (!entangled &&
+        !isTRUE(all.equal(ifelse(is.null(input$`aes-choose-data`), "", input$`aes-choose-data`),
                           ifelse(is.null(input$mapping), "", input$mapping)))) {
-      dragulaSelectR::updateDropZoneInput(session, 'mapping', presets = input$`aes-choose-data` %||% NA)
+      entangled <<- TRUE
+      dragulaSelectR::updateDropZoneInput(session, 'mapping', presets = input$`aes-choose-data` %T||% NA)
+    } else {
+      entangled <<- FALSE
     }
   }, ignoreInit = TRUE)
-  observeEvent(input$`aes-choose-dropdown`, {
-    if (!isTRUE(all.equal(ifelse(is.null(input$`aes-choose-data`), "", input$`aes-choose-data`),
+  observeEvent(input$mapping, {
+    if (!entangled &&
+        !isTRUE(all.equal(ifelse(is.null(input$`aes-choose-data`), "", input$`aes-choose-data`),
                           ifelse(is.null(input$mapping), "", input$mapping)))) {
+      entangled <<- TRUE
       shinyWidgets::updatePickerInput(session, "aes-choose-data", selected = input$mapping %||% "")
+    } else {
+      entangled <<- FALSE
     }
-  }, ignoreInit = TRUE)
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
+
+  observeEvent(input$mapping, {
+    if (is.null(input$mapping)) {
+      shinyjs::js$removeClass("caret", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data span > span"))
+      shinyjs::js$addClass("fa fa-plus", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data span > span"))
+      shinyjs::js$removeClass("bs-caret", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data button > span"))
+      shinyjs::js$addClass("bs-plus", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data button > span"))
+    } else {
+      shinyjs::js$removeClass("fa fa-plus", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data span > span"))
+      shinyjs::js$addClass("caret", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data span > span"))
+      shinyjs::js$removeClass("bs-plus", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data button > span"))
+      shinyjs::js$addClass("bs-caret", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data button > span"))
+    }
+  }, ignoreNULL = FALSE)
 
   observeEvent(input$switch, {
     if (input$switch) {

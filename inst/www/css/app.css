@@ -242,13 +242,6 @@ span.varname {
   vertical-align: top;
 }
 
-.aesthetic section .sw-dropdown button.btn-header-icon,
-.aesthetic section .action-button {
-  float: right;
-  margin-right: 5px;
-  margin-top: 5px;
-}
-
 .aesthetic section .action-button {
   margin-right: 10px;
   color: #000;
@@ -258,18 +251,64 @@ span.varname {
   margin-right: 0;
 }
 
-.aesthetic section .sw-dropdown div.sw-dropdown-content {
-  width: 100%;
-  max-width: 400px;
-  margin-top: 25px;
+.aesthetic .mapping-section .aes-content {
+  display: flex;
+  align-items: center;
 }
 
-.aesthetic section div.ds-dropzone {
-  margin: 30px 10px;
+/* Style dropzone */
+.aesthetic section.mapping-section .aes-content div.ds-dropzone {
+  margin: 30px 0 30px 10px;
+  flex: 1 0 auto;
 }
 
-.aesthetic .sw-dropdown .dropdown-menu li span.text {
+/* Style choose data dropdown button */
+.aesthetic section.mapping-section .aes-content div.aes-choose-data {
+  position: initial;
+  flex: 0 0 35px;
+  margin: 30px 10px 30px 5px;
+}
+
+/* Make sure dropdown placed in correct spot */
+.aesthetic section.mapping-section .aes-content div.aes-choose-data .dropdown {
+  position: initial;
+}
+
+/* Small button */
+.aesthetic section.mapping-section .aes-content div.aes-choose-data .dropdown button.dropdown-toggle {
+  width: 35px;
+}
+
+/* Bigger caret */
+.aesthetic section.mapping-section .aes-content div.aes-choose-data .dropdown button.dropdown-toggle .caret {
+  border-top: 6px dashed;
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+}
+
+/* Move plus icon over */
+.aesthetic section.mapping-section .aes-content div.aes-choose-data .dropdown button.dropdown-toggle span.bs-plus {
+  margin-left: -14px;
+}
+
+/* Make sure icon isn't de-emphasized */
+.aesthetic section.mapping-section .aes-content div.aes-choose-data .dropdown button.dropdown-toggle.bs-placeholder {
+  color: unset;
+}
+
+/* Fix placement of dropdown menu */
+.aesthetic .bootstrap-select .dropdown-menu {
+  top: unset;
+}
+
+/* Remove inline-block */
+.aesthetic .bootstrap-select .dropdown-menu li a span.text {
   display: block;
+}
+
+/* Remove white */
+.aesthetic .bootstrap-select .dropdown-menu>.active>a {
+  color: inherit;
 }
 
 .pretty.p-switch.p-default {
