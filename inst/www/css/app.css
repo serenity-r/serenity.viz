@@ -294,9 +294,16 @@ span.varname {
   border-left: 6px solid transparent;
 }
 
-/* Move plus icon over */
-.aesthetic section.mapping-section .aes-content div.aes-choose-data .dropdown button.dropdown-toggle span.bs-plus {
-  margin-left: -14px;
+div.ds-dropzone:not(.ds-max-input) ~ div.aes-choose-data .dropdown button.dropdown-toggle span.caret {
+  border-color: transparent !important;
+  font-weight: 900;
+  font-family: "Font Awesome 5 Free";
+  top: 7%;
+  left: 10%;
+}
+
+div.ds-dropzone:not(.ds-max-input) ~ div.aes-choose-data .dropdown button.dropdown-toggle span.caret:before {
+  content:'\f067';
 }
 
 /* Make sure icon isn't de-emphasized */
@@ -462,15 +469,12 @@ i.fa.inactive {
 }
 
 .widget-header .header-icon,
+.mapping-section .header-icon,
 .value-section .header-icon,
 .widget-header .btn-header-icon {
   float: right;
   margin-right: 0;
   margin-bottom: 0;
-}
-
-.value-section .header-icon {
-  margin-top: 5px;
 }
 
 .pretty {

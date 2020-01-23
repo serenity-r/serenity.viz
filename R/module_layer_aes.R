@@ -106,14 +106,18 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
           actionLink(session$ns("aes-reset-mapping"),
                      label = '',
                      style = ifelse(!inheritable() || (!is.null(init_mapping) && (init_mapping == geom_blank_input[[geom_blank_ns("mapping")]]())), "display: none;", ""),
-                     icon = icon("undo"))
+                     icon = icon("undo")
+          )
         )
       } else {
         if (isTruthy(default_aes)) {
-          icons <- actionLink(session$ns("aes-reset-value"),
-                              label = '',
-                              style = ifelse(is.na(default_aes) || (input$value == default_aes), "display: none;", ""),
-                              icon = icon("undo"))
+          icons <- tagList(
+            actionLink(session$ns("aes-reset-value"),
+                       label = '',
+                       style = ifelse(is.na(default_aes) || (input$value == default_aes), "display: none;", ""),
+                       icon = icon("undo")
+            )
+          )
         } else {
           icons <- NULL
         }
@@ -208,20 +212,6 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
       entangled <<- FALSE
     }
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
-
-  observeEvent(input$mapping, {
-    if (is.null(input$mapping)) {
-      shinyjs::js$removeClass("caret", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data span > span"))
-      shinyjs::js$addClass("fa fa-plus", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data span > span"))
-      shinyjs::js$removeClass("bs-caret", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data button > span"))
-      shinyjs::js$addClass("bs-plus", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data button > span"))
-    } else {
-      shinyjs::js$removeClass("fa fa-plus", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data span > span"))
-      shinyjs::js$addClass("caret", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data span > span"))
-      shinyjs::js$removeClass("bs-plus", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data button > span"))
-      shinyjs::js$addClass("bs-caret", paste0("#", session$ns("aes_content_ui"), " .aes-choose-data button > span"))
-    }
-  }, ignoreNULL = FALSE)
 
   observeEvent(input$switch, {
     if (input$switch) {
