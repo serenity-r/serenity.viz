@@ -251,14 +251,21 @@ span.varname {
   margin-right: 0;
 }
 
+.aesthetic section > .aes-content-icons {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+
 .aesthetic .mapping-section .aes-content {
   display: flex;
   align-items: center;
+  height: 100%;
+  margin: 0 10px;
 }
 
 /* Style dropzone */
 .aesthetic section.mapping-section .aes-content div.ds-dropzone {
-  margin: 30px 0 30px 10px;
   flex: 1 0 auto;
 }
 
@@ -266,7 +273,8 @@ span.varname {
 .aesthetic section.mapping-section .aes-content div.aes-choose-data {
   position: initial;
   flex: 0 0 35px;
-  margin: 30px 10px 30px 5px;
+  margin-left: 5px;
+  margin-bottom: 0;
 }
 
 /* Make sure dropdown placed in correct spot */
@@ -368,9 +376,9 @@ i.fa.inactive {
 }
 
 .aes-wrap.message {
-  position: relative;
-  top: 40%;
-  transform: translateY(-40%);
+  position: absolute;
+  top: 30%;
+  transform: translateY(-30%);
   font-style: italic;
 }
 

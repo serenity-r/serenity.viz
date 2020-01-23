@@ -82,14 +82,6 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
               .
             }
         )
-        # shinyWidgets::dropdownButton(
-        #   HTML("Hello, World!"),
-        #   inputId = session$ns("aes-settings-btn"),
-        #   status = "header-icon",
-        #   icon = icon("gear"),
-        #   size = "xs",
-        #   right = TRUE,
-        #   tooltip = shinyWidgets::tooltipOptions(title = "Aesthetic Settings", placement = "left"))
       )
     })
   })
@@ -111,9 +103,6 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
       # Icons
       if (!isTruthy(input$switch)) {
         icons <- tagList(
-          span(
-            class = switch(inheritable() && !is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]()), "inherited")
-          ),
           actionLink(session$ns("aes-reset-mapping"),
                      label = '',
                      style = ifelse(!inheritable() || (!is.null(init_mapping) && (init_mapping == geom_blank_input[[geom_blank_ns("mapping")]]())), "display: none;", ""),
@@ -129,12 +118,12 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
           icons <- NULL
         }
       }
+      icons <- icons %>% div(class = "aes-content-icons")
 
       # Content
       if (!isTruthy(input$switch)) {
         # Mapping exists (or) first time loading
-        content <- div(
-          class = "aes-content",
+        content <- tagList(
           dragulaSelectR::dropZoneInput(session$ns("mapping"),
                                         choices = sapply(names(dataset), function(var_name) {
                                           div(
@@ -175,7 +164,10 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
           ) %>% {
             .$attribs$class <- paste(.$attribs$class, "aes-choose-data")
             .
-          }
+          },
+          span(
+            class = paste(c("aes-content-inherited", switch(inheritable() && !is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]()), "inherited")), collapse = " ")
+          )
         )
       } else if (!is.null(default_aes)) {
         content <- create_aes_input(session$ns('value'),
@@ -184,10 +176,12 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
       } else {
         content <- create_aes_empty("Only mappings allowed for this aesthetic", class = "message")
       }
+      content <- content %>% div(class = "aes-content")
 
       tags$section(
         class = ifelse(input$switch, 'value-section', 'mapping-section'),
-        icons, content
+        icons,
+        content
       )
     })
   })
@@ -256,10 +250,10 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
 
     if (inheritable() && (is.null(input$mapping) || (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]()))) {
       shinyjs::show("aes-reset-mapping")
-      shinyjs::js$removeClass('inherited', paste(paste0('#', session$ns('aes_content_ui')), ' > section > span'))
+      shinyjs::js$removeClass('inherited', paste(paste0('#', session$ns('aes_content_ui')), ' > section.mapping-section span.aes-content-inherited'))
     } else {
       shinyjs::hide("aes-reset-mapping")
-      shinyjs::js$addClass('inherited', paste(paste0('#', session$ns('aes_content_ui')), ' > section > span'))
+      shinyjs::js$addClass('inherited', paste(paste0('#', session$ns('aes_content_ui')), ' > section.mapping-section span.aes-content-inherited'))
     }
   })
 
