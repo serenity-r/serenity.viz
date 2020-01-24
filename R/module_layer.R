@@ -171,28 +171,31 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
 
   # Could be conditionalPanel, but shinyWidget switch wasn't rendering correctly
   output$params <- renderUI({
-    wellPanel(
-      class = "layer-params",
-      style = switch(!(input$toggle_settings_or_params %||% FALSE), "display:none;"),
-      tabsetPanel(
-        type = "tabs",
-        tabPanel(span(icon(name = "sliders-h"), "Parameters"),
-                 layerParamsUI(ns('params'))
-        ),
-        tabPanel(span(icon(name = "arrows-alt"), "Position"),
-                 layerPositionUI(ns('position'))
+    isolate({
+      wellPanel(
+        class = "layer-params",
+        style = switch(!(input$toggle_settings_or_params %||% FALSE), "display:none;"),
+        tabsetPanel(
+          type = "tabs",
+          tabPanel(span(icon(name = "sliders-h"), "Parameters"),
+                   layerParamsUI(ns('params'))
+          ),
+          tabPanel(span(icon(name = "arrows-alt"), "Position"),
+                   layerPositionUI(ns('position'))
+          )
         )
       )
-    )
+    })
   })
+  outputOptions(output, "params", suspendWhenHidden = FALSE)
 
   # _ _ toggle hide/show of settings or params ====
   observeEvent(input$`toggle_settings_or_params`, {
     # Toggle class for params
     if (input$`toggle_settings_or_params`) {
-      shinyjs::js$myshow(paste0('#', ns("layer-params")))
+      shinyjs::js$myshow(paste0("#", ns("params"), " .layer-params"))
     } else {
-      shinyjs::js$myhide(paste0('#', ns("layer-params")))
+      shinyjs::js$myhide(paste0("#", ns("params"), " .layer-params"))
     }
   })
 
