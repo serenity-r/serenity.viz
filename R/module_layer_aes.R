@@ -68,7 +68,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
         class = "aes-header",
         span(class = "aes-name", aesthetic),
         div(
-          class = "aes-select",
+          class = paste(c("aes-select", switch((layer == "geom-blank") || is.null(default_aes), "hidden")), collapse = " "),
           icon("database", class = ifelse(isTruthy(input$switch), 'inactive', '')),
           shinyWidgets::prettySwitch(
             inputId = session$ns("switch"),
@@ -81,6 +81,32 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
               .$attribs$id <- session$ns("sliders-h")
               .
             }
+        ),
+        switch(as.character(layer != "geom-blank"),
+               "TRUE" = serenity.viz::prettyToggle(
+                 inputId = session$ns("customize"),
+                 label_on = "",
+                 label_off = "",
+                 status_on = "default",
+                 status_off = "default",
+                 outline = TRUE,
+                 plain = TRUE,
+                 icon_on = icon("times"),
+                 icon_off = icon("pencil"),
+                 inline = TRUE
+               ),
+               "FALSE" = serenity.viz::prettyToggle(
+                 inputId = session$ns("scale"),
+                 label_on = "",
+                 label_off = "",
+                 status_on = "default",
+                 status_off = "default",
+                 outline = TRUE,
+                 plain = TRUE,
+                 icon_on = icon("times"),
+                 icon_off = icon("ruler"),
+                 inline = TRUE
+               )
         )
       )
     })
@@ -173,14 +199,17 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
             class = paste(c("aes-content-inherited", switch(inheritable() && !is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]()), "inherited")), collapse = " ")
           )
         )
-      } else if (!is.null(default_aes)) {
+      } else {
+        # Should satisfy !is.null(default_aes)
         content <- create_aes_input(session$ns('value'),
                                     aesthetic,
                                     isolate(input$value) %T||% ifelse(!is.na(default_aes), default_aes, NA_defaults[[aesthetic]]))
-      } else {
-        content <- create_aes_empty("Only mappings allowed for this aesthetic", class = "message")
       }
       content <- content %>% div(class = "aes-content")
+
+      # Custom content
+      if (!isTruthy(input$switch)) {
+      }
 
       tags$section(
         class = ifelse(input$switch, 'value-section', 'mapping-section'),
@@ -262,6 +291,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
     paste(input$mapping,
           input$value,
           input$switch,
+          input$customize,
+          input$custom_ready,
           inheritable())
   })
 

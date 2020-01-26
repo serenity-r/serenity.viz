@@ -19,7 +19,7 @@ body {
   content: 'Inherited';
   position: absolute;
   top: 6px;
-  left: 12px;
+  right: 12px;
   font-style: italic;
   font-size: 0.9em;
   color: blue;
@@ -224,6 +224,13 @@ span.varname {
   margin-left: 5px;
 }
 
+.aesthetic .aes-header > .form-group.shiny-input-container.header-icon {
+  position: absolute;
+  top: 5px;
+  right: 0px;
+  margin-right: 0 !important;
+}
+
 .aesthetic section {
   position: relative;
   border: 1px solid #979797;
@@ -243,7 +250,6 @@ span.varname {
 }
 
 .aesthetic section .action-button {
-  margin-right: 10px;
   color: #000;
 }
 
@@ -486,8 +492,7 @@ i.fa.inactive {
   color: #000 !important;
 }
 
-.widget-header i,
-.value-section i {
+.widget-header i {
   float: right;
   margin-top: 0.5rem;
   margin-right: 4px;
