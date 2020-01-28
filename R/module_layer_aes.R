@@ -271,42 +271,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
   })
   outputOptions(output, "aes_content_ui", suspendWhenHidden = FALSE)
 
-  # Copy mapping to custom mapping if appropriate
-  observeEvent(input$mapping, {
-    updateTextInput(session, "custom_mapping", value = input$mapping)
-    customized$mapping <<- input$mapping
-  }, ignoreInit = TRUE, ignoreNULL = TRUE)
-  # Copy value to custom value if appropriate
-  observeEvent(input$value, {
-    updateTextInput(session, "custom_value", value = input$value)
-    customized$value <<- input$value
-  }, ignoreInit = TRUE, ignoreNULL = TRUE)
-
-  # Enable/disable custom mapping ready button
-  observeEvent(paste(input$custom_mapping, customized$mapping), {
-    if (input$custom_mapping != customized$mapping) {
-      shinyjs::enable("custom_mapping_ready")
-    } else {
-      shinyjs::disable("custom_mapping_ready")
-    }
-  }, ignoreInit = TRUE, ignoreNULL = TRUE)
-  # Enable/disable custom value ready button
-  observeEvent(paste(input$custom_value, customized$value), {
-    if (input$custom_value != customized$value) {
-      shinyjs::enable("custom_value_ready")
-    } else {
-      shinyjs::disable("custom_value_ready")
-    }
-  }, ignoreInit = TRUE, ignoreNULL = TRUE)
-
-  # Equalize mapping values to reset ready button
-  observeEvent(input$custom_mapping_ready, {
-    customized$mapping <<- input$custom_mapping
-  }, ignoreInit = TRUE, ignoreNULL = TRUE)
-  # Equalize values to reset ready button
-  observeEvent(input$custom_value_ready, {
-    customized$value <<- input$custom_value
-  }, ignoreInit = TRUE, ignoreNULL = TRUE)
+  custom_server("mapping", input, customized, session)
+  custom_server("value", input, customized, session)
 
   # Entangle aesthetic picker and dropzone
   observeEvent(input$`aes-choose-data`, {
@@ -579,4 +545,29 @@ update_aes_input <- function(session, inputId, aes, aes_val) {
          'linetype' = updateSelectInput(session, inputId, selected = linetype_to_string(aes_val)),
          ''
   )
+}
+
+# Customize override server functions for mapping and value
+custom_server <- function(type, input, customized, session) {
+  return({
+    # Copy input to custom if appropriate
+    observeEvent(input[[type]], {
+      updateTextInput(session, paste0("custom_", type), value = input[[type]])
+      customized[[type]] <<- input[[type]]
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+    # Enable/disable custom ready button
+    observeEvent(paste(input[[paste0("custom_", type)]], customized[[type]]), {
+      if (input[[paste0("custom_", type)]] != customized[[type]]) {
+        shinyjs::enable(paste0("custom_", type, "_ready"))
+      } else {
+        shinyjs::disable(paste0("custom_", type, "_ready"))
+      }
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+    # Equalize input on reset ready button
+    observeEvent(input[[paste0("custom_", type, "_ready")]], {
+      customized[[type]] <<- input[[paste0("custom_", type)]]
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+  })
 }
