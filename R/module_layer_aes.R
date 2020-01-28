@@ -43,6 +43,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
   geom_blank_ns <- geom_blank_NS(session$ns)
   entangled <- FALSE
 
+  customized <- reactiveValues(mapping = "", values = "")
+
   # Convert default colour values to hex (if applicable)
   if ((aesthetic %in% c('colour', 'fill')) && isTruthy(default_aes)) {
     default_aes <- colour_to_hex(default_aes)
@@ -85,6 +87,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
         switch(as.character(layer != "geom-blank"),
                "TRUE" = serenity.viz::prettyToggle(
                  inputId = session$ns("customize"),
+                 value = input$customize %||% FALSE,
                  label_on = "",
                  label_off = "",
                  status_on = "default",
@@ -126,6 +129,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
 
     isolate({
       init_mapping <- input$mapping %T||% switch(inheritable() && (renderNum$getNum() == 1), geom_blank_input[[geom_blank_ns("mapping")]](), NULL)
+      init_value <- input$value %T||% ifelse(!is.na(default_aes), default_aes, NA_defaults[[aesthetic]])
       # Icons
       if (!isTruthy(input$switch)) {
         icons <- tagList(
@@ -133,6 +137,9 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
                      label = '',
                      style = ifelse(!inheritable() || (!is.null(init_mapping) && (init_mapping == geom_blank_input[[geom_blank_ns("mapping")]]())), "display: none;", ""),
                      icon = icon("undo")
+          ),
+          span( # Change input$mapping to init_mapping
+            class = paste(c("aes-content-inherited", switch(inheritable() && !is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]()), "inherited")), collapse = " ")
           )
         )
       } else {
@@ -140,7 +147,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
           icons <- tagList(
             actionLink(session$ns("aes-reset-value"),
                        label = '',
-                       style = ifelse(is.na(default_aes) || (input$value == default_aes), "display: none;", ""),
+                       style = ifelse(is.na(default_aes) || (init_value == default_aes), "display: none;", ""),
                        icon = icon("undo")
             )
           )
@@ -148,7 +155,10 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
           icons <- NULL
         }
       }
-      icons <- icons %>% div(class = "aes-content-icons")
+      icons <- icons %>%
+        conditionalPanel(condition = "input.customize == false",
+                         ns = session$ns,
+                         class = "aes-content-icons")
 
       # Content
       if (!isTruthy(input$switch)) {
@@ -194,31 +204,109 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
           ) %>% {
             .$attribs$class <- paste(.$attribs$class, "aes-choose-data")
             .
-          },
-          span(
-            class = paste(c("aes-content-inherited", switch(inheritable() && !is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]()), "inherited")), collapse = " ")
-          )
+          }
         )
       } else {
         # Should satisfy !is.null(default_aes)
         content <- create_aes_input(session$ns('value'),
                                     aesthetic,
-                                    isolate(input$value) %T||% ifelse(!is.na(default_aes), default_aes, NA_defaults[[aesthetic]]))
+                                    init_value)
       }
-      content <- content %>% div(class = "aes-content")
+      content <- content %>%
+        conditionalPanel(condition = "input.customize == null || input.customize == false",
+                         ns = session$ns,
+                         class = "aes-content")
 
       # Custom content
       if (!isTruthy(input$switch)) {
+        # Mapping
+        custom <- tagList(
+          textInput(
+            session$ns("custom_mapping"),
+            label = "",
+            value = input$custom_mapping %T||% init_mapping %T||% ""
+          ),
+          actionButton(
+            session$ns("custom_mapping_ready"),
+            label = "",
+            icon = icon("check"),
+            class = switch(
+              (is.null(input$custom_mapping) && (init_mapping == customized$mapping)) ||
+                (!is.null(input$custom_mapping) && (input$custom_mapping == customized$mapping)),
+              "disabled"
+            )
+          )
+        )
+      } else {
+        custom <- tagList(
+          textInput(
+            session$ns("custom_value"),
+            label = "",
+            value = input$custom_value %T||% init_value %T||% ifelse(!is.na(default_aes), default_aes, NA_defaults[[aesthetic]])
+          ),
+          actionButton(
+            session$ns("custom_value_ready"),
+            label = "",
+            icon = icon("check"),
+            class = switch(
+              (is.null(input$custom_value) && (init_value == customized$value)) ||
+                (!is.null(input$custom_value) && (input$custom_value == customized$value)),
+              "disabled"
+            )
+          )
+        )
       }
+      custom <- custom %>%
+        conditionalPanel(condition = "input.customize == true",
+                         ns = session$ns,
+                         class = "aes-custom-content")
 
       tags$section(
         class = ifelse(input$switch, 'value-section', 'mapping-section'),
         icons,
-        content
+        content,
+        custom
       )
     })
   })
   outputOptions(output, "aes_content_ui", suspendWhenHidden = FALSE)
+
+  # Copy mapping to custom mapping if appropriate
+  observeEvent(input$mapping, {
+    updateTextInput(session, "custom_mapping", value = input$mapping)
+    customized$mapping <<- input$mapping
+  }, ignoreInit = TRUE, ignoreNULL = TRUE)
+  # Copy value to custom value if appropriate
+  observeEvent(input$value, {
+    updateTextInput(session, "custom_value", value = input$value)
+    customized$value <<- input$value
+  }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+  # Enable/disable custom mapping ready button
+  observeEvent(paste(input$custom_mapping, customized$mapping), {
+    if (input$custom_mapping != customized$mapping) {
+      shinyjs::enable("custom_mapping_ready")
+    } else {
+      shinyjs::disable("custom_mapping_ready")
+    }
+  }, ignoreInit = TRUE, ignoreNULL = TRUE)
+  # Enable/disable custom value ready button
+  observeEvent(paste(input$custom_value, customized$value), {
+    if (input$custom_value != customized$value) {
+      shinyjs::enable("custom_value_ready")
+    } else {
+      shinyjs::disable("custom_value_ready")
+    }
+  }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+  # Equalize mapping values to reset ready button
+  observeEvent(input$custom_mapping_ready, {
+    customized$mapping <<- input$custom_mapping
+  }, ignoreInit = TRUE, ignoreNULL = TRUE)
+  # Equalize values to reset ready button
+  observeEvent(input$custom_value_ready, {
+    customized$value <<- input$custom_value
+  }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
   # Entangle aesthetic picker and dropzone
   observeEvent(input$`aes-choose-data`, {
@@ -292,7 +380,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
           input$value,
           input$switch,
           input$customize,
-          input$custom_ready,
+          customized$mapping,
+          customized$value,
           inheritable())
   })
 
@@ -303,33 +392,48 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
 
     isolate({
       arg <- list(mappings = c(), values = c())
-      if (!is.null(input$switch)) {
-        if (!input$switch) {
-          if (!is.null(input$mapping) &&
-              ((layer == "geom-blank") ||
-               !inheritable() ||
-               (inheritable() && (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]())))) {
-            arg$mappings <- paste(aesthetic, "=",
-                                  ifelse(!stringr::str_detect(input$mapping, ' '),
-                                         input$mapping,
-                                         paste0("`", input$mapping, "`")))
-          } else if (is.null(input$mapping) && inheritable()) {
-            arg$mappings <- paste(aesthetic, "= NULL")
-          }
-        } else
-          if (!is.null(input$value)) {
-            if (is.na(default_aes) ||
-                (input$value != default_aes) ||
-                (inheritable())) {
-              arg$values <- paste(aesthetic, "=",
-                                  switch(aesthetic,
-                                         "colour" = ,
-                                         "linetype" = ,
-                                         "fill" = paste0('"', input$value, '"'),
-                                         input$value)
-              )
-            }
-          }
+      if (!input$switch) {
+        # Mapping
+        if (isTruthy(input$customize) && (nchar(customized$mapping) > 0)) {
+          # Custom override
+          arg$mappings <- paste(aesthetic, "=", customized$mapping)
+        } else if (!is.null(input$mapping) &&
+                   ((layer == "geom-blank") ||
+                    !inheritable() ||
+                    (inheritable() && (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]())))) {
+          # Set mapping (non-null)
+          arg$mappings <- paste(aesthetic, "=",
+                                ifelse(!stringr::str_detect(input$mapping, ' '),
+                                       input$mapping,
+                                       paste0("`", input$mapping, "`")))
+        } else if (is.null(input$mapping) && inheritable()) {
+          # Set mapping to null
+          arg$mappings <- paste(aesthetic, "= NULL")
+        }
+      } else {
+        # Value
+        if (isTruthy(input$customize) && (!is.null(customized$value) && (nchar(customized$value) > 0))) {
+          # Custom override
+          arg$values <- paste(aesthetic, "=",
+                              switch(aesthetic,
+                                     "colour" = ,
+                                     "linetype" = ,
+                                     "fill" = paste0('"', customized$value, '"'),
+                                     customized$value)
+          )
+        } else if (!is.null(input$value) &&
+                   (is.na(default_aes) ||
+                    (input$value != default_aes) ||
+                    (inheritable()))) {
+          # Set value (non-null)
+          arg$values <- paste(aesthetic, "=",
+                              switch(aesthetic,
+                                     "colour" = ,
+                                     "linetype" = ,
+                                     "fill" = paste0('"', input$value, '"'),
+                                     input$value)
+          )
+        }
       }
     })
     arg

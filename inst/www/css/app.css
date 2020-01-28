@@ -18,8 +18,8 @@ body {
 .inherited::after {
   content: 'Inherited';
   position: absolute;
-  top: 6px;
-  right: 12px;
+  top: 0;
+  right: 0;
   font-style: italic;
   font-size: 0.9em;
   color: blue;
@@ -263,24 +263,57 @@ span.varname {
   right: 10px;
 }
 
-.aesthetic .mapping-section .aes-content {
+.aesthetic .mapping-section .aes-content,
+.aesthetic .aes-custom-content {
   display: flex;
   align-items: center;
   height: 100%;
   margin: 0 10px;
 }
 
-/* Style dropzone */
-.aesthetic section.mapping-section .aes-content div.ds-dropzone {
+/* Style dropzone and custom input */
+.aesthetic section.mapping-section .aes-content div.ds-dropzone,
+.aesthetic section .aes-custom-content > div {
   flex: 1 0 auto;
+  width: unset;
 }
 
-/* Style choose data dropdown button */
-.aesthetic section.mapping-section .aes-content div.aes-choose-data {
+/* Style custom input only */
+.aesthetic section .aes-custom-content > div {
+  margin-bottom: 20px;
+}
+
+/* Style choose data dropdown button and custom ready button */
+.aesthetic section.mapping-section .aes-content div.aes-choose-data,
+.aesthetic section .aes-custom-content > button {
   position: initial;
   flex: 0 0 35px;
   margin-left: 5px;
   margin-bottom: 0;
+  max-width: 35px;
+}
+
+.aesthetic section .aes-custom-content > button.disabled {
+  background-color: inherit;
+  color: inherit;
+}
+
+.aesthetic section .aes-custom-content > button.disabled:hover {
+  background-color: inherit;
+}
+
+.aesthetic section .aes-custom-content > button {
+  background-color: #00a65a;
+  color: white;
+}
+
+.aesthetic section .aes-custom-content > button:hover {
+  background-color: #008d4c;
+}
+
+/* Style custom ready button only */
+.aesthetic section .aes-custom-content > button > i {
+  margin-left: -2px;
 }
 
 /* Make sure dropdown placed in correct spot */
