@@ -550,6 +550,15 @@ update_aes_input <- function(session, inputId, aes, aes_val) {
 # Customize override server functions for mapping and value
 custom_server <- function(type, input, customized, session) {
   return({
+    # Let Enter key in custom_<type> input press custom_<type>_ready button
+    shinyjs::onevent("keypress", paste0("custom_", type),
+                     function(event) {
+                       if (event$key == "Enter") {
+                         shinyjs::click(paste0("custom_", type, "_ready"))
+                       }
+                     }
+    )
+
     # Copy input to custom if appropriate
     observeEvent(input[[type]], {
       updateTextInput(session, paste0("custom_", type), value = input[[type]])
