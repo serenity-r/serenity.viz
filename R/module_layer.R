@@ -11,7 +11,7 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
   ns <- NS(session$ns(id))
   geom_type <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
-  geom_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
+  default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
 
   if (geom_type == "geom-blank") {
     geom_name <- tagList("Base Layer")
@@ -40,8 +40,14 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
                shinyWidgets::pickerInput(
                  inputId = ns("stat"),
                  label = NULL,
-                 selected = geom_stat,
+                 selected = default_stat,
                  choices = revList(stat_names),
+                 choicesOpt = list(
+                   subtext = rep("", length(stat_names)) %>% {
+                     .[which(names(stat_names) == default_stat)] <- "default"
+                     .
+                   }
+                 ),
                  options = list(
                    size = 6,
                    `live-search` = TRUE,
@@ -133,6 +139,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   layer_id <- paste(stringr::str_split(gsub("-$", "", ns('')), '-')[[1]][2:5], collapse="-")
   geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
+  default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
 
   layer_instance <- dragulaSelectR::multivalues(layer_id, ids=TRUE)
 
@@ -229,12 +236,6 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     }
   })
 
-  # _ _ settings output ====
-  output$summary <- renderPrint({
-    # req(layer_aesthetics())
-    # layer_aesthetics()
-  })
-
   # Call position module
   # Only need isolated base_data for now
   position_code <- callModule(module = layerPositionServer,
@@ -249,13 +250,21 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
                                           "ggplot",
                                           stringr::str_replace(geom_type, "-", "_")), "(")
 
+    # Add stat, if appropriate
+    show_stat <- (geom_type != "geom-blank") && (input$stat != default_stat)
+    if (show_stat) {
+      processed_layer_code <- paste0(processed_layer_code,
+                                     "stat = ", squote(input$stat))
+    }
+
     # Layer aesthetics
     processed_layer_code <- paste0(processed_layer_code,
+                                   ifelse(show_stat && nchar(layer_aesthetics()), ", ", ""),
                                    layer_aesthetics())
 
     # Layer parameters
     processed_layer_code <- paste0(processed_layer_code,
-                                   ifelse(nchar(layer_aesthetics()) && nchar(layer_params$code()), ",\n", ""),
+                                   ifelse((show_stat || nchar(layer_aesthetics())) && nchar(layer_params$code()), ",\n", ""),
                                    layer_params$code())
 
     return(processed_layer_code)

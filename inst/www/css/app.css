@@ -652,6 +652,13 @@ i.fa.inactive {
   content:'\f1ec';
 }
 
+/* Move default notification to the right */
+.layer-wrap.layer .layer-stat .layer-choose-stat .dropdown .dropdown-menu small.text-muted {
+  text-align: right;
+  display: inline-block;
+  width: 100%;
+}
+
 .layer-wrap.layer .layer-params {
   display:inline-block;
   width: 100%;
