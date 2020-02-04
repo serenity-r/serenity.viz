@@ -505,6 +505,35 @@ plot_names <- list(
   "geom-smooth" = "Smoother"
 )
 
+stat_names <- list(
+  "identity" = "Identity",
+  "count" = "Count",
+  "bin" = "Binning",
+  "sum" = "Sum",
+  "density" = "Density (x)",
+  "smooth" = "Smooth",
+  "summary" = "Summaries",
+  "boxplot" = "Boxplot",
+  "function" = "Function",
+  "quantile" = "Quantiles",
+  "qq" = "Quantile-Quantile (QQ)",
+  "qq_line" = "QQ Line",
+  "ecdf" = "Emperical CDF",
+  "ellipse" = "Confidence Ellipse",
+  "contour" = "Contours",
+  "ydensity" = "Density (y)",
+  "bin_2d" = "Binning (2D Rect)",
+  "bin_hex" = "Binning (2D Hex)",
+  "summary_bin" = "Summaries (Bins)",
+  "summary_hex" = "Summaries (2D Hex)",
+  "summary_2d" = "Summaries (2D Rect)",
+  "density_2d" = "Density (2D)",
+  "sf" = "SF",
+  "sf_coordinates" = "SF Coords",
+  "unique" = "Unique"
+)
+stats <- names(stat_names)
+
 NA_defaults <- list(
   fill = "#FFFFFF",
   colour = "#333333",

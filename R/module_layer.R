@@ -10,6 +10,8 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
   # Create a namespace function using the provided id
   ns <- NS(session$ns(id))
   geom_type <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="-")
+  geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
+  geom_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
 
   if (geom_type == "geom-blank") {
     geom_name <- tagList("Base Layer")
@@ -31,6 +33,26 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
           ),
           switch(geom_type != "geom-blank", span("Other stuff", class="hidden"), NULL)
         )
+      ),
+      switch(geom_type != "geom-blank",
+             div(
+               class = "layer-stat",
+               shinyWidgets::pickerInput(
+                 inputId = ns("stat"),
+                 label = NULL,
+                 selected = geom_stat,
+                 choices = revList(stat_names),
+                 options = list(
+                   size = 6,
+                   `live-search` = TRUE,
+                   `dropup-auto` = FALSE
+                 )
+               ) %>% {
+                 .$attribs$class <- paste(.$attribs$class, "layer-choose-stat")
+                 .
+               },
+               htmlOutput(ns("selected_stat"))
+             )
       ),
       div(
         class = "layer-icons",
@@ -143,6 +165,14 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
           ggdata$base_data <- NULL
         }
       }
+    )
+  })
+
+  output$selected_stat <- renderUI({
+    tagList(
+      "Calculation:",
+      br(),
+      em(stat_names[[input$stat]])
     )
   })
 

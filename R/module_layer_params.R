@@ -156,3 +156,15 @@ snakeToCamel <- function(x, capFirst = FALSE) {
     collapse = ""
   )
 }
+
+camelToSnake <- function(x) {
+  paste(unlist(
+    purrr::imap(
+      strsplit(x, "(?<=[[:lower:]])(?=[[:upper:]])", perl=TRUE)[[1]],
+      ~ ifelse(.y > 1,
+               paste0("_", tolower(.x)),
+               tolower(.x))
+    )),
+    collapse = ""
+  )
+}

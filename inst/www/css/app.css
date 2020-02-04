@@ -627,6 +627,31 @@ i.fa.inactive {
   width: 30px;
 }
 
+.layer-wrap.layer .layer-stat {
+  display: flex;
+  align-items: center;
+  margin: 5px;
+}
+
+.layer-wrap.layer .layer-stat .layer-choose-stat {
+  max-width: 35px;
+  margin-bottom: 0;
+  margin-right: 8px;
+}
+
+.layer-wrap.layer .layer-stat .layer-choose-stat .dropdown button.dropdown-toggle span.caret {
+  border-color: transparent !important;
+  font-weight: 900;
+  font-family: "Font Awesome 5 Free";
+  top: 0;
+  left: 12%;
+  font-size: 20px;
+}
+
+.layer-wrap.layer .layer-stat .layer-choose-stat .dropdown button.dropdown-toggle span.caret:before {
+  content:'\f1ec';
+}
+
 .layer-wrap.layer .layer-params {
   display:inline-block;
   width: 100%;
