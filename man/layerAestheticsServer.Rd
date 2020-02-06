@@ -4,8 +4,8 @@
 \alias{layerAestheticsServer}
 \title{Server for layer aesthetics module}
 \usage{
-layerAestheticsServer(input, output, session, layers_selected,
-  geom_blank_input, dataset, inherit.aes)
+layerAestheticsServer(input, output, session, layer_selected,
+  geom_blank_input, dataset, inherit.aes, layer_stat)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -14,13 +14,15 @@ layerAestheticsServer(input, output, session, layers_selected,
 
 \item{session}{Shiny user session}
 
-\item{layers_selected}{Reactive value of currently selected layer}
+\item{layer_selected}{Reactive value of currently selected layer}
 
 \item{geom_blank_input}{Need geom_blank values to check for inheritance}
 
 \item{dataset}{Dataset}
 
 \item{inherit.aes}{Inherit aesthetics from base layer? (reactive)}
+
+\item{layer_stat}{Reactive value of currently selected layer stat}
 }
 \description{
 Server for layer aesthetics module

@@ -66,7 +66,6 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
   #  each aesthetic, rather than rerendering all aeasthetics on every stat change.
   #  Also, the "side-effect" in this reactive is making me twitch.
   aesthetics <- reactive({
-    req(stat_aesthetics())
     triggerAesUpdate$trigger() # Make sure individual aesthetics update as well (probably bad form as side effect)
     reorderElements(c(geom_aesthetics, stat_aesthetics()), orderBy = unique(unlist(gg_aesthetics)))
   })

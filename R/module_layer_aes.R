@@ -85,7 +85,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
             }
         ),
         switch(as.character(layer != "geom-blank"),
-               "TRUE" = serenity.viz::prettyToggle(
+               "TRUE" = prettyToggle(
                  inputId = session$ns("customize"),
                  value = input$customize %||% FALSE,
                  label_on = "",
@@ -98,7 +98,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
                  icon_off = icon("pencil"),
                  inline = TRUE
                ),
-               "FALSE" = serenity.viz::prettyToggle(
+               "FALSE" = prettyToggle(
                  inputId = session$ns("scale"),
                  label_on = "",
                  label_off = "",
