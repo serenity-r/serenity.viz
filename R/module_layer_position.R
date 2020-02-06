@@ -152,7 +152,12 @@ layerPositionServer <- function(input, output, session, base_data, default_posit
 
   updateSelectizeInput(
     session, 'position', server = TRUE,
-    choices = c("Identity", "Jitter", "Dodge", "Jitter-Dodge", "Nudge", "Stack")
+    choices = list("Identity" = "identity",
+                   "Jitter" = "jitter",
+                   "Dodge" = "dodge",
+                   "Jitter-Dodge" = "jitterdodge",
+                   "Nudge" = "nudge",
+                   "Stack" = "stack")
   )
 
   position_code <- dedupe(reactive({
