@@ -570,31 +570,31 @@ makeReactiveTrigger <- function(init_val = NULL) {
   )
 }
 
-gg_aesthetics <- list(
-  "geom-blank" = c("x",
-                   "y",
-                   "alpha",
-                   "colour",
-                   "fill",
-                   "linetype",
-                   "size",
-                   "weight",
-                   "xmin",
-                   "xmax",
-                   "ymin",
-                   "ymax"),
-  "geom-bar" = ggplot2::GeomBar$aesthetics(),
-  "geom-histogram" = ggplot2::GeomBar$aesthetics(),
-  "geom-point" = ggplot2::GeomPoint$aesthetics(),
-  "geom-line" = ggplot2::GeomLine$aesthetics(),
-  "geom-dotplot" = ggplot2::GeomDotplot$aesthetics(),
-  "geom-boxplot" = c(ggplot2::GeomBoxplot$aesthetics(), "y"),
-  "geom-violin" = ggplot2::GeomViolin$aesthetics(),
-  "geom-rug" = ggplot2::GeomRug$aesthetics(),
-  "geom-smooth" = ggplot2::GeomSmooth$aesthetics()
+gg_aesthetics <- reorderElements(
+  list(
+    "geom-blank" = c("x",
+                     "y",
+                     "alpha",
+                     "colour",
+                     "fill",
+                     "linetype",
+                     "size",
+                     "weight",
+                     "xmin",
+                     "xmax",
+                     "ymin",
+                     "ymax"),
+    "geom-bar" = ggplot2::GeomBar$aesthetics(),
+    "geom-histogram" = ggplot2::GeomBar$aesthetics(),
+    "geom-point" = ggplot2::GeomPoint$aesthetics(),
+    "geom-line" = ggplot2::GeomLine$aesthetics(),
+    "geom-dotplot" = ggplot2::GeomDotplot$aesthetics(),
+    "geom-boxplot" = ggplot2::GeomBoxplot$aesthetics(),
+    "geom-violin" = ggplot2::GeomViolin$aesthetics(),
+    "geom-rug" = ggplot2::GeomRug$aesthetics(),
+    "geom-smooth" = ggplot2::GeomSmooth$aesthetics()
+  )
 )
-ordering <- unique(unlist(gg_aesthetics))
-gg_aesthetics <- purrr::map(gg_aesthetics, ~ ordering[ordering %in% .])
 
 idsToGeoms <- function(id) {
   switch(!is.null(id),

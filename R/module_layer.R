@@ -204,7 +204,8 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
                                  layers_selected,
                                  geom_blank_input,
                                  dataset,
-                                 inherit.aes)
+                                 inherit.aes,
+                                 reactive({ input$stat }))
 
   # Could be conditionalPanel, but shinyWidget switch wasn't rendering correctly
   output$params <- renderUI({

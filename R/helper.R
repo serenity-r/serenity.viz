@@ -77,3 +77,12 @@ dedupe <- function(r) {
   observe(val <<- r(), priority = 10)
   reactive(val)
 }
+
+reorderElements <- function(x, orderBy = NULL) {
+  ordering <- unique(unlist(c(orderBy, x)))
+  if (is.list(x)) {
+    return(purrr::map(x, ~ ordering[ordering %in% .]))
+  } else {
+    return(ordering[ordering %in% x])
+  }
+}
