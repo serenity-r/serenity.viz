@@ -31,7 +31,9 @@ layerParamsGeomBarServer <- function(input, output, session, base_data) {
 modify_geom_bar_args <- function(param, value, base_data) {
   return(
     switch(param,
-           "width" = value*resolution(base_data()$x, zero = FALSE),
+           "width" = ifelse(!is.null(base_data()$x),
+                            value*resolution(base_data()$x, zero = FALSE),
+                            value),
            value
     )
   )
