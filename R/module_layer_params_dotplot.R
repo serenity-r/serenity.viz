@@ -38,7 +38,7 @@ layerParamsGeomDotplotServer <- function(input, output, session, base_data) {
                     max = 2.0,
                     step = 0.05,
                     value = input[['dotsize']] %||% default_args[['dotsize']]),
-        serenity.viz::bs_accordion(session$ns('accordion_params')) %>%
+        bs_accordion(session$ns('accordion_params')) %>%
           bsplus::bs_append(tagList("Binning Parameters", icon("")),
                             content = tagList(
                               selectInput(session$ns('method'),

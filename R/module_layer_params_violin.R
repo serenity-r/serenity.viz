@@ -47,7 +47,7 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
                       "Equal width" = "width"
                     ),
                     selected = input[['scale']] %||% default_args[['scale']]),
-        serenity.viz::bs_accordion(session$ns('kernel_params')) %>%
+        bs_accordion(session$ns('kernel_params')) %>%
           bsplus::bs_append(tagList("Quantiles", icon("")),
                             content = wellPanel(
                               class = "violin_quantiles_panel",

@@ -209,6 +209,7 @@ editableTableServer <- function(input, output, session = getDefaultReactiveDomai
   observeEvent(input$table_cell_edit, {
     row <- input$table_cell_edit$row
     value <- as.numeric(input$table_cell_edit$value)
+    values <- NULL  # To appease the R CMD CHECK gods...
 
     if (!unique_values || !(value %din% table_data$values$values)) {
       table_data$values <<- DT::editData(table_data$values,

@@ -27,7 +27,8 @@ Imports:
     crayon,
     fansi,
     prettycode,
-    markdown
+    markdown,
+    DT
 Remotes: 
     serenity-r/dragulaSelectR,
     serenity-r/luminophor

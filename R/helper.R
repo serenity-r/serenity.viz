@@ -48,6 +48,14 @@ dsetdiff <- function (x, y)
     else x)
 }
 
+#' Wrapper for bsplus::bs_accordion
+#'
+#' Adds appropriate class for rendering
+#'
+#' @inheritParams bsplus::bs_accordion
+#' @param class   Additional classes to add to accordion
+#' @return bs_accordion
+#'
 bs_accordion <- function(id, panel_type = "default", use_heading_link = TRUE, class = NULL) {
   bsplus::bs_accordion(id) %>%
     bsplus::bs_set_opts(panel_type, use_heading_link = use_heading_link) %>% {
@@ -73,6 +81,7 @@ dataTypeToUI <- function(var, .icon = FALSE) {
 
 # Useful to make sure code strings don't get invalidated if they don't change
 dedupe <- function(r) {
+  val <- NULL
   makeReactiveBinding("val")
   observe(val <<- r(), priority = 10)
   reactive(val)
