@@ -187,7 +187,8 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   if (geom_type != "geom-blank") {
     layer_params <- callModule(module = layerParamsServer,
                                id = 'params',
-                               base_data = reactive({ ggdata$base_data })
+                               base_data = reactive({ ggdata$base_data }),
+                               layer_stat = reactive({ input$stat %||% default_stat })
     )
   }
 

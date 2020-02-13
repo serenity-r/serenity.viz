@@ -5,7 +5,7 @@ layerParamsStatBinUI <- function(id) {
 }
 
 # Refactor: Duplicate plotting when changing between bins and binwidth
-layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
+layerParamsStatBinServer <- function(input, output, session, base_data) {
   default_args <- list("bins_width" = TRUE,  # Number of bins (TRUE) or binwidth (FALSE)
                        "bins" = 30,          # Default number of bins
                        "binwidth" = NA,      # Width of bins
@@ -40,7 +40,7 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
   # Avoid NA warning
   observeEvent(rng(), {
     default_args$binwidth <- diff(rng())/default_args$bins
-    if (is.na(input$binwidth)) {
+    if (!isTruthy(input$binwidth)) {
       updateNumericInput(session, 'binwidth',
                          value = default_args$binwidth,
                          max = diff(rng()))
@@ -170,10 +170,10 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
 
   # This reactive needs to be isolated since we have inputs that don't need
   #   to rerun this code (e.g. buttons in breaks panel).
-  geom_params_code <- reactive({
+  stat_params_code <- reactive({
     reactive_inputs()
     isolate({
-      processed_geom_params_code <- ''
+      processed_stat_params_code <- ''
       if (!is.null(input$bins_width)) {
         args <- default_args[setdiff(names(default_args),
                                      c("bins_width",
@@ -182,15 +182,15 @@ layerParamsGeomHistogramServer <- function(input, output, session, base_data) {
                                               "TRUE" = c("binwidth", "bins"),
                                               "FALSE" = c("breaks", ifelse(input$bins_width, "binwidth", "bins")))))]
 
-        processed_geom_params_code <- process_args(args,
+        processed_stat_params_code <- process_args(args,
                                                    c(reactiveValuesToList(input),
                                                      reactiveValuesToList(layer_data)),
                                                    base_data)
       }
     })
 
-    return(processed_geom_params_code)
+    return(processed_stat_params_code)
   })
 
-  return(geom_params_code)
+  return(stat_params_code)
 }
