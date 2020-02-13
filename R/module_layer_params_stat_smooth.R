@@ -1,10 +1,10 @@
-layerParamsGeomSmoothUI <- function(id) {
+layerParamsStatSmoothUI <- function(id) {
   ns <- NS(id)
 
   uiOutput(ns("params"))
 }
 
-layerParamsGeomSmoothServer <- function(input, output, session, base_data) {
+layerParamsStatSmoothServer <- function(input, output, session, base_data) {
   default_args <- list("method" = "auto",   # loess or gam
                        "se" = TRUE,         # Show confidence bands
                        "level" = 0.95,      # Confidence level
@@ -117,7 +117,7 @@ layerParamsGeomSmoothServer <- function(input, output, session, base_data) {
     }
   })
 
-  geom_params_code <- reactive({
+  stat_params_code <- reactive({
     req(input$method)
 
     # Handle family separately
@@ -127,11 +127,11 @@ layerParamsGeomSmoothServer <- function(input, output, session, base_data) {
                                           "span",
                                           NULL)))]
 
-    processed_geom_params_code <- process_args(args, input, base_data)
+    processed_stat_params_code <- process_args(args, input, base_data)
 
     if (input$method == "glm") {
-      processed_geom_params_code <- paste(processed_geom_params_code,
-                                          ifelse(nchar(processed_geom_params_code) > 0, ",\n", ""),
+      processed_stat_params_code <- paste(processed_stat_params_code,
+                                          ifelse(nchar(processed_stat_params_code) > 0, ",\n", ""),
                                           paste0('method.args = list("family" = ',
                                                  input$family,
                                                  '(',
@@ -142,8 +142,8 @@ layerParamsGeomSmoothServer <- function(input, output, session, base_data) {
       )
     }
 
-    return(processed_geom_params_code)
+    return(processed_stat_params_code)
   })
 
-  return(geom_params_code)
+  return(stat_params_code)
 }
