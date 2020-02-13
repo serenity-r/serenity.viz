@@ -12,7 +12,6 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
   default_args <- reactiveValues("notch" = FALSE,    # Show notches?
                                  "notchwidth" = 0.5, # Width of notches
                                  "varwidth" = FALSE, # Variable width boxes (weight by n)
-                                 "coef" = 1.5,       # Whisker length as multiple of IQR
                                  "outlier.show" = TRUE,
                                  "outlier.colour" = NA_defaults[["colour"]],
                                  "outlier.fill" = NA_defaults[["fill"]],
@@ -78,12 +77,6 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
         checkboxInput(session$ns('varwidth'),
                       label = "Variable widths?",
                       value = input[['varwidth']] %||% default_args[['varwidth']]
-        ),
-        numericInput(session$ns('coef'),
-                     label = "Whisker length (x IQR)",
-                     value = input[['coef']] %||% default_args[['coef']],
-                     min = 0,
-                     max = Inf
         ),
         shinyWidgets::switchInput(session$ns('outlier.show'),
                                   label = 'Show outliers?',

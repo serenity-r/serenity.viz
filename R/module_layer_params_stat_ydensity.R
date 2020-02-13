@@ -1,10 +1,10 @@
-layerParamsGeomViolinUI <- function(id) {
+layerParamsStatYdensityUI <- function(id) {
   ns <- NS(id)
 
   uiOutput(ns("params"))
 }
 
-layerParamsGeomViolinServer <- function(input, output, session, base_data) {
+layerParamsStatYdensityServer <- function(input, output, session, base_data) {
   default_args <- list("trim" = TRUE,            # Trim the tails of the violins to the range of the data
                        "scale" = "area",         # Scaling algorithm for violins
                        "kernel" = "gaussian",    # Kernel
@@ -12,11 +12,9 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
                        "bw_algorithm" = "nrd0",  # The smoothing bandwidth to be used
                        "bw_numeric" = NULL,
                        "bw" = "nrd0",
-                       "draw_quantiles" = NA,
                        "bw_override" = FALSE)
 
-  layer_data <- reactiveValues(draw_quantiles = NULL,
-                               bw = NULL)
+  layer_data <- reactiveValues(bw = NULL)
 
   refreshDT <- makeReactiveTrigger()
 
@@ -27,8 +25,7 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
           input$adjust,
           input$bw_algorithm,
           input$bs_numeric,
-          layer_data$bw,
-          layer_data$draw_quantiles
+          layer_data$bw
     )
   })
 
@@ -48,13 +45,6 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
                     ),
                     selected = input[['scale']] %||% default_args[['scale']]),
         bs_accordion(session$ns('kernel_params')) %>%
-          bsplus::bs_append(tagList("Quantiles", icon("")),
-                            content = wellPanel(
-                              class = "violin_quantiles_panel",
-                              editableTableUI(session$ns('quantiles'),
-                                              refreshIcon = "trash")
-                            )
-          ) %>%
           bsplus::bs_append(tagList("Kernel Parameters", icon("")),
                             content = tagList(
                               selectInput(session$ns('kernel'),
@@ -111,21 +101,6 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
   })
   outputOptions(output, "params", suspendWhenHidden = FALSE)
 
-  quantiles <- callModule(module = editableTableServer,
-                          id = "quantiles",
-                          refreshDT = refreshDT,
-                          unique_values = TRUE,
-                          default_from = reactive({ 0.25 }),
-                          default_to = reactive({ 0.75 }),
-                          default_num = 3,
-                          session = session)
-
-  observeEvent(quantiles(), {
-    layer_data$draw_quantiles <- data.frame(
-      draw_quantiles = quantiles()$values
-    )
-  })
-
   observeEvent(input$bw_override, {
     if (input$bw_override) {
       shinyjs::disable("bw_algorithm")
@@ -158,24 +133,19 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
     }
   })
 
-  geom_params_code <- reactive({
+  stat_params_code <- reactive({
     reactive_inputs()
     isolate({
-      args <- default_args[setdiff(names(default_args),
-                                   c("bw_override",
-                                     "bw_algorithm",
-                                     "bw_numeric",
-                                     switch(is.null(layer_data$draw_quantiles) || (nrow(layer_data$draw_quantiles) == 0),
-                                            "draw_quantiles")))]
+      args <- default_args[setdiff(names(default_args), c("bw_override", "bw_algorithm", "bw_numeric"))]
 
-      processed_geom_params_code <- process_args(args,
+      processed_stat_params_code <- process_args(args,
                                                  c(reactiveValuesToList(input),
                                                    reactiveValuesToList(layer_data)),
                                                  base_data)
     })
 
-    return(processed_geom_params_code)
+    return(processed_stat_params_code)
   })
 
-  return(geom_params_code)
+  return(stat_params_code)
 }
