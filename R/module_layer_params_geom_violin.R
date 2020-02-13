@@ -13,7 +13,7 @@ layerParamsGeomViolinServer <- function(input, output, session, base_data) {
 
   output$params <- renderUI({
     isolate({
-      serenity.viz::bs_accordion(session$ns('quantile_params')) %>%
+      bs_accordion(session$ns('quantile_params')) %>%
         bsplus::bs_append(tagList("Quantiles", icon("")),
                           content = wellPanel(
                             class = "violin_quantiles_panel",
