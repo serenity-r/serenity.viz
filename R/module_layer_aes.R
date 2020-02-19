@@ -164,7 +164,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
       if (!isTruthy(input$switch)) {
         # Mapping exists (or) first time loading
         content <- tagList(
-          dragulaSelectR::dropZoneInput(session$ns("mapping"),
+          dndselectr::dropZoneInput(session$ns("mapping"),
                                         choices = sapply(names(dataset), function(var_name) {
                                           div(
                                             class = paste("aeszone",
@@ -280,7 +280,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
         !isTRUE(all.equal(ifelse(is.null(input$`aes-choose-data`), "", input$`aes-choose-data`),
                           ifelse(is.null(input$mapping), "", input$mapping)))) {
       entangled <<- TRUE
-      dragulaSelectR::updateDropZoneInput(session, 'mapping', presets = input$`aes-choose-data` %T||% NA)
+      dndselectr::updateDropZoneInput(session, 'mapping', presets = input$`aes-choose-data` %T||% NA)
     } else {
       entangled <<- FALSE
     }
@@ -337,7 +337,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
 
   # Reset aesthetic mapping to base layer (default)
   observeEvent(input$`aes-reset-mapping`, {
-    dragulaSelectR::updateDropZoneInput(session, 'mapping', presets = geom_blank_input[[geom_blank_ns("mapping")]]())
+    dndselectr::updateDropZoneInput(session, 'mapping', presets = geom_blank_input[[geom_blank_ns("mapping")]]())
   })
 
   # _ Aesthetic to code ====

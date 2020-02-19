@@ -21,7 +21,7 @@ Imports:
     shinyWidgets,
     bsplus,
     luminophor,
-    dragulaSelectR,
+    dndselectr,
     htmltools,
     colourpicker,
     crayon,
@@ -30,7 +30,7 @@ Imports:
     markdown,
     DT
 Remotes: 
-    serenity-r/dragulaSelectR,
+    serenity-r/dndselectr,
     serenity-r/luminophor
 URL: https://github.com/serenity-r/serenity
 BugReports: https://github.com/serenity-r/serenity.viz/issues

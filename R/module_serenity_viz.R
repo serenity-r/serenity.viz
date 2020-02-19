@@ -50,8 +50,8 @@ serenityVizServer <- function(input, output, session, dataset) {
   }
 
   # Server code for layer dropzones
-  dragulaSelectR::dropZoneServer(session, "layers", layerUI)
-  dragulaSelectR::dropZoneServer(session, "base-layer", layerUI)
+  dndselectr::dropZoneServer(session, "layers", layerUI)
+  dndselectr::dropZoneServer(session, "base-layer", layerUI)
 
   # This stores returned reactives from layer modules
   layer_modules <- reactiveValues()
@@ -173,8 +173,8 @@ serenityVizServer <- function(input, output, session, dataset) {
         class = "layers-wrapper",
         div(
           class = "base-layer",
-          isolate({ # See Example 22 in DragulaSelectR
-            dragulaSelectR::dropZoneInput(
+          isolate({ # See Example 22 in dndselectr
+            dndselectr::dropZoneInput(
               session$ns("base_layer"),
               class = "layers",
               choices = list(
@@ -189,7 +189,7 @@ serenityVizServer <- function(input, output, session, dataset) {
             )
           })
         ),
-        dragulaSelectR::dropZoneInput(
+        dndselectr::dropZoneInput(
           session$ns("layers"),
           class = "layers",
           choices = sapply(geoms, function(geom) { layerUI(geom) }, simplify = FALSE, USE.NAMES = TRUE),
@@ -204,7 +204,7 @@ serenityVizServer <- function(input, output, session, dataset) {
       div(
         class = "layer-chooser-wrapper",
         style = "display: none;",
-        dragulaSelectR::dropZoneInput(session$ns("ds-layer-chooser"), choices = sapply(geoms, function(geom) { layerChoiceUI(geom) }, simplify = FALSE),
+        dndselectr::dropZoneInput(session$ns("ds-layer-chooser"), choices = sapply(geoms, function(geom) { layerChoiceUI(geom) }, simplify = FALSE),
                                       class = "layer-chooser",
                                       flex = TRUE,
                                       selectable = TRUE,
@@ -217,7 +217,7 @@ serenityVizServer <- function(input, output, session, dataset) {
   })
 
   observeEvent(input$`layer-chooser`, {
-    dragulaSelectR::unselect(session, "ds-layer-chooser")
+    dndselectr::unselect(session, "ds-layer-chooser")
     if (input$`layer-chooser`) {
       # Toggle header views
       shinyjs::js$myhide(paste0('#', session$ns("remove-layer")))
@@ -262,26 +262,26 @@ serenityVizServer <- function(input, output, session, dataset) {
   # The next two observe events handle selection of layers
   observeEvent(input$base_layer_selected, {
     if (!is.null(input$layers_selected)) {
-      dragulaSelectR::unselect(session, "layers")
+      dndselectr::unselect(session, "layers")
     }
   }, ignoreInit = TRUE)
 
   observeEvent(input$layers_selected, {
     if (!is.null(input$base_layer_selected) && !is.null(input$layers_selected)) {
-      dragulaSelectR::unselect(session, "base_layer")
+      dndselectr::unselect(session, "base_layer")
     } else if (is.null(input$base_layer_selected) && is.null(input$layers_selected)) {
-      dragulaSelectR::select(session, "geom-blank-ds-1", "base_layer")
+      dndselectr::select(session, "geom-blank-ds-1", "base_layer")
     }
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   observeEvent(input$`add-layer-button`, {
     shinyWidgets::updatePrettyToggle(session, "layer-chooser", value = FALSE)
-    dragulaSelectR::appendToDropzone(session, input$`ds-layer-chooser_selected`, "layers")
+    dndselectr::appendToDropzone(session, input$`ds-layer-chooser_selected`, "layers")
   })
 
   observeEvent(input$`remove-layer`, {
     if (!is.null(input$layers_selected)) {
-      dragulaSelectR::removeSelected(session, "layers")
+      dndselectr::removeSelected(session, "layers")
     }
   })
 
