@@ -135,6 +135,13 @@ serenityVizServer <- function(input, output, session, dataset) {
                 title = "Variables",
                 icon = icon("database"),
                 closable = FALSE) %>%
+      addWidget(id = session$ns("widget-computed-vars"),
+                refwidgetID = session$ns("widget-vars"),
+                insertmode = "tab-after",
+                ui = computedDataUI(id = session$ns("computed-vars")),
+                title = "Computed Variables",
+                icon = icon("calculator"),
+                closable = FALSE) %>%
       addWidget(id = session$ns("aesthetics"),
                 refwidgetID = session$ns("widget-vars"),
                 insertmode = "split-bottom",
@@ -533,6 +540,30 @@ stat_names <- list(
   "unique" = "Unique"
 )
 stats <- names(stat_names)
+
+stat_computed_vars <- list(
+  "count" = c("count", "prop"),
+  "bin" = c("count", "density", "ncount", "ndensity"),
+  "sum" = c("n", "prop"),
+  "density" = c("density", "count", "scaled", "ndensity"),
+  "smooth" = c("y", "ymin", "ymax", "se"),
+  "summary" = c("y", "ymin", "ymax"),
+  "boxplot" = c("width", "ymin", "ymax", "lower", "middle", "upper", "notchlower", "notchupper"),
+  "function" = c("x", "y"),
+  "quantile" = c("quantile"),
+  "qq" = c("sample", "theoretical"),
+  "qq_line" = c("sample", "theoretical"),
+  "ecdf" = c("x", "y"),
+  "ellipse" = c("x", "y"),
+  "contour" = c("level", "nlevel", "piece"),
+  "ydensity" = c("density", "scaled", "count", "violinwidth", "n", "width"),
+  "bin_2d" = c("count", "density", "ncount", "ndensity"),
+  "bin_hex" = c("count", "density", "ncount", "ndensity"),
+  "summary_bin" = c("y", "ymin", "ymax"),
+  "summary_hex" = c("x", "y", "value"),
+  "summary_2d" = c("x", "y", "value"),
+  "density_2d" = c("density", "ndensity")
+)
 
 NA_defaults <- list(
   fill = "#FFFFFF",

@@ -148,6 +148,11 @@ body {
   background: #B2DF8A;
 }
 
+.varzone.computed,
+.aeszone.computed {
+  background: #FDBF6F;
+}
+
 .aesthetic .ds-dropzone .ds-dropoption,
 .ds-dropoption.gu-mirror,
 .aesthetic .ds-dragitem.gu-transit {
