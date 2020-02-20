@@ -17,6 +17,31 @@ dataUI <- function(id) {
   )
 }
 
+#' UI for computed data
+#'
+#' @param id  Data ID
+#'
+#' @return UI for data
+#'
+dataComputedUI <- function(id, stat="identity") {
+  # Create a namespace function using the provided id
+  ns <- NS(id)
+
+  tagList(
+    widgetHeader(),
+    widgetBody(
+      div(
+        class = "dataset-vars",
+        em("No computed variables available", class = "none-computed hidden"),
+        dndselectr::dragZone(
+          id = ns('computeddatazone'),
+          choices = computedDragZoneItems(stat)
+        )
+      )
+    )
+  )
+}
+
 #' Server for data module
 #'
 #' @param input   Shiny inputs
@@ -89,4 +114,21 @@ dataServer <- function(input, output, session, dataset) {
   })
 
   return(processed_args)
+}
+
+computedDragZoneItems <- function(stat="identity") {
+  if (is.null(stat_computed_vars[[stat]])) {
+    return(list())
+  }
+
+  sapply(stat_computed_vars[[stat]], function(var_name) {
+    div(
+      class = "varzone computed",
+      icon("calculator"),
+      span(class = "varname", var_name)
+    )
+  }, simplify = FALSE, USE.NAMES = TRUE) %>% {
+    names(.) <- paste0("stat(", stat_computed_vars[[stat]], ")")
+    .
+  }
 }

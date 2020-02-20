@@ -138,8 +138,8 @@ serenityVizServer <- function(input, output, session, dataset) {
       addWidget(id = session$ns("widget-computed-vars"),
                 refwidgetID = session$ns("widget-vars"),
                 insertmode = "tab-after",
-                ui = computedDataUI(id = session$ns("computed-vars")),
-                title = "Computed Variables",
+                ui = dataComputedUI(id = session$ns("computed-vars")),
+                title = "Computed",
                 icon = icon("calculator"),
                 closable = FALSE) %>%
       addWidget(id = session$ns("aesthetics"),
