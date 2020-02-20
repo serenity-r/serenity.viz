@@ -165,14 +165,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
         # Mapping exists (or) first time loading
         content <- tagList(
           dndselectr::dropZoneInput(session$ns("mapping"),
-                                        choices = sapply(names(dataset), function(var_name) {
-                                          div(
-                                            class = paste("aeszone",
-                                                          dataTypeToUI(dataset[[var_name]])),
-                                            dataTypeToUI(dataset[[var_name]], .icon = TRUE),
-                                            span(class = "varname", var_name)
-                                          )
-                                        }, simplify = FALSE, USE.NAMES = TRUE),
+                                        choices = dataInputChoices(dataset, zone = "aeszone"),
                                         presets = init_mapping,
                                         placeholder = "Drag or select variable",
                                         maxInput = 1,
@@ -184,16 +177,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
             choices = c("", names(dataset)),
             choicesOpt = list(
               content = c(htmltools::doRenderTags(em("Clear variable")),
-                          sapply(names(dataset), function(var_name) {
-                            htmltools::doRenderTags(
-                              div(
-                                class = paste("aeszone",
-                                              dataTypeToUI(dataset[[var_name]])),
-                                dataTypeToUI(dataset[[var_name]], .icon = TRUE),
-                                span(class = "varname", var_name)
-                              )
-                            )
-                          })
+                          sapply(dataInputChoices(dataset, zone = "aeszone"),
+                                 function(x) { htmltools::doRenderTags(x) })
               )),
             options = list(
               title = "Nothing selected",

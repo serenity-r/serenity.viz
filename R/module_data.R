@@ -35,7 +35,7 @@ dataComputedUI <- function(id, stat="identity") {
         em("No computed variables available", class = "none-computed hidden"),
         dndselectr::dragZone(
           id = ns('computeddatazone'),
-          choices = computedDragZoneItems(stat)
+          choices = dataInputChoices(stat_computed_vars[[stat]])
         )
       )
     )
@@ -58,23 +58,7 @@ dataServer <- function(input, output, session, dataset) {
   output$dataset_vars <- renderUI({
     dndselectr::dragZone(
       id = session$ns('datazone'),
-      choices = sapply(var_names, function(var_name) {
-        div(
-          class = paste("varzone",
-                        dataTypeToUI(dataset[[var_name]])),
-          dataTypeToUI(dataset[[var_name]], .icon = TRUE),
-          span(class = "varname", var_name),
-          shinyWidgets::dropdownButton(
-            dataVarUI(id = session$ns(var_name), var = dataset[[var_name]]),
-            inputId = session$ns("data-filter-btn"),
-            status = "header-icon",
-            icon = icon("filter"),
-            size = "xs",
-            right = TRUE,
-            tooltip = shinyWidgets::tooltipOptions(title = "Filter")
-          )
-        )
-      }, simplify = FALSE, USE.NAMES = TRUE)
+      choices = dataInputChoices(dataset)
     )
   })
 
@@ -116,19 +100,45 @@ dataServer <- function(input, output, session, dataset) {
   return(processed_args)
 }
 
-computedDragZoneItems <- function(stat="identity") {
-  if (is.null(stat_computed_vars[[stat]])) {
+#' UI for data choices, either for dropzone or picker
+#'
+#' @param vars    Dataset, if not computed; otherwise, element of stat_computed_vars
+#' @param zone    "varzone" or "aeszone"
+#' @param session Shiny user session
+#'
+dataInputChoices <- function(vars = NULL, zone = "varzone", session = getDefaultReactiveDomain()) {
+  if (is.null(vars)) {
     return(list())
   }
 
-  sapply(stat_computed_vars[[stat]], function(var_name) {
+  computed <- is.null(names(vars))
+
+  ns <- session$ns %||% function(x) { x }
+
+  itemsUI <- sapply(names(vars) %||% vars, function(var_name) {
     div(
-      class = "varzone computed",
-      icon("calculator"),
-      span(class = "varname", var_name)
+      class = paste(
+        c(zone,
+          switch(as.character(computed), "TRUE" = "computed", "FALSE" = dataTypeToUI(vars[[var_name]]))
+        ), collapse = " "),
+      switch(as.character(computed), "TRUE" = icon("calculator"), "FALSE" = dataTypeToUI(vars[[var_name]], .icon = TRUE)),
+      span(class = "varname", var_name),
+      switch(!computed && zone == "varzone", # Include filter
+             shinyWidgets::dropdownButton(
+               dataVarUI(id = ns(var_name), var = vars[[var_name]]),
+               inputId = ns("data-filter-btn"),
+               status = "header-icon",
+               icon = icon("filter"),
+               size = "xs",
+               right = TRUE,
+               tooltip = shinyWidgets::tooltipOptions(title = "Filter")
+             ))
     )
-  }, simplify = FALSE, USE.NAMES = TRUE) %>% {
-    names(.) <- paste0("stat(", stat_computed_vars[[stat]], ")")
-    .
+  }, simplify = FALSE, USE.NAMES = TRUE)
+
+  if (computed) {
+    names(itemsUI) <- paste0("stat(", vars, ")")
   }
+
+  return(itemsUI)
 }

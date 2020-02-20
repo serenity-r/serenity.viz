@@ -243,7 +243,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
       stat <- input$stat %||% default_stat
       dndselectr::updateDragZone(session,
                                  id = paste(c(stringr::str_split(ns(''), '-')[[1]][1], "computed-vars", "computeddatazone"), collapse = "-"),
-                                 choices = computedDragZoneItems(stat))
+                                 choices = dataInputChoices(stat_computed_vars[[stat]]))
       if (is.null(stat_computed_vars[[stat]])) {
         shinyjs::js$removeClass("hidden", "em.none-computed")
       } else {
