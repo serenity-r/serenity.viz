@@ -88,7 +88,7 @@ observeEvent(rval(), {
   ns <- session$ns
   if (!isTRUE(all.equal(ifelse(is.null(rval()), "", rval()),
                         ifelse(is.null(input$mapping), "", input$mapping)))) {
-    dragulaSelectR::updateDropZoneInput(session, 'mapping', presets = rval() %||% NA)
+    dndselectr::updateDropZoneInput(session, 'mapping', presets = rval() %||% NA)
   }
   if (!isTRUE(all.equal(ifelse(is.null(input$`aes-choose-data`), "", input$`aes-choose-data`),
                         ifelse(is.null(rval()), "", rval())))) {

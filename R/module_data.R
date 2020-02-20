@@ -31,7 +31,7 @@ dataServer <- function(input, output, session, dataset) {
   var_names <- names(dataset)
 
   output$dataset_vars <- renderUI({
-    dragulaSelectR::dragZone(
+    dndselectr::dragZone(
       id = session$ns('datazone'),
       choices = sapply(var_names, function(var_name) {
         div(

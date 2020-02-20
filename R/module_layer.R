@@ -141,7 +141,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
 
-  layer_instance <- dragulaSelectR::multivalues(layer_id, ids=TRUE)
+  layer_instance <- dndselectr::multivalues(layer_id, ids=TRUE)
 
   # _ _ load parameters module ====
 

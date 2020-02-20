@@ -1,5 +1,5 @@
 library(shiny)
-library(dragulaSelectR)
+library(dndselectr)
 
 layerUI <- function(plotname) {
   div(

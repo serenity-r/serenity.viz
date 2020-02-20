@@ -1,6 +1,6 @@
 library(shinyWidgets)
 library(shiny)
-library(dragulaSelectR)
+library(dndselectr)
 
 layerUI <- function(aesthetic) {
   div(
