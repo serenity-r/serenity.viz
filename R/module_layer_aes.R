@@ -357,9 +357,9 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
                                                          function(x) { htmltools::doRenderTags(x) }),
                                                   sapply(dataInputChoices(stat_computed_vars[[layer_stat()]], zone = "aeszone"),
                                                          function(x) { htmltools::doRenderTags(x) })
-                                      ))
+                                      )),
+                                    selected = input$mapping  # pickerInput needs current selection
     )
-
   })
 
   # _ Aesthetic to code ====
