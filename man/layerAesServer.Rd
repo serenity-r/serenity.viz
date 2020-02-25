@@ -5,7 +5,8 @@
 \title{Server for layer aesthetic submodule}
 \usage{
 layerAesServer(input, output, session, aesUpdateDependency,
-  geom_blank_input, inherit.aes, default_aes, dataset, renderNum)
+  geom_blank_input, inherit.aes, default_aes, dataset, renderNum,
+  layer_stat)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -25,6 +26,8 @@ layerAesServer(input, output, session, aesUpdateDependency,
 \item{dataset}{Dataset}
 
 \item{renderNum}{Closure used to mark number of times aesthetic is rendered}
+
+\item{layer_stat}{Reactive value of currently selected layer stat}
 }
 \description{
 Server for layer aesthetic submodule

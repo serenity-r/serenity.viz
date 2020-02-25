@@ -31,12 +31,13 @@ layerAesUI <- function(id) {
 #' @param default_aes Default value for aesthetic
 #' @param dataset Dataset
 #' @param renderNum Closure used to mark number of times aesthetic is rendered
+#' @param layer_stat Reactive value of currently selected layer stat
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
 layerAesServer <- function(input, output, session, aesUpdateDependency, geom_blank_input,
-                           inherit.aes, default_aes, dataset, renderNum) {
+                           inherit.aes, default_aes, dataset, renderNum, layer_stat) {
   # Get aesthetic from namespace
   aesthetic <- stringr::str_split(session$ns(''), '-')[[1]] %>% { .[length(.)-1] }
   layer <- paste(stringr::str_split(session$ns(''), '-')[[1]][2:3], collapse="-")
@@ -165,25 +166,34 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
         # Mapping exists (or) first time loading
         content <- tagList(
           dndselectr::dropZoneInput(session$ns("mapping"),
-                                        choices = dataInputChoices(dataset, zone = "aeszone"),
-                                        presets = init_mapping,
-                                        placeholder = "Drag or select variable",
-                                        maxInput = 1,
-                                        replaceOnDrop = TRUE),
+                                    choices = c(
+                                      dataInputChoices(dataset, zone="aeszone"),
+                                      dataInputChoices(stat_computed_vars[[layer_stat()]], zone="aeszone")
+                                    ),
+                                    presets = init_mapping,
+                                    placeholder = "Drag or select variable",
+                                    maxInput = 1,
+                                    replaceOnDrop = TRUE),
           shinyWidgets::pickerInput(
             inputId = session$ns("aes-choose-data"),
             label = NULL,
             selected = init_mapping,
-            choices = c("", names(dataset)),
+            choices = c("",
+                        names(dataset),
+                        switch(!is.null(stat_computed_vars[[layer_stat()]]),
+                               paste0("stat(", stat_computed_vars[[layer_stat()]], ")"))
+            ),
             choicesOpt = list(
               content = c(htmltools::doRenderTags(em("Clear variable")),
                           sapply(dataInputChoices(dataset, zone = "aeszone"),
+                                 function(x) { htmltools::doRenderTags(x) }),
+                          sapply(dataInputChoices(stat_computed_vars[[layer_stat()]], zone = "aeszone"),
                                  function(x) { htmltools::doRenderTags(x) })
               )),
             options = list(
               title = "Nothing selected",
               size = 6,
-              `live-search` = ifelse(length(names(dataset)) > 6, TRUE, FALSE),
+              `live-search` = ifelse(length(c(names(dataset), stat_computed_vars[[layer_stat()]])) > 6, TRUE, FALSE),
               `dropup-auto` = FALSE
             )
           ) %>% {
@@ -323,6 +333,33 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
   # Reset aesthetic mapping to base layer (default)
   observeEvent(input$`aes-reset-mapping`, {
     dndselectr::updateDropZoneInput(session, 'mapping', presets = geom_blank_input[[geom_blank_ns("mapping")]]())
+  })
+
+  # Update dropZone on stat change
+  observeEvent(layer_stat(), {
+    dndselectr::updateDropZoneInput(session,
+                                    inputId = 'mapping',
+                                    choices = c(
+                                      dataInputChoices(dataset, zone="aeszone"),
+                                      dataInputChoices(stat_computed_vars[[layer_stat()]], zone="aeszone")
+                                    )
+    )
+    shinyWidgets::updatePickerInput(session,
+                                    inputId = 'aes-choose-data',
+                                    choices = c("",
+                                                names(dataset),
+                                                switch(!is.null(stat_computed_vars[[layer_stat()]]),
+                                                       paste0("stat(", stat_computed_vars[[layer_stat()]], ")"))
+                                    ),
+                                    choicesOpt = list(
+                                      content = c(htmltools::doRenderTags(em("Clear variable")),
+                                                  sapply(dataInputChoices(dataset, zone = "aeszone"),
+                                                         function(x) { htmltools::doRenderTags(x) }),
+                                                  sapply(dataInputChoices(stat_computed_vars[[layer_stat()]], zone = "aeszone"),
+                                                         function(x) { htmltools::doRenderTags(x) })
+                                      ))
+    )
+
   })
 
   # _ Aesthetic to code ====

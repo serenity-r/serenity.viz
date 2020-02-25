@@ -238,20 +238,6 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     }
   })
 
-  observe({
-    if (layers_selected() == layer_id) {
-      stat <- input$stat %||% default_stat
-      dndselectr::updateDragZone(session,
-                                 id = paste(c(stringr::str_split(ns(''), '-')[[1]][1], "computed-vars", "computeddatazone"), collapse = "-"),
-                                 choices = dataInputChoices(stat_computed_vars[[stat]]))
-      if (is.null(stat_computed_vars[[stat]])) {
-        shinyjs::js$removeClass("hidden", "em.none-computed")
-      } else {
-        shinyjs::js$addClass("hidden", "em.none-computed")
-      }
-    }
-  })
-
   # Call position module
   # Only need isolated base_data for now
   position_code <- callModule(module = layerPositionServer,
@@ -300,5 +286,8 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     return(processed_layer_code)
   })
 
-  return(layer_code)
+  return(list(
+    code = layer_code,
+    stat = reactive({ input$stat %||% default_stat })
+  ))
 }

@@ -166,7 +166,7 @@ serenityVizServer <- function(input, output, session, dataset) {
                 title = "Messages",
                 icon = icon("info")) %>%
       addWidget(id = session$ns("widget-labels"),
-                refwidgetID = session$ns('aesthetics'),
+                refwidgetID = session$ns('widget-geoms-and-layers'),
                 insertmode = "tab-after",
                 ui = labelsUI(session$ns("labels")),
                 title = "Labels",
@@ -326,6 +326,20 @@ serenityVizServer <- function(input, output, session, dataset) {
     setdiff(all_layers(), input$layers_invisible)
   }, ignoreInit = TRUE)
 
+  # Handle stat changes
+  observe({
+    req(selected_layer())
+    stat <- layer_modules[[selected_layer()]]$stat()
+    dndselectr::updateDragZone(session,
+                               id = paste(session$ns("computed-vars"), "computeddatazone", sep = "-"),
+                               choices = dataInputChoices(stat_computed_vars[[stat]]))
+    if (is.null(stat_computed_vars[[stat]])) {
+      shinyjs::js$removeClass("hidden", "em.none-computed")
+    } else {
+      shinyjs::js$addClass("hidden", "em.none-computed")
+    }
+  })
+
   # Preps geom_blank dropzone inputs for layer modules
   geom_blank_inputs_to_reactives <- function() {
     geom_blank_inputs <- as.list(paste0('geom-blank-ds-1-aesthetics-', gg_aesthetics[["geom-blank"]], '-mapping'))
@@ -347,7 +361,7 @@ serenityVizServer <- function(input, output, session, dataset) {
                                        geom_blank_inputs_to_reactives(),
                                        dataset = dataset,
                                        ggbase = switch(as.character(. != "geom-blank-ds-1"),
-                                                       "TRUE" = layer_modules[["geom-blank-ds-1"]],
+                                                       "TRUE" = layer_modules[["geom-blank-ds-1"]]$code,
                                                        "FALSE" = reactive({ NULL }))
       )
     })
@@ -359,8 +373,8 @@ serenityVizServer <- function(input, output, session, dataset) {
   # Get layer code
   layer_code <- reactive({
     req(visible_layers(),
-        purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .()))
-    paste(purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .()), collapse = "+\n")
+        purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .$code()))
+    paste(purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .$code()), collapse = "+\n")
   })
 
   # _ Plot ====

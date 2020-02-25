@@ -89,7 +89,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
                                                             inherit.aes = inherit.aes,
                                                             default_aes = geom_proto$geom$default_aes[[.]],
                                                             dataset = dataset,
-                                                            renderNum = renderNumSource()))
+                                                            renderNum = renderNumSource(),
+                                                            layer_stat = layer_stat))
 
   stat_aes_args <- list()
   observe({
@@ -100,7 +101,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
                                                                  inherit.aes = inherit.aes,
                                                                  default_aes = geom_proto$geom$default_aes[[.]],
                                                                  dataset = dataset,
-                                                                 renderNum = renderNumSource()))
+                                                                 renderNum = renderNumSource(),
+                                                                 layer_stat = layer_stat))
   })
 
   # _ process subset arguments ====
