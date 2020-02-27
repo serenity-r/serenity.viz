@@ -43,6 +43,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
   layer_id <- paste(stringr::str_split(gsub("-$", "", ns('')), '-')[[1]][2:5], collapse="-")
   geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
+  stat_proto <- reactive({ eval(parse(text=paste0("stat_", layer_stat(), "()"))) })
   geom_aesthetics <- gg_aesthetics[[geom_type]]
 
   # Create trigger for this layers update
@@ -57,7 +58,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
 
   stat_aesthetics <- reactive({
     setdiff(
-      eval(parse(text = snakeToCamel(paste0("stat_", layer_stat()), capFirst = T)))$aesthetics(),
+      stat_proto()$stat$aesthetics(),
       geom_aesthetics
     )
   })
@@ -87,10 +88,11 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
                                                             reactive({ triggerAesUpdate$depend() }),
                                                             geom_blank_input,
                                                             inherit.aes = inherit.aes,
-                                                            default_aes = geom_proto$geom$default_aes[[.]],
+                                                            default_geom_aes = geom_proto$geom$default_aes[[.]],
+                                                            default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] }),
                                                             dataset = dataset,
-                                                            renderNum = renderNumSource(),
-                                                            layer_stat = layer_stat))
+                                                            computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }),
+                                                            renderNum = renderNumSource()))
 
   stat_aes_args <- list()
   observe({
@@ -99,10 +101,11 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
                                                                  reactive({ triggerAesUpdate$depend() }),
                                                                  geom_blank_input,
                                                                  inherit.aes = inherit.aes,
-                                                                 default_aes = geom_proto$geom$default_aes[[.]],
+                                                                 default_geom_aes = geom_proto$geom$default_aes[[.]],
+                                                                 default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] }),
                                                                  dataset = dataset,
-                                                                 renderNum = renderNumSource(),
-                                                                 layer_stat = layer_stat))
+                                                                 computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }),
+                                                                 renderNum = renderNumSource()))
   })
 
   # _ process subset arguments ====
