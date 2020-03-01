@@ -91,8 +91,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
                                                             default_geom_aes = geom_proto$geom$default_aes[[.]],
                                                             default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] }),
                                                             dataset = dataset,
-                                                            computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }),
-                                                            renderNum = renderNumSource()))
+                                                            computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
 
   stat_aes_args <- list()
   observe({
@@ -104,8 +103,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
                                                                  default_geom_aes = geom_proto$geom$default_aes[[.]],
                                                                  default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] }),
                                                                  dataset = dataset,
-                                                                 computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }),
-                                                                 renderNum = renderNumSource()))
+                                                                 computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
   })
 
   # _ process subset arguments ====
@@ -137,16 +135,4 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
   }, ignoreInit = TRUE)
 
   return(aes_code)
-}
-
-renderNumSource <- function() {
-  nextRenderNum <- 0
-  list(nextNum = function() {
-    r <- nextRenderNum
-    nextRenderNum <<- nextRenderNum + 1
-    r
-  },
-  getNum = function() {
-    nextRenderNum
-  })
 }

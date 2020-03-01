@@ -135,13 +135,6 @@ serenityVizServer <- function(input, output, session, dataset) {
                 title = "Variables",
                 icon = icon("database"),
                 closable = FALSE) %>%
-      addWidget(id = session$ns("widget-computed-vars"),
-                refwidgetID = session$ns("widget-vars"),
-                insertmode = "tab-after",
-                ui = dataComputedUI(id = session$ns("computed-vars")),
-                title = "Computed",
-                icon = icon("calculator"),
-                closable = FALSE) %>%
       addWidget(id = session$ns("aesthetics"),
                 refwidgetID = session$ns("widget-vars"),
                 insertmode = "split-bottom",
@@ -149,6 +142,13 @@ serenityVizServer <- function(input, output, session, dataset) {
                 ui = uiOutput(session$ns("aesthetics")),
                 title = "Aesthetics",
                 icon = icon("paint-brush"),
+                closable = FALSE) %>%
+      addWidget(id = session$ns("widget-computed-vars"),
+                refwidgetID = session$ns("widget-vars"),
+                insertmode = "split-right",
+                ui = dataComputedUI(id = session$ns("computed-vars")),
+                title = "Computed",
+                icon = icon("calculator"),
                 closable = FALSE) %>%
       addWidget(id = session$ns("widget-code"),
                 refwidgetID = session$ns('widget-ggplot'),

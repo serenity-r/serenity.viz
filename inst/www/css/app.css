@@ -18,11 +18,11 @@ body {
 .inherited::after {
   content: 'Inherited';
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 2px;
+  right: 10px;
   font-style: italic;
   font-size: 0.9em;
-  color: blue;
+  color: mediumblue;
 }
 
 .default::after {
@@ -123,6 +123,7 @@ body {
 
 .varzone,
 .aeszone {
+  position: relative;
   border: none;
   min-height: unset;
   max-width: 300px;

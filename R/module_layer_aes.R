@@ -32,14 +32,13 @@ layerAesUI <- function(id) {
 #' @param default_stat_aes Reactive value of default stat aesthetic - might be mapping!
 #' @param dataset Dataset
 #' @param computed_vars Reactive value of stat computed variables
-#' @param renderNum Closure used to mark number of times aesthetic is rendered
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
 layerAesServer <- function(input, output, session, aesUpdateDependency, geom_blank_input,
                            inherit.aes, default_geom_aes, default_stat_aes, dataset,
-                           computed_vars, renderNum) {
+                           computed_vars) {
   # Get aesthetic from namespace
   aesthetic <- stringr::str_split(session$ns(''), '-')[[1]] %>% { .[length(.)-1] }
   layer <- paste(stringr::str_split(session$ns(''), '-')[[1]][2:3], collapse="-")
@@ -63,10 +62,19 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
 
   # Inheritable mapping exists
   inheritable <- reactive({
-    inherit.aes() && isTruthy(geom_blank_input) &&
-      isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]) &&
-      isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]())
+    list(
+      base = inherit.aes() && isTruthy(geom_blank_input) &&
+        isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]) &&
+        isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]()),
+      stat = rlang::is_quosure(default_stat_aes())
+    )
   })
+
+  # Capture intentional mapping change to stop auto-initialization on stat changes
+  mapping_modified <- NULL
+  observeEvent(input$mapping, {
+    mapping_modified <<- !is.null(mapping_modified)
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
   output$aes_header_ui <- renderUI({
     aesUpdateDependency()
@@ -131,35 +139,26 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
     req(!is.null(input$switch))
 
     aesUpdateDependency()
-    renderNum$nextNum()
 
     isolate({
-      init_mapping <- input$mapping %T||% switch(inheritable() && (renderNum$getNum() == 1), geom_blank_input[[geom_blank_ns("mapping")]](), NULL)
+      init_mapping <- input$mapping %T||%
+        switch(as.character(inheritable()$base && !isTruthy(mapping_modified)),
+               "TRUE" = geom_blank_input[[geom_blank_ns("mapping")]](),
+               "FALSE" = switch(inheritable()$stat && !isTruthy(mapping_modified) && rlang::is_quosure(default_stat_aes()),
+                                rlang::quo_name(default_stat_aes()))
+        )
       init_value <- input$value %T||% ifelse(!is.na(default_geom_aes), default_geom_aes, NA_defaults[[aesthetic]])
       # Icons
-      if (!isTruthy(input$switch)) {
+      if (isTruthy(input$switch) && isTruthy(default_geom_aes)) {
         icons <- tagList(
-          actionLink(session$ns("aes-reset-mapping"),
+          actionLink(session$ns("aes-reset-value"),
                      label = '',
-                     style = ifelse(!inheritable() || (!is.null(init_mapping) && (init_mapping == geom_blank_input[[geom_blank_ns("mapping")]]())), "display: none;", ""),
+                     style = ifelse(is.na(default_geom_aes) || (init_value == default_geom_aes), "display: none;", ""),
                      icon = icon("undo")
-          ),
-          span( # Change input$mapping to init_mapping
-            class = paste(c("aes-content-inherited", switch(inheritable() && !is.null(input$mapping) && (input$mapping == geom_blank_input[[geom_blank_ns("mapping")]]()), "inherited")), collapse = " ")
           )
         )
       } else {
-        if (isTruthy(default_geom_aes)) {
-          icons <- tagList(
-            actionLink(session$ns("aes-reset-value"),
-                       label = '',
-                       style = ifelse(is.na(default_geom_aes) || (init_value == default_geom_aes), "display: none;", ""),
-                       icon = icon("undo")
-            )
-          )
-        } else {
-          icons <- NULL
-        }
+        icons <- NULL
       }
       icons <- icons %>%
         conditionalPanel(condition = "input.customize == false",
@@ -172,8 +171,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
         content <- tagList(
           dndselectr::dropZoneInput(session$ns("mapping"),
                                     choices = c(
-                                      dataInputChoices(dataset, zone="aeszone"),
-                                      dataInputChoices(computed_vars(), zone="aeszone")
+                                      dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, geom_blank_input[[geom_blank_ns("mapping")]]())),
+                                      dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
                                     ),
                                     presets = init_mapping,
                                     placeholder = "Drag or select variable",
@@ -183,18 +182,19 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
             inputId = session$ns("aes-choose-data"),
             label = NULL,
             selected = init_mapping,
-            choices = c("",
-                        names(dataset),
-                        switch(!is.null(computed_vars()),
-                               paste0("stat(", computed_vars(), ")"))
+            choices = list(" " = "",
+                           "Variables" = names(dataset),
+                           "Computed" = switch(!is.null(computed_vars()),
+                                               paste0("stat(", computed_vars(), ")"))
             ),
             choicesOpt = list(
               content = c(htmltools::doRenderTags(em("Clear variable")),
-                          sapply(dataInputChoices(dataset, zone = "aeszone"),
+                          sapply(dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, geom_blank_input[[geom_blank_ns("mapping")]]())),
                                  function(x) { htmltools::doRenderTags(x) }),
-                          sapply(dataInputChoices(computed_vars(), zone = "aeszone"),
+                          sapply(dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
                                  function(x) { htmltools::doRenderTags(x) })
-              )),
+              )
+            ),
             options = list(
               title = "Nothing selected",
               size = 6,
@@ -317,27 +317,9 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
     }
   })
 
-  # Show or hide aesthetic mapping reset button
-  observe({
-    req(!is.null(inheritable()))
-
-    if (inheritable() && (is.null(input$mapping) || (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]()))) {
-      shinyjs::show("aes-reset-mapping")
-      shinyjs::js$removeClass('inherited', paste(paste0('#', session$ns('aes_content_ui')), ' > section.mapping-section span.aes-content-inherited'))
-    } else {
-      shinyjs::hide("aes-reset-mapping")
-      shinyjs::js$addClass('inherited', paste(paste0('#', session$ns('aes_content_ui')), ' > section.mapping-section span.aes-content-inherited'))
-    }
-  })
-
   # Reset aesthetic value to default
   observeEvent(input$`aes-reset-value`, {
     update_aes_input(session, 'value', aesthetic, default_geom_aes)
-  })
-
-  # Reset aesthetic mapping to base layer (default)
-  observeEvent(input$`aes-reset-mapping`, {
-    dndselectr::updateDropZoneInput(session, 'mapping', presets = geom_blank_input[[geom_blank_ns("mapping")]]())
   })
 
   # Update dropZone on stat change
@@ -345,22 +327,22 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
     dndselectr::updateDropZoneInput(session,
                                     inputId = 'mapping',
                                     choices = c(
-                                      dataInputChoices(dataset, zone="aeszone"),
-                                      dataInputChoices(computed_vars(), zone="aeszone")
+                                      dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, geom_blank_input[[geom_blank_ns("mapping")]]())),
+                                      dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
                                     )
     )
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'aes-choose-data',
-                                    choices = c("",
-                                                names(dataset),
-                                                switch(!is.null(computed_vars()),
-                                                       paste0("stat(", computed_vars(), ")"))
+                                    choices = list(" " = "",
+                                                   "Variables" = names(dataset),
+                                                   "Computed" = switch(!is.null(computed_vars()),
+                                                                       paste0("stat(", computed_vars(), ")"))
                                     ),
                                     choicesOpt = list(
                                       content = c(htmltools::doRenderTags(em("Clear variable")),
-                                                  sapply(dataInputChoices(dataset, zone = "aeszone"),
+                                                  sapply(dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, geom_blank_input[[geom_blank_ns("mapping")]]())),
                                                          function(x) { htmltools::doRenderTags(x) }),
-                                                  sapply(dataInputChoices(computed_vars(), zone = "aeszone"),
+                                                  sapply(dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
                                                          function(x) { htmltools::doRenderTags(x) })
                                       )),
                                     selected = input$mapping  # pickerInput needs current selection
@@ -392,14 +374,15 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
           arg$mappings <- paste(aesthetic, "=", customized$mapping)
         } else if (!is.null(input$mapping) &&
                    ((layer == "geom-blank") ||
-                    !inheritable() ||
-                    (inheritable() && (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]())))) {
+                    (!inheritable()$base && !inheritable()$stat) ||
+                    (inheritable()$base && (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]())) ||
+                    (!inheritable()$base && inheritable()$stat && (input$mapping != rlang::quo_name(default_stat_aes()))))) {
           # Set mapping (non-null)
           arg$mappings <- paste(aesthetic, "=",
                                 ifelse(!stringr::str_detect(input$mapping, ' '),
                                        input$mapping,
                                        paste0("`", input$mapping, "`")))
-        } else if (is.null(input$mapping) && inheritable()) {
+        } else if (is.null(input$mapping) && (inheritable()$base || inheritable()$stat)) {
           # Set mapping to null
           arg$mappings <- paste(aesthetic, "= NULL")
         }
@@ -417,7 +400,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
         } else if (!is.null(input$value) &&
                    (is.na(default_geom_aes) ||
                     (input$value != default_geom_aes) ||
-                    (inheritable()))) {
+                    (inheritable()$base))) {
           # Set value (non-null)
           arg$values <- paste(aesthetic, "=",
                               switch(aesthetic,

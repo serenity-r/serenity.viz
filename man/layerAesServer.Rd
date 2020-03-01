@@ -5,8 +5,8 @@
 \title{Server for layer aesthetic submodule}
 \usage{
 layerAesServer(input, output, session, aesUpdateDependency,
-  geom_blank_input, inherit.aes, default_aes, dataset, renderNum,
-  layer_stat)
+  geom_blank_input, inherit.aes, default_geom_aes, default_stat_aes,
+  dataset, computed_vars)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -21,13 +21,13 @@ layerAesServer(input, output, session, aesUpdateDependency,
 
 \item{inherit.aes}{Reactive: Is this aesthetic inheritable?}
 
-\item{default_aes}{Default value for aesthetic}
+\item{default_geom_aes}{Default value for geom aesthetic}
+
+\item{default_stat_aes}{Reactive value of default stat aesthetic - might be mapping!}
 
 \item{dataset}{Dataset}
 
-\item{renderNum}{Closure used to mark number of times aesthetic is rendered}
-
-\item{layer_stat}{Reactive value of currently selected layer stat}
+\item{computed_vars}{Reactive value of stat computed variables}
 }
 \description{
 Server for layer aesthetic submodule

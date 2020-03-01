@@ -104,9 +104,10 @@ dataServer <- function(input, output, session, dataset) {
 #'
 #' @param vars    Dataset, if not computed; otherwise, element of stat_computed_vars
 #' @param zone    "varzone" or "aeszone"
+#' @param inherited Array of variable names denoting inherited status (from base or stat)
 #' @param session Shiny user session
 #'
-dataInputChoices <- function(vars = NULL, zone = "varzone", session = getDefaultReactiveDomain()) {
+dataInputChoices <- function(vars = NULL, zone = "varzone", inherited = NULL, session = getDefaultReactiveDomain()) {
   if (is.null(vars)) {
     return(list())
   }
@@ -122,7 +123,7 @@ dataInputChoices <- function(vars = NULL, zone = "varzone", session = getDefault
           switch(as.character(computed), "TRUE" = "computed", "FALSE" = dataTypeToUI(vars[[var_name]]))
         ), collapse = " "),
       switch(as.character(computed), "TRUE" = icon("calculator"), "FALSE" = dataTypeToUI(vars[[var_name]], .icon = TRUE)),
-      span(class = "varname", var_name),
+      span(var_name, class = paste(c("varname", switch(var_name %in% inherited, "inherited")), collapse = " ")),
       switch(!computed && zone == "varzone", # Include filter
              shinyWidgets::dropdownButton(
                dataVarUI(id = ns(var_name), var = vars[[var_name]]),
