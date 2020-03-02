@@ -4,13 +4,15 @@
 \alias{dataInputChoices}
 \title{UI for data choices, either for dropzone or picker}
 \usage{
-dataInputChoices(vars = NULL, zone = "varzone",
+dataInputChoices(vars = NULL, zone = "varzone", inherited = NULL,
   session = getDefaultReactiveDomain())
 }
 \arguments{
 \item{vars}{Dataset, if not computed; otherwise, element of stat_computed_vars}
 
 \item{zone}{"varzone" or "aeszone"}
+
+\item{inherited}{Array of variable names denoting inherited status (from base or stat)}
 
 \item{session}{Shiny user session}
 }

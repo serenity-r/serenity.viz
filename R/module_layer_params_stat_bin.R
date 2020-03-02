@@ -11,6 +11,7 @@ layerParamsStatBinServer <- function(input, output, session, base_data) {
                        "binwidth" = NA,      # Width of bins
                        "breaks" = NA,        # Breaks (if not using bins or binwidth)
                        "closed" = TRUE,      # Bins closed on left (TRUE) or right (FALSE)
+                       "pad" = FALSE,
                        "use_breaks" = FALSE) # Don't use breaks by default
 
   # Not a built-in input (handled via datatable)
@@ -29,6 +30,7 @@ layerParamsStatBinServer <- function(input, output, session, base_data) {
           input$binwidth,
           layer_data$breaks,
           input$closed,
+          input$pad,
           input$use_breaks)
   })
 
@@ -95,6 +97,19 @@ layerParamsStatBinServer <- function(input, output, session, base_data) {
                                       size = "mini",
                                       inline = TRUE),
             span("closed.")
+          )
+        ),
+        div(
+          class = "inline-switch-no-label",
+          tagList(
+            span("Pad with zero bins:"),
+            shinyWidgets::switchInput(session$ns('pad'),
+                                      value = input[['pad']] %||% default_args[['pad']],
+                                      onLabel = "yes",
+                                      offLabel = "no",
+                                      labelWidth = "0",
+                                      size = "mini",
+                                      inline = TRUE)
           )
         ),
         checkboxInput(session$ns('use_breaks'),
