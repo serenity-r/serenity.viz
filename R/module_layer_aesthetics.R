@@ -68,7 +68,12 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
   #  Also, the "side-effect" in this reactive is making me twitch.
   aesthetics <- reactive({
     triggerAesUpdate$trigger() # Make sure individual aesthetics update as well (probably bad form as side effect)
-    reorderElements(c(geom_aesthetics, stat_aesthetics()), orderBy = unique(unlist(gg_aesthetics)))
+    reorderElements(c(geom_aesthetics, stat_aesthetics()),
+                    orderBy = unique(c(
+                      stat_proto()$stat$required_aes,
+                      geom_proto$geom$required_aes,
+                      unlist(gg_aesthetics))
+                    ))
   })
 
   # _ Aesthetic divs ====
@@ -90,6 +95,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
                                                             inherit.aes = inherit.aes,
                                                             default_geom_aes = geom_proto$geom$default_aes[[.]],
                                                             default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] }),
+                                                            required = reactive({ . %in% c(stat_proto()$stat$required_aes, geom_proto$geom$required_aes) }),
                                                             dataset = dataset,
                                                             computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
 
@@ -102,6 +108,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
                                                                  inherit.aes = inherit.aes,
                                                                  default_geom_aes = geom_proto$geom$default_aes[[.]],
                                                                  default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] }),
+                                                                 required = reactive({ . %in% c(stat_proto()$stat$required_aes, geom_proto$geom$required_aes) }),
                                                                  dataset = dataset,
                                                                  computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
   })

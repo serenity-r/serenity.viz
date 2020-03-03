@@ -6,7 +6,7 @@
 \usage{
 layerAesServer(input, output, session, aesUpdateDependency,
   geom_blank_input, inherit.aes, default_geom_aes, default_stat_aes,
-  dataset, computed_vars)
+  required, dataset, computed_vars)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -24,6 +24,8 @@ layerAesServer(input, output, session, aesUpdateDependency,
 \item{default_geom_aes}{Default value for geom aesthetic}
 
 \item{default_stat_aes}{Reactive value of default stat aesthetic - might be mapping!}
+
+\item{required}{Reactive value of required status for aesthetic}
 
 \item{dataset}{Dataset}
 

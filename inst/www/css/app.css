@@ -25,6 +25,16 @@ body {
   color: mediumblue;
 }
 
+.required::after {
+  content: 'Required';
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-style: italic;
+  font-size: 0.9em;
+  color: red;
+}
+
 .default::after {
   content: 'default';
   float: right;

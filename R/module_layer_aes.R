@@ -30,6 +30,7 @@ layerAesUI <- function(id) {
 #' @param inherit.aes Reactive: Is this aesthetic inheritable?
 #' @param default_geom_aes Default value for geom aesthetic
 #' @param default_stat_aes Reactive value of default stat aesthetic - might be mapping!
+#' @param required Reactive value of required status for aesthetic
 #' @param dataset Dataset
 #' @param computed_vars Reactive value of stat computed variables
 #'
@@ -37,8 +38,8 @@ layerAesUI <- function(id) {
 #' @import shiny ggplot2
 #'
 layerAesServer <- function(input, output, session, aesUpdateDependency, geom_blank_input,
-                           inherit.aes, default_geom_aes, default_stat_aes, dataset,
-                           computed_vars) {
+                           inherit.aes, default_geom_aes, default_stat_aes, required,
+                           dataset, computed_vars) {
   # Get aesthetic from namespace
   aesthetic <- stringr::str_split(session$ns(''), '-')[[1]] %>% { .[length(.)-1] }
   layer <- paste(stringr::str_split(session$ns(''), '-')[[1]][2:3], collapse="-")
@@ -157,9 +158,14 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
                      icon = icon("undo")
           )
         )
-      } else {
-        icons <- NULL
-      }
+      } else
+        if (!isTruthy(input$switch) && required()) {
+          icons <- tagList(
+            span(class = "required")
+          )
+        } else {
+          icons <- NULL
+        }
       icons <- icons %>%
         conditionalPanel(condition = "input.customize == false",
                          ns = session$ns,
