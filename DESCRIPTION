@@ -37,4 +37,5 @@ BugReports: https://github.com/serenity-r/serenity.viz/issues
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
+StagedInstall: no
 RoxygenNote: 6.1.1
