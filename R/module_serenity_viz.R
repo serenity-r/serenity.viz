@@ -343,13 +343,8 @@ serenityVizServer <- function(input, output, session, dataset) {
   # Preps geom_blank dropzone inputs for layer modules
   geom_blank_inputs_to_reactives <- function() {
     geom_blank_inputs <- as.list(paste0('geom-blank-ds-1-aesthetics-', gg_aesthetics[["geom-blank"]], '-mapping'))
-    names(geom_blank_inputs) <- paste0('geom-blank-ds-1-aesthetics-', gg_aesthetics[["geom-blank"]], '-mapping')
-    if (any(names(geom_blank_inputs) %in% names(input))) {
-      return(geom_blank_inputs %>%
-               purrr::map(~ reactive({ input[[.]] })))
-    } else {
-      return(NULL)
-    }
+    names(geom_blank_inputs) <- gg_aesthetics[["geom-blank"]]
+    return(geom_blank_inputs %>% purrr::map(~ reactive({ input[[.]] })))
   }
 
   # Update layer module output reactives - create only once!

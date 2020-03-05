@@ -27,7 +27,7 @@ layerAestheticsUI <- function(id) {
 #' @param output  Shiny outputs
 #' @param session Shiny user session
 #' @param layer_selected Reactive value of currently selected layer
-#' @param geom_blank_input  Need geom_blank values to check for inheritance
+#' @param base_layer_mappings  Need base layer aesthetic mappings for inheritance
 #' @param dataset Dataset
 #' @param inherit.aes Inherit aesthetics from base layer? (reactive)
 #' @param layer_stat Reactive value of currently selected layer stat
@@ -35,7 +35,7 @@ layerAestheticsUI <- function(id) {
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerAestheticsServer <- function(input, output, session, layer_selected, geom_blank_input, dataset, inherit.aes, layer_stat) {
+layerAestheticsServer <- function(input, output, session, layer_selected, base_layer_mappings, dataset, inherit.aes, layer_stat) {
   # This contains the layer id
   ns <- session$ns
 
@@ -91,7 +91,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
   # _ load variable subset modules ====
   geom_aes_args <- purrr::map(geom_aesthetics, ~ callModule(module = layerAesServer, id = .,
                                                             reactive({ triggerAesUpdate$depend() }),
-                                                            geom_blank_input,
+                                                            base_layer_mappings[[.]],
                                                             inherit.aes = inherit.aes,
                                                             default_geom_aes = geom_proto$geom$default_aes[[.]],
                                                             default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] }),
@@ -104,7 +104,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, geom_b
     req(stat_aesthetics())
     stat_aes_args <<- purrr::map(stat_aesthetics(), ~ callModule(module = layerAesServer, id = .,
                                                                  reactive({ triggerAesUpdate$depend() }),
-                                                                 geom_blank_input,
+                                                                 base_layer_mappings[[.]],
                                                                  inherit.aes = inherit.aes,
                                                                  default_geom_aes = geom_proto$geom$default_aes[[.]],
                                                                  default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] }),

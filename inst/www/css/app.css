@@ -240,11 +240,16 @@ span.varname {
   margin-left: 5px;
 }
 
-.aesthetic .aes-header > .form-group.shiny-input-container.header-icon {
-  position: absolute;
-  top: 5px;
-  right: 0px;
+.aesthetic .aes-header > .header-icons {
+  display: inline-flex;
+  flex-direction: row;
+  float: right;
+}
+
+.aesthetic .aes-header > .header-icons > .form-group.shiny-input-container.header-icon {
   margin-right: 0 !important;
+  margin-bottom: 0;
+  margin-top: 4px;
 }
 
 .aesthetic section {

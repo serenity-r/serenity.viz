@@ -26,7 +26,7 @@ layerAesUI <- function(id) {
 #' @param output  Shiny outputs
 #' @param session Shiny user session
 #' @param aesUpdateDependency  Trigger update on layer change
-#' @param geom_blank_input  Need geom_blank values to check for inheritance
+#' @param base_layer_mapping  Need base layer aesthetic mapping to use for inheritance
 #' @param inherit.aes Reactive: Is this aesthetic inheritable?
 #' @param default_geom_aes Default value for geom aesthetic
 #' @param default_stat_aes Reactive value of default stat aesthetic - might be mapping!
@@ -37,13 +37,12 @@ layerAesUI <- function(id) {
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerAesServer <- function(input, output, session, aesUpdateDependency, geom_blank_input,
+layerAesServer <- function(input, output, session, aesUpdateDependency, base_layer_mapping,
                            inherit.aes, default_geom_aes, default_stat_aes, required,
                            dataset, computed_vars) {
   # Get aesthetic from namespace
   aesthetic <- stringr::str_split(session$ns(''), '-')[[1]] %>% { .[length(.)-1] }
   layer <- paste(stringr::str_split(session$ns(''), '-')[[1]][2:3], collapse="-")
-  geom_blank_ns <- geom_blank_NS(session$ns)
   entangled <- FALSE
 
   # cat(paste("Default geom aesthetic for", aesthetic, "=", default_geom_aes %||% "NULL", "\n"))
@@ -61,13 +60,11 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
     default_geom_aes <- linetype_to_string(default_geom_aes)
   }
 
-  # Inheritable mapping exists
+  # Inheritable mapping exists from base layer or stat
   inheritable <- reactive({
     list(
-      base = inherit.aes() && isTruthy(geom_blank_input) &&
-        isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]) &&
-        isTruthy(geom_blank_input[[geom_blank_ns("mapping")]]()),
-      stat = rlang::is_quosure(default_stat_aes())
+      base = (layer != "geom-blank") && inherit.aes() && (input$linked %||% TRUE),
+      stat = (layer != "geom-blank") && rlang::is_quosure(default_stat_aes())
     )
   })
 
@@ -99,32 +96,54 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
               .
             }
         ),
-        switch(as.character(layer != "geom-blank"),
-               "TRUE" = prettyToggle(
-                 inputId = session$ns("customize"),
-                 value = input$customize %||% FALSE,
-                 label_on = "",
-                 label_off = "",
-                 status_on = "default",
-                 status_off = "default",
-                 outline = TRUE,
-                 plain = TRUE,
-                 icon_on = icon("times"),
-                 icon_off = icon("pencil"),
-                 inline = TRUE
-               ),
-               "FALSE" = prettyToggle(
-                 inputId = session$ns("scale"),
-                 label_on = "",
-                 label_off = "",
-                 status_on = "default",
-                 status_off = "default",
-                 outline = TRUE,
-                 plain = TRUE,
-                 icon_on = icon("times"),
-                 icon_off = icon("ruler"),
-                 inline = TRUE
-               )
+        div(
+          class = "header-icons",
+          switch(as.character(layer != "geom-blank"),
+                 "TRUE" = tagList(
+                   prettyToggle(
+                     inputId = session$ns("linked"),
+                     value = input$linked %||% TRUE,
+                     label_on = "",
+                     label_off = "",
+                     status_on = "default",
+                     status_off = "default",
+                     outline = TRUE,
+                     plain = TRUE,
+                     icon_on = icon("link"),
+                     icon_off = icon("unlink"),
+                     inline = TRUE
+                   ) %>% {
+                     .$attribs$id <- paste0(session$ns("linked"), '-icon')
+                     .$attribs$class <- paste(c(.$attribs$class, switch(!inherit.aes() || isTruthy(input$switch), 'hidden')), collapse = " ")
+                     .
+                   },
+                   prettyToggle(
+                     inputId = session$ns("customize"),
+                     value = input$customize %||% FALSE,
+                     label_on = "",
+                     label_off = "",
+                     status_on = "default",
+                     status_off = "default",
+                     outline = TRUE,
+                     plain = TRUE,
+                     icon_on = icon("times"),
+                     icon_off = icon("pencil"),
+                     inline = TRUE
+                   )
+                 ),
+                 "FALSE" = prettyToggle(
+                   inputId = session$ns("scale"),
+                   label_on = "",
+                   label_off = "",
+                   status_on = "default",
+                   status_off = "default",
+                   outline = TRUE,
+                   plain = TRUE,
+                   icon_on = icon("times"),
+                   icon_off = icon("ruler"),
+                   inline = TRUE
+                 )
+          )
         )
       )
     })
@@ -142,12 +161,20 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
     aesUpdateDependency()
 
     isolate({
-      init_mapping <- input$mapping %T||%
-        switch(as.character(inheritable()$base && !isTruthy(mapping_modified)),
-               "TRUE" = geom_blank_input[[geom_blank_ns("mapping")]](),
-               "FALSE" = switch(inheritable()$stat && !isTruthy(mapping_modified) && rlang::is_quosure(default_stat_aes()),
-                                rlang::quo_name(default_stat_aes()))
-        )
+      # if (inheritable()$base && !inheritable()$stat) {
+      if (inheritable()$base && !is.null(base_layer_mapping())) {
+        init_mapping <- base_layer_mapping()
+      } else
+        if (isTruthy(input$mapping)) {
+          init_mapping <- input$mapping
+        } else
+          if (inheritable()$stat && !isTruthy(mapping_modified) && rlang::is_quosure(default_stat_aes())) {
+            init_mapping <- rlang::quo_name(default_stat_aes())
+            shinyWidgets::updatePrettyToggle(session, 'linked', value = FALSE)
+          } else {
+            init_mapping <- NULL
+          }
+
       init_value <- input$value %T||% ifelse(!is.na(default_geom_aes), default_geom_aes, NA_defaults[[aesthetic]])
       # Icons
       if (isTruthy(input$switch) && isTruthy(default_geom_aes)) {
@@ -177,7 +204,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
         content <- tagList(
           dndselectr::dropZoneInput(session$ns("mapping"),
                                     choices = c(
-                                      dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, geom_blank_input[[geom_blank_ns("mapping")]]())),
+                                      dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
                                       dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
                                     ),
                                     presets = init_mapping,
@@ -195,7 +222,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
             ),
             choicesOpt = list(
               content = c(htmltools::doRenderTags(em("Clear variable")),
-                          sapply(dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, geom_blank_input[[geom_blank_ns("mapping")]]())),
+                          sapply(dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
                                  function(x) { htmltools::doRenderTags(x) }),
                           sapply(dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
                                  function(x) { htmltools::doRenderTags(x) })
@@ -328,12 +355,41 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
     update_aes_input(session, 'value', aesthetic, default_geom_aes)
   })
 
+  #### Handle linking ----
+
+  # Show/Hide link button
+  observe({
+    req(!is.null(input$switch), !is.null(input$customize))
+
+    if (inherit.aes() && !input$switch && !input$customize) {
+      shinyjs::js$removeClass('hidden', paste0('#', session$ns("linked"), '-icon'))
+    } else {
+      shinyjs::js$addClass('hidden', paste0('#', session$ns("linked"), '-icon'))
+    }
+  })
+
+  # If linking turned on, set mapping to base layer
+  observeEvent(input$linked, {
+    req(inheritable()$base)
+
+    dndselectr::updateDropZoneInput(session, 'mapping', presets = base_layer_mapping() %||% NA)
+  }, ignoreInit = TRUE)
+
+  # If mapping changed, deactivate if mapping no longer same as base
+  observeEvent(input$mapping, {
+    req(inheritable()$base && !identical(input$mapping, base_layer_mapping()))
+
+    shinyWidgets::updatePrettyToggle(session, 'linked', value = FALSE)
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
+
+  #### Handle stat changes ----
+
   # Update dropZone on stat change
   observeEvent(computed_vars(), {
     dndselectr::updateDropZoneInput(session,
                                     inputId = 'mapping',
                                     choices = c(
-                                      dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, geom_blank_input[[geom_blank_ns("mapping")]]())),
+                                      dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
                                       dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
                                     )
     )
@@ -346,7 +402,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
                                     ),
                                     choicesOpt = list(
                                       content = c(htmltools::doRenderTags(em("Clear variable")),
-                                                  sapply(dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, geom_blank_input[[geom_blank_ns("mapping")]]())),
+                                                  sapply(dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
                                                          function(x) { htmltools::doRenderTags(x) }),
                                                   sapply(dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
                                                          function(x) { htmltools::doRenderTags(x) })
@@ -361,9 +417,11 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
           input$value,
           input$switch,
           input$customize,
+          input$linked,
           customized$mapping,
           customized$value,
-          inheritable())
+          inheritable(),
+          base_layer_mapping())
   })
 
   aesToCode <- reactive({
@@ -374,6 +432,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
     isolate({
       arg <- list(mappings = c(), values = c())
       if (!input$switch) {
+
         # Mapping
         if (isTruthy(input$customize) && (nchar(customized$mapping) > 0)) {
           # Custom override
@@ -381,14 +440,20 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
         } else if (!is.null(input$mapping) &&
                    ((layer == "geom-blank") ||
                     (!inheritable()$base && !inheritable()$stat) ||
-                    (inheritable()$base && (input$mapping != geom_blank_input[[geom_blank_ns("mapping")]]())) ||
-                    (!inheritable()$base && inheritable()$stat && (input$mapping != rlang::quo_name(default_stat_aes()))))) {
+                    (!inheritable()$base && inheritable()$stat &&
+                     ((input$mapping != rlang::quo_name(default_stat_aes())) ||
+                      (inherit.aes() && !is.null(base_layer_mapping())))
+                    )
+                   )) {
           # Set mapping (non-null)
           arg$mappings <- paste(aesthetic, "=",
                                 ifelse(!stringr::str_detect(input$mapping, ' '),
                                        input$mapping,
                                        paste0("`", input$mapping, "`")))
-        } else if (is.null(input$mapping) && (inheritable()$base || inheritable()$stat)) {
+        } else if (is.null(input$mapping) &&
+                   ((!is.null(base_layer_mapping()) && inherit.aes() && !input$linked) ||
+                    (is.null(base_layer_mapping()) && inheritable()$stat && inheritable()$base) ||
+                    (!inheritable()$base && inheritable()$stat))) {
           # Set mapping to null
           arg$mappings <- paste(aesthetic, "= NULL")
         }
@@ -429,16 +494,6 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, geom_bla
 `%||%` <- function(a, b) if (!is.null(a)) a else b
 
 `%T||%` <- function(a, b) if (isTruthy(a)) a else b
-
-geom_blank_NS <- function(ns) {
-  f <- function(id) {
-    ns(id) %>%
-    { stringr::str_replace(., paste0(stringr::str_split(., '-')[[1]][1], '-'), '') } %>%
-    { stringr::str_replace(., stringr::str_split(., '-')[[1]][2], 'blank') } %>%
-    { stringr::str_replace(., stringr::str_split(., '-')[[1]][4], '1') }
-  }
-  return(f)
-}
 
 aes_wrap <- function(content, class=NULL) {
   tagList(

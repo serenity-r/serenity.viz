@@ -5,7 +5,7 @@
 \title{Server for layer aesthetic submodule}
 \usage{
 layerAesServer(input, output, session, aesUpdateDependency,
-  geom_blank_input, inherit.aes, default_geom_aes, default_stat_aes,
+  base_layer_mapping, inherit.aes, default_geom_aes, default_stat_aes,
   required, dataset, computed_vars)
 }
 \arguments{
@@ -17,7 +17,7 @@ layerAesServer(input, output, session, aesUpdateDependency,
 
 \item{aesUpdateDependency}{Trigger update on layer change}
 
-\item{geom_blank_input}{Need geom_blank values to check for inheritance}
+\item{base_layer_mapping}{Need base layer aesthetic mapping to use for inheritance}
 
 \item{inherit.aes}{Reactive: Is this aesthetic inheritable?}
 

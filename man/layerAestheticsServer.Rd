@@ -5,7 +5,7 @@
 \title{Server for layer aesthetics module}
 \usage{
 layerAestheticsServer(input, output, session, layer_selected,
-  geom_blank_input, dataset, inherit.aes, layer_stat)
+  base_layer_mappings, dataset, inherit.aes, layer_stat)
 }
 \arguments{
 \item{input}{Shiny inputs}
@@ -16,7 +16,7 @@ layerAestheticsServer(input, output, session, layer_selected,
 
 \item{layer_selected}{Reactive value of currently selected layer}
 
-\item{geom_blank_input}{Need geom_blank values to check for inheritance}
+\item{base_layer_mappings}{Need base layer aesthetic mappings for inheritance}
 
 \item{dataset}{Dataset}
 
