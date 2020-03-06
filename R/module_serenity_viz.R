@@ -557,7 +557,7 @@ stat_computed_vars <- list(
   "density" = c("density", "count", "scaled", "ndensity"),
   "smooth" = c("y", "ymin", "ymax", "se"),
   "summary" = c("y", "ymin", "ymax"),
-  "boxplot" = c("width", "ymin", "ymax", "lower", "middle", "upper", "notchlower", "notchupper"),
+  "boxplot" = c("x", "width", "ymin", "ymax", "lower", "middle", "upper", "notchlower", "notchupper"),
   "function" = c("x", "y"),
   "quantile" = c("quantile"),
   "qq" = c("sample", "theoretical"),
@@ -573,6 +573,17 @@ stat_computed_vars <- list(
   "summary_2d" = c("x", "y", "value"),
   "density_2d" = c("density", "ndensity")
 )
+
+computed_word <- ifelse(packageVersion("ggplot2") < "3.3.0", "stat", "after_stat")
+stat_additional_defaults <- list(
+  "boxplot" = c("x", "ymin", "ymax", "lower", "middle", "upper")
+)
+stat_additional_defaults <- lapply(stat_additional_defaults,
+       function(x) {
+         lapply(as.list(x) %>% {
+           names(.) <- x
+           .},
+           function(y) { quo(!!sym(paste0(computed_word, "(", y, ")"))) }) })
 
 NA_defaults <- list(
   fill = "#FFFFFF",
@@ -627,6 +638,9 @@ gg_aesthetics <- reorderElements(
                      "xmax",
                      "ymin",
                      "ymax",
+                     "lower",
+                     "upper",
+                     "middle",
                      "sample"),
     "geom-bar" = ggplot2::GeomBar$aesthetics(),
     "geom-histogram" = ggplot2::GeomBar$aesthetics(),
@@ -660,5 +674,3 @@ terminal_dark_theme <- function() {
   mystyle$operator <- crayon::make_style("#4E9A06")
   return(mystyle)
 }
-
-computed_word <- ifelse(packageVersion("ggplot2") < "3.3.0", "stat", "after_stat")

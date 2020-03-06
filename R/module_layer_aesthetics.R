@@ -70,8 +70,9 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
     triggerAesUpdate$trigger() # Make sure individual aesthetics update as well (probably bad form as side effect)
     reorderElements(c(geom_aesthetics, stat_aesthetics()),
                     orderBy = unique(c(
-                      stat_proto()$stat$required_aes,
-                      geom_proto$geom$required_aes,
+                      reorderElements(c(geom_proto$geom$required_aes,
+                                        stat_proto()$stat$required_aes),
+                                      orderBy = unique(unlist(gg_aesthetics))),
                       unlist(gg_aesthetics))
                     ))
   })
@@ -94,7 +95,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
                                                             base_layer_mappings[[.]],
                                                             inherit.aes = inherit.aes,
                                                             default_geom_aes = geom_proto$geom$default_aes[[.]],
-                                                            default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] }),
+                                                            default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
                                                             required = reactive({ . %in% c(stat_proto()$stat$required_aes, geom_proto$geom$required_aes) }),
                                                             dataset = dataset,
                                                             computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
@@ -107,7 +108,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
                                                                  base_layer_mappings[[.]],
                                                                  inherit.aes = inherit.aes,
                                                                  default_geom_aes = geom_proto$geom$default_aes[[.]],
-                                                                 default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] }),
+                                                                 default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
                                                                  required = reactive({ . %in% c(stat_proto()$stat$required_aes, geom_proto$geom$required_aes) }),
                                                                  dataset = dataset,
                                                                  computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
