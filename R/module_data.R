@@ -138,7 +138,7 @@ dataInputChoices <- function(vars = NULL, zone = "varzone", inherited = NULL, se
   }, simplify = FALSE, USE.NAMES = TRUE)
 
   if (computed) {
-    names(itemsUI) <- paste0("stat(", vars, ")")
+    names(itemsUI) <- paste0(computed_word, "(", vars, ")")
   }
 
   return(itemsUI)

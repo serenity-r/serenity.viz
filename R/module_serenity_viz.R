@@ -660,3 +660,5 @@ terminal_dark_theme <- function() {
   mystyle$operator <- crayon::make_style("#4E9A06")
   return(mystyle)
 }
+
+computed_word <- ifelse(packageVersion("ggplot2") < "3.3.0", "stat", "after_stat")

@@ -218,7 +218,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
             choices = list(" " = "",
                            "Variables" = names(dataset),
                            "Computed" = switch(!is.null(computed_vars()),
-                                               paste0("stat(", computed_vars(), ")"))
+                                               paste0(computed_word, "(", computed_vars(), ")"))
             ),
             choicesOpt = list(
               content = c(htmltools::doRenderTags(em("Clear variable")),
@@ -398,7 +398,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                                     choices = list(" " = "",
                                                    "Variables" = names(dataset),
                                                    "Computed" = switch(!is.null(computed_vars()),
-                                                                       paste0("stat(", computed_vars(), ")"))
+                                                                       paste0(computed_word, "(", computed_vars(), ")"))
                                     ),
                                     choicesOpt = list(
                                       content = c(htmltools::doRenderTags(em("Clear variable")),
