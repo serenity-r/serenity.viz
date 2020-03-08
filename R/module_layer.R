@@ -278,8 +278,9 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
         !is.null(position_code()))
 
     # Add position arguments
+    show_stat <- (geom_type != "geom-blank") && (isolate(input$stat) != default_stat)
     processed_layer_code <- paste0(base_layer_code(),
-                                   ifelse((nchar(layer_aesthetics()) || nchar(layer_params$code())) && nchar(position_code()), ",\n", ""),
+                                   ifelse((show_stat || nchar(layer_aesthetics()) || nchar(layer_params$code())) && nchar(position_code()), ",\n", ""),
                                    position_code(),
                                    ")")
 
