@@ -43,7 +43,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
   layer_id <- paste(stringr::str_split(gsub("-$", "", ns('')), '-')[[1]][2:5], collapse="-")
   geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
-  stat_proto <- reactive({ eval(parse(text=paste0("stat_", layer_stat(), "()"))) })
+  # stat_proto <- reactive({ eval(parse(text=paste0("stat_", layer_stat(), "()"))) })
+  stat_proto <- reactive({ get(paste0("Stat", snakeToCamel(layer_stat(), capFirst = TRUE))) })
   geom_aesthetics <- gg_aesthetics[[geom_type]]
 
   # Create trigger for this layers update
@@ -58,7 +59,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
 
   stat_aesthetics <- reactive({
     setdiff(
-      stat_proto()$stat$aesthetics(),
+      stat_proto()$aesthetics(),
       geom_aesthetics
     )
   })
@@ -71,7 +72,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
     reorderElements(c(geom_aesthetics, stat_aesthetics()),
                     orderBy = unique(c(
                       reorderElements(c(geom_proto$geom$required_aes,
-                                        stat_proto()$stat$required_aes),
+                                        stat_proto()$required_aes),
                                       orderBy = unique(unlist(gg_aesthetics))),
                       unlist(gg_aesthetics))
                     ))
@@ -95,8 +96,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
                                                             base_layer_mappings[[.]],
                                                             inherit.aes = inherit.aes,
                                                             default_geom_aes = geom_proto$geom$default_aes[[.]],
-                                                            default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
-                                                            required = reactive({ . %in% c(stat_proto()$stat$required_aes, geom_proto$geom$required_aes) }),
+                                                            default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
+                                                            required = reactive({ . %in% c(stat_proto()$required_aes, geom_proto$geom$required_aes) }),
                                                             dataset = dataset,
                                                             computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
 
@@ -108,8 +109,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
                                                                  base_layer_mappings[[.]],
                                                                  inherit.aes = inherit.aes,
                                                                  default_geom_aes = geom_proto$geom$default_aes[[.]],
-                                                                 default_stat_aes = reactive({ stat_proto()$stat$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
-                                                                 required = reactive({ . %in% c(stat_proto()$stat$required_aes, geom_proto$geom$required_aes) }),
+                                                                 default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
+                                                                 required = reactive({ . %in% c(stat_proto()$required_aes, geom_proto$geom$required_aes) }),
                                                                  dataset = dataset,
                                                                  computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
   })
