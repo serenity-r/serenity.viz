@@ -32,7 +32,7 @@ dataComputedUI <- function(id, stat="identity") {
     widgetBody(
       div(
         class = "dataset-vars",
-        em("No computed variables available", class = "none-computed hidden"),
+        em("No computed variables available for this layer.", class = "none-computed hidden"),
         dndselectr::dragZone(
           id = ns('computeddatazone'),
           choices = dataInputChoices(stat_computed_vars[[stat]])
@@ -123,7 +123,7 @@ dataInputChoices <- function(vars = NULL, zone = "varzone", inherited = NULL, se
           switch(as.character(computed), "TRUE" = "computed", "FALSE" = dataTypeToUI(vars[[var_name]]))
         ), collapse = " "),
       switch(as.character(computed), "TRUE" = icon("calculator"), "FALSE" = dataTypeToUI(vars[[var_name]], .icon = TRUE)),
-      span(var_name, class = paste(c("varname", switch(var_name %in% inherited, "inherited")), collapse = " ")),
+      span(var_name, class = paste(c("varname", switch(var_name %in% inherited, ifelse(computed, "default", "inherited"))), collapse = " ")),
       switch(!computed && zone == "varzone", # Include filter
              shinyWidgets::dropdownButton(
                dataVarUI(id = ns(var_name), var = vars[[var_name]]),

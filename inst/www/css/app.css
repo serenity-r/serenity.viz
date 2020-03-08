@@ -15,14 +15,21 @@ body {
   margin: 15px 0 0 15px;
 }
 
-.inherited::after {
-  content: 'Inherited';
+.varname::after {
   position: absolute;
   top: 2px;
   right: 10px;
   font-style: italic;
   font-size: 0.9em;
   color: mediumblue;
+}
+
+.varname.inherited::after {
+  content: 'Inherited';
+}
+
+.varname.default::after {
+  content: 'Default';
 }
 
 .required::after {
@@ -32,13 +39,6 @@ body {
   right: 0;
   font-style: italic;
   font-size: 0.9em;
-  color: red;
-}
-
-.default::after {
-  content: 'default';
-  float: right;
-  font-size: 0.8em;
   color: red;
 }
 
