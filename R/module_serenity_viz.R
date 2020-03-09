@@ -506,6 +506,12 @@ serenityVizServer <- function(input, output, session, dataset) {
 
 # GLOBALS ----
 
+revList <- function(x) {
+  tmp <- names(x)
+  names(tmp) <- unlist(x)
+  as.list(tmp)
+}
+
 resourcePath <- system.file("www", package = "serenity.viz")
 
 geoms <- c("geom-bar", "geom-histogram", "geom-point", "geom-line", "geom-dotplot", "geom-boxplot", "geom-violin", "geom-rug", "geom-smooth")
@@ -522,34 +528,48 @@ plot_names <- list(
 )
 
 stat_names <- list(
-  "identity" = "Identity",
-  "count" = "Count",
-  "bin" = "Binning",
-  "sum" = "Sum",
-  "density" = "Density (x)",
-  "smooth" = "Smooth",
-  "summary" = "Summaries",
-  "boxplot" = "Boxplot",
-  "function" = "Function",
-  "quantile" = "Quantiles",
-  "qq" = "Quantile-Quantile (QQ)",
-  "qq_line" = "QQ Line",
-  "ecdf" = "Emperical CDF",
-  "ellipse" = "Confidence Ellipse",
-  "contour" = "Contours",
-  "ydensity" = "Density (y)",
-  "bindot" = "Binning (Dotplot)",
-  "bin_2d" = "Binning (2D Rect)",
-  "bin_hex" = "Binning (2D Hex)",
-  "summary_bin" = "Summaries (Bins)",
-  "summary_hex" = "Summaries (2D Hex)",
-  "summary_2d" = "Summaries (2D Rect)",
-  "density_2d" = "Density (2D)",
-  "sf" = "SF",
-  "sf_coordinates" = "SF Coords",
-  "unique" = "Unique"
+  "1D distributions" = list(
+    "bin" = "Binning",
+    "count" = "Count",
+    "density" = "Density (x)"
+  ),
+  "2D distributions" = list(
+    "bin_2d" = "Binning (2D Rect)",
+    "bin_hex" = "Binning (2D Hex)",
+    "density_2d" = "Density (2D)",
+    "ellipse" = "Confidence Ellipse"
+  ),
+  "3 Variables" = list(
+    "contour" = "Contours",
+    "summary_hex" = "Summaries (2D Hex)",
+    "summary_2d" = "Summaries (2D Rect)"
+  ),
+  "Comparisons" = list(
+    "boxplot" = "Boxplot",
+    "ydensity" = "Density (y)"
+  ),
+  "Functions" = list(
+    "ecdf" = "Emperical CDF",
+    "quantile" = "Quantiles",
+    "smooth" = "Smooth"
+  ),
+  "General Purpose" = list(
+    "function" = "Function",
+    "identity" = "Identity",
+    "qq" = "Quantile-Quantile (QQ)",
+    "qq_line" = "QQ Line",
+    "sum" = "Sum",
+    "summary" = "Summaries",
+    "summary_bin" = "Summaries (Bins)",
+    "unique" = "Unique",
+    "bindot" = "Binning (Dotplot)",
+    "sf" = "SF",
+    "sf_coordinates" = "SF Coords"
+  )
 )
-stats <- names(stat_names)
+
+stat_names_unlist <- unlist(stat_names, recursive = FALSE)
+names(stat_names_unlist) <- unlist(lapply(stat_names, function(x) { revList(x) }), recursive = FALSE)
 
 stat_computed_vars <- list(
   "count" = c("count", "prop"),
@@ -660,12 +680,6 @@ idsToGeoms <- function(id) {
   switch(!is.null(id),
          sapply(id, FUN = function(x) { paste(stringr::str_split(x, '-')[[1]][1:2], collapse="-") }, simplify = "array"),
          NULL)
-}
-
-revList <- function(x) {
-  tmp <- names(x)
-  names(tmp) <- unlist(x)
-  as.list(tmp)
 }
 
 terminal_dark_theme <- function() {

@@ -41,10 +41,10 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
                  inputId = ns("stat"),
                  label = NULL,
                  selected = default_stat,
-                 choices = revList(stat_names),
+                 choices = lapply(stat_names, function(x) { revList(x) }),
                  choicesOpt = list(
-                   subtext = rep("", length(stat_names)) %>% {
-                     .[which(names(stat_names) == default_stat)] <- "default"
+                   subtext = rep("", length(unlist(stat_names))) %>% {
+                     .[which(names(stat_names_unlist) == default_stat)] <- "default"
                      .
                    }
                  ),
@@ -179,7 +179,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     tagList(
       "Calculation:",
       br(),
-      em(stat_names[[input$stat]])
+      em(stat_names_unlist[[input$stat]])
     )
   })
 
