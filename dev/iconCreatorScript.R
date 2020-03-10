@@ -259,7 +259,7 @@ save_plot(bar)
 
 ## 3. Two Variables ====
 
-## 3.1 Continuous X, Continuous Y
+## 3.1 Continuous X, Continuous Y ====
 
 # __ geom_label ----
 
@@ -355,3 +355,101 @@ text <- theme_serenity(a + theme_layer) +
   scale_x_continuous(breaks = seq(0, 10, 2.5))
 
 save_plot(text)
+
+## 3.2 Discrete X, Continuous Y
+
+# __ geom_boxplot ----
+
+boxplot_data <- data.frame(
+  x = c(3, 7),
+  lower = c(2, 3),
+  middle = c(3, 5),
+  upper = c(7, 6),
+  ymin = c(1, 1.5),
+  ymax = c(9, 7)
+)
+
+a <- ggplot(boxplot_data, aes(x)) +
+  geom_boxplot(stat = "identity",
+               aes(ymin = ymin,
+                   lower = lower,
+                   middle = middle,
+                   upper = upper,
+                   ymax = ymax,
+                   group = x),
+               size = 4,
+               width = 2.0) +
+  geom_point(aes(x = c(7, 7), y = c(8, 9)), size = 6)
+
+boxplot <- theme_serenity(a + theme_layer)
+
+save_plot(boxplot)
+
+# __ geom_violin ----
+
+x <- seq(from = 0, to = 10, length.out = 100)
+
+y1 <- dnorm(x, mean = 3, sd = 0.5) + dnorm(x, mean = 7, sd = 1)
+z1 <- y1/(x[2]*sum(y1))
+CDF1 <- data.frame(x = x, p = x[2]*cumsum(z1))
+
+y2 <- dnorm(x, mean = 4, sd = 0.5) + dnorm(x, mean = 6, sd = 1)
+z2 <- y2/(x[2]*sum(y2))
+CDF2 <- data.frame(x = x, p = x[2]*cumsum(z2))
+
+violin_data <- data.frame(
+  x = c(rep(3, 100), rep(7, 100)),
+  y = c(sapply(runif(100), function(x) { CDF1$x[which.min(CDF1$p < x)] }),
+        sapply(runif(100), function(x) { CDF2$x[which.min(CDF2$p < x)] }))
+)
+
+a <- ggplot(violin_data, aes(x, y)) +
+  geom_violin(trim = FALSE, aes(group = x), fill = serenity.fill)
+
+violin <- theme_serenity(a + theme_layer)
+
+save_plot(violin)
+
+## 3.2 Continuous Bivariate Distribution ----
+
+# __ geom_bin2d ----
+
+mean <- c(5, 5)
+s <- 1.5
+s2 <- s*s
+S <- matrix(s2*c(1, 0.7, 0.7, 1), 2, 2)
+Z <- mvtnorm::rmvnorm(3000, mean, S)
+bin2d_data <- data.frame(
+  x = Z[,1],
+  y = Z[,2]
+)
+
+a <- ggplot(bin2d_data, aes(x, y)) +
+  geom_bin2d(breaks = seq(0, 10, 1.25), drop = FALSE, show.legend = FALSE)
+
+bin2d <- theme_serenity(a + theme_layer) +
+  coord_cartesian(xlim = c(0.45, 9.45), ylim = c(0.45, 9.45))
+
+save_plot(bin2d)
+
+# __ geom_density2d ----
+
+a <- ggplot(bin2d_data, aes(x, y)) +
+  geom_density2d(h = 2.5, size = 3)
+
+density2d <- theme_serenity(a + theme_layer)
+
+save_plot(density2d)
+
+# __ geom_hex ----
+
+hex_data <- rbind(bin2d_data,
+                  expand.grid(x = seq(0, 10, 1), y = seq(0, 10, 1)))
+
+a <- ggplot(hex_data, aes(x, y)) +
+  geom_hex(binwidth = 1.25, show.legend = FALSE)
+
+hex <- theme_serenity(a + theme_layer) +
+  coord_cartesian(xlim = c(1, 9), ylim = c(1, 9))
+
+save_plot(hex)
