@@ -1,0 +1,615 @@
+---
+title: "Geoms and Stats"
+author: "M. Drew LaMar"
+date: "1/29/2020"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(magrittr)
+```
+
+Looks like if aesthetic is specified in base layer, that is the default.
+```{r}
+iris %>% ggplot(aes(x = Sepal.Length, y = Sepal.Width, size = Species)) + geom_point(stat = "sum")
+```
+BUT, if it is not specified, the default for the stat kicks in:
+```{r}
+iris %>% ggplot(aes(x = Sepal.Length, y = Sepal.Width)) + geom_point(stat = "sum")
+```
+Problem is, how do you specify NULL now???  Before, an empty specification meant NULL, but not anymore.  Could have reset button prompt use for which default they want: base layer (or) stat default.
+
+# Stats
+
+Basic, statistic, 
+
+ * [+] count (basic, 1d)
+ * bin_2d (basic, 2d)
+ * [+] boxplot (statistic, 1d)
+ * contour (2d)
+ * [+] sum (basic, 1d)
+ * [+] density (basic, 1d)
+ * density_2d (basic, 2d)
+ * bin_hex (basic, 2d)
+ * [+] bin (basic, 1d)
+ * qq_line (statistic, 1d)
+ * qq (statistic, 1d)
+ * quantile (statistic, 1d)
+ * [+] smooth (statistic, 1d)
+ * ydensity (basic, 1d)
+ * sf (basic, 2d)
+ * ecdf (statistic, 1d)
+ * ellipse (statistic, 2d)
+ * function (custom, 1d)
+ * [+] identity (basic, 1d, 2d)
+ * summary_2d (custom, 2d)
+ * summary_hex (custom, 2d)
+ * summary_bin (custom, 1d)
+ * summary (custom, 1d)
+ * unique (manipulate, 1d)
+ * sf_coordinates (2d)
+ 
+# Primitives
+
+## Bar
+
+### Stat = count (default) [Bar plot]
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = class)) + 
+  geom_bar()
+```
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = class)) + 
+  geom_bar(stat = "count")
+```
+
+Computed variables:
+
+ - **count**
+ - **prop**
+ 
+Layer data
+```{r}
+layer_data(mpg %>% 
+  ggplot(aes(x = class)) + 
+  geom_bar(stat = "count"))
+```
+
+Default aesthetics
+```{r}
+mpg %>% 
+  ggplot(aes(x = class)) + 
+  geom_bar(stat = "count", aes(y = stat(count)))
+```
+
+### Stat = bin [Histogram/Relative frequency dist]
+
+This is essentially a histogram, but with less options (e.g. no binwidth allowed)
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = displ)) + 
+  geom_bar(stat = "bin")
+```
+
+Computed variables:
+
+ - **count**: number of points in bin
+ - **density**: density of points in bin, scaled to integrate to 1
+ - **ncount**: count, scaled to maximum of 1
+ - **ndensity**: density, scaled to maximum of 1
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = displ)) + 
+  geom_bar(stat = "bin", bins = 40)
+```
+
+All `stat_bin` arguments should work (`binwidth` giving a warning, but probably shouldn't).
+```{r}
+mpg %>% 
+  ggplot(aes(x = displ)) + 
+  geom_bar(stat = "bin", 
+           bins = 30, 
+           closed = "right", 
+           pad = TRUE)
+```
+
+Default aesthetics.
+```{r}
+mpg %>% 
+  ggplot(aes(x = displ)) + 
+  geom_bar(stat = "bin", 
+           aes(y = stat(count)),
+           bins = 30)
+```
+
+Relative frequency distribution (use `stat(density)`)
+```{r}
+mpg %>% 
+  ggplot(aes(x = displ)) + 
+  geom_bar(stat = "bin", 
+           aes(y = stat(density)),
+           bins = 30)
+```
+
+Make sure sums to 1.  First, check out layer data.
+```{r}
+tmp <- mpg %>% 
+  ggplot(aes(x = displ)) + 
+  geom_bar(stat = "bin", 
+           aes(y = stat(count)),
+           bins = 30)
+ldata <- layer_data(tmp)
+str(ldata)
+sum(ldata$density*(ldata$xmax[1]-ldata$xmin[1]))
+```
+
+### Stat = identity [Bar plot, manual]
+
+```{r}
+(means <- iris %>% 
+  group_by(Species) %>% 
+  summarize(mu = mean(Sepal.Length)))
+
+means %>%
+  ggplot(aes(x = Species, y = mu)) + 
+  geom_bar(stat = "identity")
+```
+
+`geom_col` also does this
+```{r}
+means %>%
+  ggplot(aes(x = Species, y = mu)) + 
+  geom_col()
+```
+
+Note that you can also use the `stat = summary` to get this automatically.
+
+### Stat = summary [Bar plot, statistics]
+
+```{r}
+iris %>%
+  ggplot(aes(x = Species, y = Sepal.Length)) + 
+  geom_bar(stat = "summary", fun.y = "mean")
+```
+
+What does the layer data look like?
+
+```{r}
+tmp <- iris %>%
+  ggplot(aes(x = Species, y = Sepal.Length)) + 
+  geom_bar(stat = "summary", fun.y = "mean")
+
+ldata <- layer_data(tmp)
+str(ldata)
+```
+
+Ah, makes sense - will have usual aesthetics.  Note that even though the `y` aesthetic for the `geom_bar` layer is not really inheriting the aesthetic from the base layer, and is instead using the calculated `stat(y)` from the layer data, you will get an error if you try and manually specify the `y` aesthetic as follows:
+```{r, eval=F}
+iris %>%
+  ggplot(aes(x = Species, y = Sepal.Length)) + 
+  geom_bar(stat = "summary", 
+           fun.y = "mean",
+           aes(y = stat(y)))
+```
+
+Let's try another one (`sum`):
+```{r}
+iris %>%
+  ggplot(aes(x = Species, y = Sepal.Length)) + 
+  geom_bar(stat = "summary", fun.y = "sum")
+```
+
+What about counting elements using `length`?  Should be equivalent to `stat = count`.
+```{r}
+mpg %>%
+  ggplot(aes(x = class, y = displ)) + 
+  geom_bar(stat = "summary", fun.y = "length")
+```
+
+Yep!  Only issue is y-axis label.
+
+## Line/Area
+
+Doing these together as they are very similar.
+
+### Stat = identity (default) [Line plot]
+
+```{r}
+ggplot(economics, aes(date, unemploy)) + 
+  geom_line()
+```
+
+```{r}
+ggplot(economics, aes(date, unemploy)) + 
+  geom_area()
+```
+
+### Stat = count
+
+Useful to connect barplot with lines, but need a grouping constant.
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = class)) + 
+  geom_bar(stat = "count") + 
+  geom_line(stat = "count", aes(group = 1))
+```
+
+Again, y aesthetic is implied:
+```{r}
+mpg %>% 
+  ggplot(aes(x = class)) + 
+  geom_bar(stat = "count") + 
+  geom_line(stat = "count", aes(y = stat(count), group = 1))
+```
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = class)) + 
+  geom_area(stat = "count", aes(y = stat(count), group = 1))
+```
+
+### Stat = bin
+
+Same as `stat = count`, draw line for histogram.  In this case, no grouping needed.  Also, I added `pad = TRUE` to match behavior of `geom_freqpoly` (see below).
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = displ)) + 
+  geom_bar(stat = "bin", 
+           bins = 30) +
+  geom_line(stat = "bin",
+            bins = 30,
+            pad = TRUE)
+```
+
+This is similar to `geom_freqpoly`.  Note that padding happens by default with `geom_freqpoly` and cannot be changed with the `pad` argument.
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = displ)) + 
+  geom_bar(stat = "bin", 
+           bins = 30) +
+  geom_freqpoly(bins = 30)
+```
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = displ)) + 
+  geom_bar(stat = "bin", 
+           bins = 30) +
+  geom_area(stat = "bin",
+            bins = 30,
+            pad = TRUE)
+```
+
+```{r}
+mpg %>% 
+  ggplot(aes(x = displ)) + 
+  geom_bar(stat = "bin", 
+           bins = 30) +
+  geom_area(stat = "bin",
+            bins = 30,
+            pad = TRUE,
+            alpha = 0.3,
+            colour = "black")
+```
+
+### Stat = density
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = carat)) +
+  geom_line(stat = "density")
+```
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = carat)) +
+  geom_area(stat = "density")
+```
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = depth, colour = cut)) +
+  geom_line(stat = "density") +
+  xlim(55, 70)
+```
+
+Compare to `geom_density`.  Note that if you use `stat_density`, position must be identity to replicate this plot!!
+```{r}
+ggplot(diamonds, aes(x = depth, colour = cut)) +
+  geom_density() +
+  xlim(55, 70)
+```
+
+Let's try to replicate this one:
+```{r}
+ggplot(diamonds, aes(depth, fill = cut, colour = cut)) +
+  geom_density(alpha = 0.1) +
+  xlim(55, 70)
+```
+
+```{r}
+ggplot(diamonds, aes(depth, fill = cut, colour = cut)) +
+  geom_area(stat = "density", position = "identity", alpha = 0.1) +
+  xlim(55, 70)
+```
+
+Let's try another one:
+```{r}
+ggplot(diamonds, aes(x = carat, y = stat(count), colour = cut)) +
+  geom_line(stat = "density", position = "stack")
+```
+
+One more:
+```{r}
+ggplot(diamonds, aes(x = carat, y = stat(count), colour = cut)) +
+  geom_line(stat = "density", position = "fill")
+```
+
+Better with `geom_area`:
+```{r}
+ggplot(diamonds, aes(x = carat, y = stat(count), fill = cut)) +
+  geom_area(stat = "density", position = "fill", colour = "black")
+```
+
+### Stat = summary
+
+```{r}
+data.frame(
+  x = seq(from = 0, to = 4*pi, length.out = 1000)
+) %>% 
+  ggplot(aes(x = x, y = x)) + 
+  geom_line(stat = "summary",
+            fun.y = sin)
+```
+
+```{r}
+data.frame(
+  x = seq(from = 0, to = 4*pi, length.out = 1000)
+) %>% 
+  ggplot(aes(x = x, y = x)) + 
+  geom_area(stat = "summary",
+            fun.y = sin)
+```
+
+```{r}
+data.frame(
+  x = seq(from = 0, to = 4*pi, length.out = 1000)
+) %>% 
+  ggplot(aes(x = x, y = x)) + 
+  geom_ribbon(stat = "summary",
+              fun.ymin = sin,
+              fun.ymax = cos)
+```
+
+## Points
+
+### Stat = identity (default) [Scatter plot]
+
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) + 
+  geom_point(stat = "identity")
+```
+
+### Stat = count
+
+```{r}
+mpg %>%
+  ggplot(aes(x = cyl)) + 
+  geom_point(stat = "count",
+             aes(y = stat(count)))
+```
+
+```{r}
+mpg %>%
+  ggplot(aes(x = cyl)) + 
+  geom_point(stat = "count",
+             aes(y = stat(prop)))
+```
+
+### Stat = sum [geom_col]
+
+Should be similar to `geom_count`
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) + 
+  geom_point(stat = "sum",
+             aes(size = stat(n), weight = 1))
+```
+
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) + 
+  geom_count()
+```
+
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) + 
+  geom_point(stat = "sum",
+             aes(size = stat(prop)))
+```
+
+# Non-primitives
+
+## geom_histogram
+
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length)) + 
+  geom_histogram(bins = 40)
+```
+
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length)) + 
+  geom_histogram(binwidth = 0.1)
+```
+
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length)) + 
+  geom_histogram(breaks = c(4, 5, 6, 7, 8))
+```
+
+### Geom = Bar, Stat = Bin
+
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length)) + 
+  geom_bar(stat = "bin", bins = 40)
+```
+
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length)) + 
+  geom_bar(stat = "bin", binwidth = 0.1)
+```
+
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length)) + 
+  geom_bar(stat = "bin", breaks = c(4, 5, 6, 7, 8))
+```
+
+Explicit aesthetic assignment:
+```{r}
+iris %>%
+  ggplot(aes(x = Sepal.Length)) + 
+  geom_bar(stat = "bin", 
+           aes(y = stat(count)),
+           breaks = c(4, 5, 6, 7, 8))
+```
+
+## geom_smooth
+
+```{r}
+p <- iris %>% 
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width))
+```
+
+```{r}
+p + 
+  geom_point() + 
+  geom_smooth(method = "lm")
+```
+
+### geom_line w/ stat = smooth + geom_ribbon w/ stat = smooth
+
+```{r}
+p + 
+  geom_point() + 
+  geom_ribbon(stat = "smooth", method = "lm", fill = "grey60", alpha = 0.4) +
+  geom_line(stat = "smooth", method = "lm", size = 1, colour = "#3366FF")
+```
+
+Explicit aesthetic assignments:
+
+```{r}
+iris %>% 
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) + 
+  geom_point() + 
+  geom_ribbon(stat = "smooth", 
+              aes(ymin = stat(ymin), ymax = stat(ymax)),
+              method = "lm",  fill = "grey60", alpha = 0.4) +
+  geom_line(stat = "smooth", method = "lm", size = 1, colour = "#3366FF")
+```
+
+## geom_count
+
+```{r}
+p <- iris %>%
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width))
+```
+
+```{r}
+p + 
+  geom_count()
+```
+
+### geom_point w/ stat = sum
+
+```{r}
+p + 
+  geom_point(stat = "sum")
+```
+
+Explicit aesthetic assignments:
+
+```{r}
+p + 
+  geom_point(stat = "sum",
+             aes(size = stat(n)))
+```
+
+## geom_freqpoly
+
+```{r}
+p <- ggplot(diamonds, 
+       aes(price, colour = cut))
+```
+
+```{r}
+p +
+  geom_freqpoly(binwidth = 500)
+```
+
+### geom_line + stat = "bin" + pad = TRUE
+
+```{r}
+p +
+  geom_line(stat = "bin", binwidth = 500, pad = TRUE)
+```
+
+Explicit aesthetic assignment:
+
+```{r}
+p +
+  geom_line(stat = "bin", 
+            aes(y = stat(count)),
+            binwidth = 500, pad = TRUE)
+```
+
+Extending:
+
+```{r}
+p +
+  geom_line(stat = "bin", binwidth = 500, pad = TRUE) + 
+  geom_point(stat = "bin", binwidth = 500, pad = TRUE)
+```
+
+## geom_boxplot
+
+```{r}
+p <- ggplot(iris,
+            aes(x = Species, y = Sepal.Length))
+```
+
+```{r}
+p + 
+  geom_boxplot()
+```
+
+```{r}
+# Not sure how to easily do extreme values yet.  Commented is what I would like to do, but it
+#   doesn't work as the y aesthetic is defined twice - once to compute stat, and then second time
+#   upon assignment.  Maybe this will work with ggplot2 3.3.0??
+p + 
+  geom_linerange(stat = "boxplot") +
+  geom_crossbar(stat = "summary", fun.data = "median_hilow", fun.args = list(conf.int = 0.5), fill = "white", width = 0.8, fatten = 2.0, size = 0.4) # + 
+  # geom_point(stat = "boxplot", aes(y = after_stat(outliers)))
+```
