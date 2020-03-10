@@ -453,3 +453,68 @@ hex <- theme_serenity(a + theme_layer) +
   coord_cartesian(xlim = c(1, 9), ylim = c(1, 9))
 
 save_plot(hex)
+
+## 3.3 Continuous Function ====
+
+# __ geom_line ----
+
+a <- ggplot(ribbon_data, aes(x = x, y = ymax)) +
+  geom_line(size = 6)
+
+line <- theme_serenity(a + theme_layer)
+
+save_plot(line)
+
+# __ geom_step ----
+
+a <- ggplot(ribbon_data, aes(x = x, y = ymax)) +
+  geom_step(size = 6)
+
+step <- theme_serenity(a + theme_layer)
+
+save_plot(step)
+
+## 3.4 Visualizing Error ====
+
+error_data <- data.frame(
+  x = c(2, 5, 8),
+  y = c(3.5, 5.5, 7),
+  ymin = c(1, 4, 5),
+  ymax = c(6, 7, 9)
+)
+
+# __ geom_crossbar ----
+
+a <- ggplot(error_data, aes(x, y)) +
+  geom_crossbar(aes(ymin = ymin, ymax = ymax), size = 4, fatten = 1.5, width = 2)
+
+crossbar <- theme_serenity(a + theme_layer)
+
+save_plot(crossbar)
+
+# __ geom_errorbar ----
+
+a <- ggplot(error_data, aes(x, y)) +
+  geom_errorbar(aes(ymin = ymin, ymax = ymax), size = 4, width = 2)
+
+errorbar <- theme_serenity(a + theme_layer)
+
+save_plot(errorbar)
+
+# __ geom_linerange ----
+
+a <- ggplot(error_data, aes(x, y)) +
+  geom_linerange(aes(ymin = ymin, ymax = ymax), size = 4, width = 2)
+
+linerange <- theme_serenity(a + theme_layer)
+
+save_plot(linerange)
+
+# __ geom_pointrange ----
+
+a <- ggplot(error_data, aes(x, y)) +
+  geom_pointrange(aes(ymin = ymin, ymax = ymax), size = 4, width = 2)
+
+pointrange <- theme_serenity(a + theme_layer)
+
+save_plot(pointrange)
