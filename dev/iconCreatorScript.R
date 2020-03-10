@@ -232,17 +232,6 @@ save_plot(histogram)
 
 # __ geom_qq ----
 
-# qq_data <- data.frame(
-#   x = rnorm(40, mean = 5, sd = 2)
-# )
-#
-# a <- ggplot(qq_data, aes(sample = x)) +
-#   geom_qq(size = 5)
-#
-# qq <- theme_serenity(a + theme_layer, X = -3, Y = -1, W = 3, H = 11)
-#
-# save_plot(qq, W = 10, H = 10)
-
 qq_data <- data.frame(
   x = rnorm(40)
 )
@@ -267,3 +256,102 @@ a <- ggplot(bar_data, aes(x)) +
 bar <- theme_serenity(a + theme_layer)
 
 save_plot(bar)
+
+## 3. Two Variables ====
+
+## 3.1 Continuous X, Continuous Y
+
+# __ geom_label ----
+
+label_data <- data.frame(
+  x = c(3, 4, 7),
+  y = c(7, 3, 5),
+  label = c("A", "B", "C")
+)
+
+a <- ggplot(label_data, aes(x, y)) +
+  geom_label(aes(label = label), size = 70,
+             label.padding = unit(2.0, "lines"),
+             label.r = unit(0.5, "lines"),
+             label.size = 2.0)
+
+label <- theme_serenity(a + theme_layer)
+
+save_plot(label)
+
+# __ geom_point ----
+
+mean <- c(5, 5)
+s <- 1.7
+s2 <- s*s
+S <- matrix(s2*c(1, 0.8, 0.8, 1), 2, 2)
+Z <- mvtnorm::rmvnorm(30, mean, S)
+point_data <- data.frame(
+  x = Z[,1],
+  y = Z[,2]
+)
+
+a <- ggplot(point_data, aes(x,y)) +
+  geom_point(size = 6)
+
+point <- theme_serenity(a + theme_layer)
+
+save_plot(point)
+
+# __ geom_quantile ----
+
+S <- matrix(s2*c(0.5, 0.2, 0.2, 4), 2, 2)
+Z <- mvtnorm::rmvnorm(3000, mean, S)
+quantile_data <- data.frame(
+  x = Z[,1],
+  y = Z[,2]
+)
+
+a <- ggplot(quantile_data, aes(x,y)) +
+  geom_quantile(size = 5)
+
+quantile <- theme_serenity(a + theme_layer)
+
+save_plot(quantile)
+
+# __ geom_rug ----
+
+S <- matrix(s2*c(1, 0.2, 0.2, 1), 2, 2)
+Z <- mvtnorm::rmvnorm(100, mean, S)
+rug_data <- data.frame(
+  x = Z[,1],
+  y = Z[,2]
+)
+
+a <- ggplot(rug_data, aes(x,y)) +
+  geom_rug(length = unit(0.1, "npc"), size = 1.2)
+
+rug <- theme_serenity(a + theme_layer)
+
+save_plot(rug)
+
+# __ geom_smooth ----
+
+S <- matrix(s2*c(0.5, 0.2, 0.2, 4), 2, 2)
+Z <- mvtnorm::rmvnorm(200, mean, S)
+smooth_data <- data.frame(
+  x = Z[,1],
+  y = Z[,2]
+)
+
+a <- ggplot(smooth_data, aes(x,y)) +
+  geom_smooth(size = 5, fill = serenity.fill, alpha = 0.5)
+
+smooth <- theme_serenity(a + theme_layer, X = 2, W = 8)
+
+save_plot(smooth)
+
+# __ geom_text ----
+
+a <- ggplot(label_data, aes(x,y)) +
+  geom_text(aes(label = label), size = 70)
+
+text <- theme_serenity(a + theme_layer) +
+  scale_x_continuous(breaks = seq(0, 10, 2.5))
+
+save_plot(text)
