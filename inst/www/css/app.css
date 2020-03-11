@@ -989,51 +989,6 @@ i.fa.inactive {
   background-size: 100%;
 }
 
-.geom-icon.geom-bar {
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8AQMAAAAAMksxAAAABlBMVEX///8mJiZ40e/1AAAAFUlEQVR4AWOgN6j//2CYMSDkMGQAAG9VqnFBc2JcAAAAAElFTkSuQmCC) no-repeat;
-    background-size: 100%;
-}
-
-.geom-icon.geom-point {
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAAAAAAfl4auAAABSUlEQVRIx+3WMUvDQBjG8T+NR09wEKR0KjaWgrObUiEZHLo5Sr+B0rE6uCaDfoCi6OoXEP0W1bldlbqmhSw2oHFol4YMea8SB3P7D47nubv3iFdY5IW/btv7vcAQn2xAiTcj/LwOwLERPgeAxip4xwg/bQFwZIS/O2tg6Ylhzzftg977XxySOA49x/EiMxzZGpQdGmFfAWjPCLvzpp38sa8BlHjboec4XmAr0HYkxIucA991/VBaVTJnEU5GlR9O5izCYSJnWVXRcs65X8kCF/j/4tFVtx8Y4kHVosxYimfD12n8MX+tWp8yPG7Va5X7x00A6kMRDgBQZxqA2osI98sA7G4DUJmKcHfxzTq1AHUnC+zaAqAZXzYbew/CqkZVAA4jo0MyoMTSl0PU84WVNgoz4vRplgdOH4UZcfoozHqrUkdh8Yb9Hv4Bj+b7XD+PnBYAAAAASUVORK5CYII=) no-repeat;
-    background-size: 100%;
-}
-
-.geom-icon.geom-line {
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAAAAAAfl4auAAABOElEQVR4Ae3WMU4CURRGYXs7N+F2ABWXoc4awAp6rdQ9qKVsAHETo42RchoJ12QKHvkSH5OhsHBu86qTnP9kijmIPe4fwB3cwR282AMuju7WbeGy93l1uWwJ39zG+r6/aAV/98uIeBuo3gh+KepnqXojuJjVT1Y9weZa1W9ePcHm2hzqO+FVr6xf1PMwuUL1PEwu1fOwubbVX3fD5HoebdRPVA9hc32cJvXi4msXTK5hmdQfVBc21/Vj/aAuTC5Gqy5MLkYn9RA2l6PTVcdzYXM5Ot10EsLm+nX0fFgBZ7+u9+3R1fmc2ubizkqlt2FzceM0GmnhWRHe0whpYHMxWmlgczFaaWBzMVppYHMxWmlgczFaaWCO0dUQ6SzM6Mk0GsOMVjoPM1rpPMzo8TRaw4PD6u9/pTr4B9LfsdEdAfdTAAAAAElFTkSuQmCC) no-repeat;
-    background-size: 100%;
-}
-
-.geom-icon.geom-dotplot {
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAAFVBMVEX////Ozs5qampiYmLa2toYGBgAAACh6dWXAAAAgUlEQVR42u2QMQrAMAwDGzvJ/5/cBk+mCGFvpdJwCIEhuUtRFEVRlB9lmM/u7Vx7r9E89v3Emsd2jr375fPs/qfdRtkw69ww7tww7tww7tww7tww7txwEO3McBDtxHAQ7cRwEO3EcBDtxHAQ7W/bVWbbVSbbVSbbVSbbVSaTVX43NyZjCc3Zq3CYAAAAAElFTkSuQmCC) no-repeat;
-    background-size: 100%;
-}
-
-.geom-icon.geom-boxplot {
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8BAMAAADI0sRBAAAAIVBMVEX////c3NygoKCfn59jY2NAQEBBQUGKiopkZGSJiYk/Pz89z7m5AAAAdUlEQVR4AWOgPmAUwCvNpDDypJmNjY1NnIGEAVZpVSUoSMYqrQxn0E+aUQCvNJPCIJPGDOcSWKB2YglnNGlMAxFs+kgjnEOONEJoYKW1jKEgGKs0E9ADGk1AQgGrNCJy8UuPSiPCGYs0ZjgzCgyNghLu2qEFABDhJYXCskOWAAAAAElFTkSuQmCC) no-repeat;
-    background-size: 100%;
-}
-
-.geom-icon.geom-violin {
-	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAAAAAAfl4auAAAB1klEQVRIx+3Xv0sCYRgH8K8/4JRcOsEECbsz8AaDgwhqFV3rL4goapSif0GcDJwCHQoiEIJACzLccmlpbjGQ6BcOgggON1nDZXeveZfvc9AQPePD84Hj7n2e9zm8Owj847+HKxU6LrrdRTJeBlaouDEDzDRoeJACgNSAhMsiAIhlCm4rAAAobQJe9+rYu8GPL0L4jNAlL+4t4CsWepw47zewP8+H+wpMofTtcL0+kqiJZizWbPCV4LtiM/tgYt8GbwGbbCbJ4qQ17siA3GFSCRYnrHHBB/gKTCrG4pgl7ioAoHTNOYnFc5Y4KwCAkLXBkhV+lvUC+ZmA9zx6gWeX/7Ff5WGF/Mr9wkrCsEIocn+qNaNklfuQqEaJyn08x+PryRpj/GNP2JKmF1YypQ8mGgYvX59UeuEfQxm3XuLOEAZgK6rXRFuU0bujF22Thn4jCADBG9J104wAQKRJuugOpwBg6oRyxd5+tqR0/k2v/HS5143WPeNdK05dxmEIl0crq1W7heZomumeY65VapFtvUUunGZxmgu/sXPunm8DfEwGhjSw1OFdH7XcrG5ncxph97ybcwEu9Y62uD7NA3igbr2NcLhGX5njcQf7tqo6wJrmAP/WP8YHdIxLvAqrfWwAAAAASUVORK5CYII=) no-repeat;
-	background-size: 100%;
-}
-
-.geom-icon.geom-rug {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAAAAAAfl4auAAAArElEQVRIx+2WsQ2AIBRE/x4MwxDUdszADpTuIWs4AAM4hIWthiOhVi7RGP4V/IYXAgfHl5OQULCF5g/g7/b8U9hAoQ/20KKnfRc+oE64auqDI7SqVXfhDO2MVa4PTtCmVr1yYJRV1CUZ0SoqhqgApKJ3RKuoz51qK7SJG6vfnuviod61CemwO+T55hCua330S2jzG2wtivFlPCSWkiWVkiSXEgXP3ps2X+GH8AU8+GV4A9XwagAAAABJRU5ErkJggg==) no-repeat;
-  background-size: 100%;
-}
-
-.geom-icon.geom-smooth {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAAAAAAfl4auAAABN0lEQVRIx+3WIZbCMBCA4bkNbwWrOMBiOQYITB93ADMWjY6md2APgY1HVwOdNslkMu0jWbcvcRS+95fmMQGef1hQccUVV0y47YrtDfB8L7UIiFgWvyHhovjbDrgg3luEZtCZcbIIy81pMm7N5fcxaQ9fcNosJ+LW0GXFj/bw/s6NGh+p5p2lB6bEOZXe2/FpN99RPKHcB+u2iscZ3W+P0jOLcD+jiAe6Wq0Xa+GZRXh2Vxn3dI943KbeWex/klp8oLR6/8O8t4TTOKPDG7vgg8VxGERxSSPPrMM8rlHvF8xiGEM+Hqix7mLw/BWbYV0bf9BYdkfqigYg7xCVF+dwiHs6G5ejlzqczsWTud21kk7HPx36StzYj08MbS8yjpt0L3LOqmQv8g46sReZp2S8F/VvRcX/Fb8AvjtIxBxZPRIAAAAASUVORK5CYII=) no-repeat;
-  background-size: 100%;
-}
-
-.geom-icon.geom-histogram {
-	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAABL1BMVEX///////////////////9fX19gYGBlZWVmZmZnZ2dpaWlra2tsbGxtbW1ubm5wcHBxcXFzc3N0dHR1dXV2dnZ3d3d4eHh5eXl6enp7e3t8fHx9fX1+fn5/f3+AgICBgYGCgoKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Pj4+QkJCRkZGSkpKTk5OUlJSVlZWWlpaXl5eZmZmampqbm5ucnJyfn5+kpKSmpqanp6eoqKipqamqqqqrq6usrKytra2urq6vr6+wsLCxsbGysrKzs7O0tLS1tbW2tra3t7e4uLi5ubm6urq8vLy+vr6/v7/Hx8fJycnLy8vMzMzOzs7Q0NDn5+fo6Ojv7+/39/f4+Pj5+fn6+vr7+/v8/Pz9/f3+/v7////QzpMQAAAABXRSTlNrbXHD1NGf/xQAAAGRSURBVHja7dZZT8JAFIZh9w1UrAoWXAoMlootVARZBDrTKYILdd9ZRP//b/BMTITEmMA0Bo18F+/FnDwJF1x0ZOyNf0M8xEM8xP8XjzrBE07w96eH6gns+KkHfF+zbbt21XU69enxuC7c9IAlRVVVbbXeOdlxSoil3PaAYwVCiImeu7BKDMOUe8E7ecMwcHhgGL10Thd9YiJe338upfWHqWsLIRSdFCMIyTN6f9gUCpTS6lrWorQSTPSJl3JQy5vB8Cs2/zS+c4JrD7DHJg+mkdmQJIU8l3xYqVB6pJ3x4W0K77u1X4dfntlkLtyOSEHYVIkHtyTMtlDkwiGD7UfxK4wTx2eVaDQqnXNhLWAWiyU9z4fXLcPAB9O7sVhsu8yF0wI+PCyk9/jwCms25QRnvvxJ3CUI9eSg5dUMwdjaSJhQFLHgXQuUMSbpZdbczH4ymdQxw205xDYXhIRdW1A0HwhDPT5WQUDw7l1k9btZN6f9oih6VcDjb+06W+ujDdZmd5usje626g3YK+CRQX0NvQMy5rszYmQiFAAAAABJRU5ErkJggg==) no-repeat;
-	background-size: 100%;
-}
-
 .position > span[data-value="dodge"] {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAAIVBMVEVUbzFnd1FneFFsLV12Tmx6gHF6gXGAcHzR0dHS0tL///8QD+rpAAAAUUlEQVR4Ae3VQQqAMAxE0bYmNvH+B9YDpDAgiIX/t8NbT7teBAaDwWDwDjgWKTinlc1QsB1lBgZ/gWORgtN7mYeCRyvrYDD4X1g4ujxHmT/rDXV7aBwduLX3AAAAAElFTkSuQmCC) no-repeat;
 	background-size: 100%;

@@ -44,12 +44,12 @@ save_plot(ribbon)
 
 # __ geom_blank ----
 
-a <- ggplot(ribbon_data, aes(x, ymin)) +
-  geom_blank()
-
-blank <- theme_serenity(a + theme_layer)
-
-save_plot(blank)
+# a <- ggplot(ribbon_data, aes(x, ymin)) +
+#   geom_blank()
+#
+# blank <- theme_serenity(a + theme_layer)
+#
+# save_plot(blank)
 
 # __ geom_curve ----
 
@@ -245,6 +245,8 @@ save_plot(qq)
 
 
 ## 2.2 Discrete ====
+
+# __ geom_bar ----
 
 bar_data <- data.frame(
   x = c(rep(2, 2), rep(4, 4), rep(6, 6), rep(8, 8))
@@ -518,3 +520,17 @@ a <- ggplot(error_data, aes(x, y)) +
 pointrange <- theme_serenity(a + theme_layer)
 
 save_plot(pointrange)
+
+## A. Create icon css file ====
+
+fileConn <- file(here::here("inst", "www", "css", "geom_icons.css"))
+
+icons <- list.files(here::here("inst", "www", "img"), ".svg", full.names = TRUE)
+css <- sapply(icons, function(x) {
+  geom <- paste(strsplit(strsplit(strsplit(x, "/")[[1]][length(strsplit(x, "/")[[1]])], ".svg")[[1]], "_")[[1]], collapse = "-")
+  encoding <- htmltools::urlEncodePath(readChar(x, file.info(x)$size))
+  paste0('.geom-icon.', geom, ' {\n  background-image: url("data:image/svg+xml,', encoding, '");\n  background-size: 100%;\n}\n')
+}, USE.NAMES = FALSE)
+
+writeLines(css, fileConn)
+close(fileConn)
