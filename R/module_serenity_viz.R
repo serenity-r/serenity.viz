@@ -50,60 +50,18 @@ serenityVizServer <- function(input, output, session, dataset) {
     attr(dataset, "df_name") <- deparse(substitute(dataset))
   }
 
-  # Server code for layer dropzones
-  dndselectr::dropZoneServer(session, "layers", layerUI)
-  dndselectr::dropZoneServer(session, "base-layer", layerUI)
-
-  # This stores returned reactives from layer modules
-  layer_modules <- reactiveValues()
-
   # Store log for warnings
   ggplot2_log <- reactiveVal("")
 
   output$luminobox <- renderLuminophor({
     luminophor() %>%
-      addWidget(id = session$ns("widget-geoms-and-layers"),
-                ui = tagList(
-                  widgetHeader(
-                    div(
-                      style = "display: flex; flex-direction: row; justify-content: flex-end;",
-                      actionButton(
-                        inputId = session$ns("add-layer-button"),
-                        label = "Add Layer",
-                        icon = icon("plus"),
-                        style = "padding: 0; display: none;",
-                        class = "add-layer"
-                      ),
-                      actionButton(
-                        inputId = session$ns("remove-layer"),
-                        label = "",
-                        icon = icon("minus"),
-                        style = "border: transparent; padding: 0;"
-                      ),
-                      prettyToggle(
-                        inputId = session$ns("layer-chooser"),
-                        label_on = "",
-                        label_off = "",
-                        status_on = "default",
-                        status_off = "default",
-                        outline = TRUE,
-                        plain = TRUE,
-                        icon_on = icon("times"),
-                        icon_off = icon("plus"),
-                        inline = TRUE
-                      )
-                    )
-                  ),
-                  widgetBody(
-                    class = "widget-geoms-and-layers",
-                    uiOutput(session$ns("widget-layers-body"))
-                  )
-                ),
+      addWidget(id = session$ns("widget-layers"),
+                ui = layersUI(session$ns("layers")),
                 title = "Layers",
                 icon = icon("layer-group"),
                 closable = FALSE) %>%
       addWidget(id = session$ns('widget-ggplot'),
-                refwidgetID = session$ns('widget-geoms-and-layers'),
+                refwidgetID = session$ns('widget-layers'),
                 insertmode = "split-left",
                 relsize = 0.66,
                 ui = tagList(
@@ -167,87 +125,12 @@ serenityVizServer <- function(input, output, session, dataset) {
                 title = "Messages",
                 icon = icon("info")) %>%
       addWidget(id = session$ns("widget-labels"),
-                refwidgetID = session$ns('widget-geoms-and-layers'),
+                refwidgetID = session$ns('widget-layers'),
                 insertmode = "tab-after",
                 ui = labelsUI(session$ns("labels")),
                 title = "Labels",
                 icon = icon("tags"),
                 closable = FALSE)
-  })
-
-  output$`widget-layers-body` <- renderUI({
-    tagList(
-      div(
-        class = "layers-wrapper",
-        div(
-          class = "base-layer",
-          isolate({ # See Example 22 in dndselectr
-            dndselectr::dropZoneInput(
-              session$ns("base_layer"),
-              class = "layers",
-              choices = list(
-                'geom-blank' = layerUI("geom-blank")
-              ),
-              server = layerUI,
-              presets = list(values = "geom-blank-ds-1",
-                             locked = "geom-blank-ds-1",
-                             freeze = "geom-blank-ds-1"),
-              multivalued = TRUE,
-              selectable = TRUE
-            )
-          })
-        ),
-        dndselectr::dropZoneInput(
-          session$ns("layers"),
-          class = "layers",
-          choices = sapply(geoms, function(geom) { layerUI(geom) }, simplify = FALSE, USE.NAMES = TRUE),
-          server = layerUI,
-          placeholder = "Add a layer",
-          multivalued = TRUE,
-          selectable = TRUE,
-          selectOnDrop = TRUE,
-          removeOnSpill = TRUE
-        )
-      ),
-      div(
-        class = "layer-chooser-wrapper",
-        style = "display: none;",
-        dndselectr::dropZoneInput(session$ns("ds-layer-chooser"), choices = sapply(geoms, function(geom) { layerChoiceUI(geom) }, simplify = FALSE),
-                                      class = "layer-chooser",
-                                      flex = TRUE,
-                                      selectable = TRUE,
-                                      direction = "horizontal",
-                                      presets = list(values = geoms,
-                                                     locked = geoms)
-        )
-      )
-    )
-  })
-
-  observeEvent(input$`layer-chooser`, {
-    dndselectr::unselect(session, "ds-layer-chooser")
-    if (input$`layer-chooser`) {
-      # Toggle header views
-      shinyjs::js$myhide(paste0('#', session$ns("remove-layer")))
-
-      # Toggle body views
-      shinyjs::js$myhide('.layers-wrapper')
-      shinyjs::js$myshow('.layer-chooser-wrapper')
-    } else {
-      # Toggle header views
-      shinyjs::js$myshow(paste0('#', session$ns("remove-layer")))
-      shinyjs::js$myhide(paste0('#', session$ns("add-layer-button")))
-
-      # Toggle body views
-      shinyjs::js$myshow('.layers-wrapper')
-      shinyjs::js$myhide('.layer-chooser-wrapper')
-    }
-  })
-
-  observeEvent(input$`ds-layer-chooser_selected`, {
-    if (!is.null(input$`ds-layer-chooser_selected`)) {
-      shinyjs::js$myshow(paste0('#', session$ns("add-layer-button")))
-    }
   })
 
   output$`widget-ggplot-header` <- renderUI({
@@ -267,32 +150,6 @@ serenityVizServer <- function(input, output, session, dataset) {
     )
   })
 
-  # The next two observe events handle selection of layers
-  observeEvent(input$base_layer_selected, {
-    if (!is.null(input$layers_selected)) {
-      dndselectr::unselect(session, "layers")
-    }
-  }, ignoreInit = TRUE)
-
-  observeEvent(input$layers_selected, {
-    if (!is.null(input$base_layer_selected) && !is.null(input$layers_selected)) {
-      dndselectr::unselect(session, "base_layer")
-    } else if (is.null(input$base_layer_selected) && is.null(input$layers_selected)) {
-      dndselectr::select(session, "geom-blank-ds-1", "base_layer")
-    }
-  }, ignoreNULL = FALSE, ignoreInit = TRUE)
-
-  observeEvent(input$`add-layer-button`, {
-    shinyWidgets::updatePrettyToggle(session, "layer-chooser", value = FALSE)
-    dndselectr::appendToDropzone(session, input$`ds-layer-chooser_selected`, "layers")
-  })
-
-  observeEvent(input$`remove-layer`, {
-    if (!is.null(input$layers_selected)) {
-      dndselectr::removeSelected(session, "layers")
-    }
-  })
-
   observeEvent(input$maximize, {
     if (input$maximize) {
       luminophor::luminophorProxy(session$ns('luminobox')) %>%
@@ -308,69 +165,28 @@ serenityVizServer <- function(input, output, session, dataset) {
                                id = attributes(dataset)$df_name,
                                dataset = dataset)
 
+  # Layers module
+  layers <- callModule(module = layersServer,
+                       id = 'layers',
+                       dataset = dataset)
+
   # Aesthetics UI
   output$aesthetics <- renderUI({
-    req(selected_layer())
-    layerAestheticsUI(id = paste0(session$ns(selected_layer()),'-aesthetics'))
+    req(layers$selected_layer())
+    layerAestheticsUI(id = paste0(session$ns(paste0('layers-', layers$selected_layer())),'-aesthetics'))
   })
-
-  all_layers <- eventReactive(input$layers, {
-    c(input$base_layer, input$layers)
-  }, ignoreNULL = FALSE, ignoreInit = TRUE)
-
-  selected_layer <- eventReactive(input$layers_selected, {
-    input$layers_selected %||% "geom-blank-ds-1"
-  }, ignoreNULL = FALSE, ignoreInit = TRUE)
-
-  # Get the names of the visible layers
-  visible_layers <- eventReactive(paste(all_layers(), input$layers_invisible), {
-    setdiff(all_layers(), input$layers_invisible)
-  }, ignoreInit = TRUE)
 
   # Handle stat changes
   observe({
-    req(selected_layer())
-    stat <- layer_modules[[selected_layer()]]$stat()
+    req(layers$selected_stat())
     dndselectr::updateDragZone(session,
                                id = paste(session$ns("computed-vars"), "computeddatazone", sep = "-"),
-                               choices = dataInputChoices(stat_computed_vars[[stat]]))
-    if (is.null(stat_computed_vars[[stat]])) {
+                               choices = dataInputChoices(stat_computed_vars[[layers$selected_stat()]]))
+    if (is.null(stat_computed_vars[[layers$selected_stat()]])) {
       shinyjs::js$removeClass("hidden", "em.none-computed")
     } else {
       shinyjs::js$addClass("hidden", "em.none-computed")
     }
-  })
-
-  # Preps geom_blank dropzone inputs for layer modules
-  geom_blank_inputs_to_reactives <- function() {
-    geom_blank_inputs <- as.list(paste0('geom-blank-ds-1-aesthetics-', gg_aesthetics[["geom-blank"]], '-mapping'))
-    names(geom_blank_inputs) <- gg_aesthetics[["geom-blank"]]
-    return(geom_blank_inputs %>% purrr::map(~ reactive({ input[[.]] })))
-  }
-
-  # Update layer module output reactives - create only once!
-  observeEvent(all_layers(), {
-    # Adding new layers
-    purrr::map(setdiff(all_layers(), names(layer_modules)), ~ {
-      layer_modules[[.]] <- callModule(module = layerServer, id = .,
-                                       selected_layer,
-                                       geom_blank_inputs_to_reactives(),
-                                       dataset = dataset,
-                                       ggbase = switch(as.character(. != "geom-blank-ds-1"),
-                                                       "TRUE" = layer_modules[["geom-blank-ds-1"]]$code,
-                                                       "FALSE" = reactive({ NULL }))
-      )
-    })
-
-    # Remove old layers
-    purrr::map(setdiff(names(layer_modules), all_layers()), ~ { layer_modules[[.]] <- NULL })
-  }, priority = 1) # Needs to happen before layer_code reactive
-
-  # Get layer code
-  layer_code <- reactive({
-    req(visible_layers(),
-        purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .$code()))
-    paste(purrr::map(reactiveValuesToList(layer_modules)[visible_layers()], ~ .$code()), collapse = "+\n")
   })
 
   # _ Plot ====
@@ -435,7 +251,7 @@ serenityVizServer <- function(input, output, session, dataset) {
   outputOptions(output, "log", suspendWhenHidden = FALSE)
 
   ggcode <- reactive({
-    req(layer_code())
+    req(layers$code())
     code <- attributes(dataset)$df_name
     if (isTruthy(subsetted_data())) {
       code <- paste(code,
@@ -444,10 +260,10 @@ serenityVizServer <- function(input, output, session, dataset) {
       )
     }
 
-    if (isTruthy(layer_code())) {
+    if (isTruthy(layers$code())) {
       code <- paste(code,
                     "%>%\n",
-                    layer_code()
+                    layers$code()
       )
     }
 
@@ -515,18 +331,35 @@ revList <- function(x) {
 
 resourcePath <- system.file("www", package = "serenity.viz")
 
-geoms <- c("geom-bar", "geom-histogram", "geom-point", "geom-line", "geom-dotplot", "geom-boxplot", "geom-violin", "geom-rug", "geom-smooth")
-plot_names <- list(
-  "geom-bar" = "Bar Plot",
-  "geom-histogram" = "Histogram",
-  "geom-point" = "Scatter Plot",
-  "geom-line" = "Line Plot",
-  "geom-dotplot" = "Dot Plot",
-  "geom-boxplot" = "Box Plot",
-  "geom-violin" = "Violin Plot",
-  "geom-rug" = "Rug Plot",
-  "geom-smooth" = "Smoother"
+plot_names_one <- list(
+  "Discrete" = list(
+    "geom-bar" = "Bar Plot"
+  ),
+  "Continuous" = list(
+    "geom-histogram" = "Histogram",
+    "geom-dotplot" = "Dot Plot"
+  )
 )
+
+plot_names_two <- list(
+  "Continuous X, Continuous Y" = list(
+    "geom-point" = "Scatter Plot",
+    "geom-smooth" = "Smoother",
+    "geom-rug" = "Rug Plot"
+  ),
+  "Discrete X, Continuous Y" = list(
+    "geom-boxplot" = "Box Plot",
+    "geom-violin" = "Violin Plot"
+  ),
+  "Continuous Function" = list(
+    "geom-line" = "Line Plot"
+  )
+)
+
+plot_names <- unlist(c(plot_names_one, plot_names_two), recursive = FALSE)
+names(plot_names) <- unlist(lapply(c(plot_names_one, plot_names_two), function(x) { revList(x) }), recursive = FALSE)
+
+geoms <- names(plot_names)
 
 stat_names <- list(
   "1D distributions" = list(
@@ -676,12 +509,6 @@ gg_aesthetics <- reorderElements(
     "geom-smooth" = ggplot2::GeomSmooth$aesthetics()
   )
 )
-
-idsToGeoms <- function(id) {
-  switch(!is.null(id),
-         sapply(id, FUN = function(x) { paste(stringr::str_split(x, '-')[[1]][1:2], collapse="-") }, simplify = "array"),
-         NULL)
-}
 
 terminal_dark_theme <- function() {
   mystyle <- prettycode::default_style()

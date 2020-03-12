@@ -1,4 +1,4 @@
-#' UI for layer module
+#' Module UI for individual layer
 #'
 #' @param id  Layer ID
 #' @param server  Render Shiny reactive elements if TRUE
@@ -9,7 +9,10 @@
 layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
   # Create a namespace function using the provided id
   ns <- NS(session$ns(id))
-  geom_type <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="-")
+
+  ns_levels <- stringr::str_split(ns(''), '-')[[1]]
+  geom_ns_ind <- which(ns_levels == "geom")
+  geom_type <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
 
@@ -136,8 +139,10 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   # _ Initialization and Setup ====
 
   # _ _ Get layer, geom, and aesthetics information ====
-  layer_id <- paste(stringr::str_split(gsub("-$", "", ns('')), '-')[[1]][2:5], collapse="-")
-  geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
+  ns_levels <- stringr::str_split(ns(''), '-')[[1]]
+  geom_ns_ind <- which(ns_levels == "geom")
+  layer_id <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+3)], collapse="-")
+  geom_type <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
 

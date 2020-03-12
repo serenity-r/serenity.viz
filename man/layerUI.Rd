@@ -2,7 +2,7 @@
 % Please edit documentation in R/module_layer.R
 \name{layerUI}
 \alias{layerUI}
-\title{UI for layer module}
+\title{Module UI for individual layer}
 \usage{
 layerUI(id, server = FALSE, session = getDefaultReactiveDomain())
 }
@@ -17,5 +17,5 @@ layerUI(id, server = FALSE, session = getDefaultReactiveDomain())
 UI for layer
 }
 \description{
-UI for layer module
+Module UI for individual layer
 }

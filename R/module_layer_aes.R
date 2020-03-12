@@ -41,12 +41,11 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                            inherit.aes, default_geom_aes, default_stat_aes, required,
                            dataset, computed_vars) {
   # Get aesthetic from namespace
-  aesthetic <- stringr::str_split(session$ns(''), '-')[[1]] %>% { .[length(.)-1] }
-  layer <- paste(stringr::str_split(session$ns(''), '-')[[1]][2:3], collapse="-")
+  ns_levels <- stringr::str_split(session$ns(''), '-')[[1]]
+  geom_ns_ind <- which(ns_levels == "geom")
+  aesthetic <- ns_levels %>% { .[length(.)-1] }
+  layer <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="-")
   entangled <- FALSE
-
-  # cat(paste("Default geom aesthetic for", aesthetic, "=", default_geom_aes %||% "NULL", "\n"))
-  # observe({ cat(paste("Default stat aesthetic for", aesthetic, "=", quo_name(default_stat_aes()), "\n")) })
 
   customized <- reactiveValues(mapping = "", values = "")
 

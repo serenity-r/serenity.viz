@@ -7,7 +7,9 @@
 layerAestheticsUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
-  geom_type <- paste(stringr::str_split(ns(''), '-')[[1]][2:3], collapse="-")
+  ns_levels <- stringr::str_split(ns(''), '-')[[1]]
+  geom_ns_ind <- which(ns_levels == "geom")
+  geom_type <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="-")
 
   tagList(
       widgetHeader(
@@ -40,10 +42,11 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
   ns <- session$ns
 
   # Get layer, geom, and aesthetics information
-  layer_id <- paste(stringr::str_split(gsub("-$", "", ns('')), '-')[[1]][2:5], collapse="-")
-  geom_type <- paste(stringr::str_split(layer_id, '-')[[1]][1:2], collapse="-")
+  ns_levels <- stringr::str_split(ns(''), '-')[[1]]
+  geom_ns_ind <- which(ns_levels == "geom")
+  layer_id <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+3)], collapse="-")
+  geom_type <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="-")
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
-  # stat_proto <- reactive({ eval(parse(text=paste0("stat_", layer_stat(), "()"))) })
   stat_proto <- reactive({ get(paste0("Stat", snakeToCamel(layer_stat(), capFirst = TRUE))) })
   geom_aesthetics <- gg_aesthetics[[geom_type]]
 
@@ -91,15 +94,16 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
   })
 
   # _ load variable subset modules ====
-  geom_aes_args <- purrr::map(geom_aesthetics, ~ callModule(module = layerAesServer, id = .,
-                                                            reactive({ triggerAesUpdate$depend() }),
-                                                            base_layer_mappings[[.]],
-                                                            inherit.aes = inherit.aes,
-                                                            default_geom_aes = geom_proto$geom$default_aes[[.]],
-                                                            default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
-                                                            required = reactive({ . %in% c(stat_proto()$required_aes, geom_proto$geom$required_aes) }),
-                                                            dataset = dataset,
-                                                            computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
+  geom_aes_args <- purrr::map(geom_aesthetics, ~ {
+    callModule(module = layerAesServer, id = .,
+               reactive({ triggerAesUpdate$depend() }),
+               base_layer_mappings[[.]],
+               inherit.aes = inherit.aes,
+               default_geom_aes = geom_proto$geom$default_aes[[.]],
+               default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
+               required = reactive({ . %in% c(stat_proto()$required_aes, geom_proto$geom$required_aes) }),
+               dataset = dataset,
+               computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }))})
 
   stat_aes_args <- list()
   observe({
