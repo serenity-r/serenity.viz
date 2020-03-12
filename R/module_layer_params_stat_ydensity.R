@@ -24,7 +24,7 @@ layerParamsStatYdensityServer <- function(input, output, session, base_data) {
           input$kernel,
           input$adjust,
           input$bw_algorithm,
-          input$bs_numeric,
+          input$bw_numeric,
           layer_data$bw
     )
   })
@@ -85,7 +85,10 @@ layerParamsStatYdensityServer <- function(input, output, session, base_data) {
                                   numericInput(session$ns('bw_numeric'),
                                                label = '',
                                                value = input[['bw_numeric']] %||% default_args[['bw_numeric']],
-                                  )
+                                  ) %>% {
+                                    .$attribs$style <- switch(!(input[['bw_override']] %||% default_args[['bw_override']]), "display: none;")
+                                    .
+                                  }
                                 )
                               ),
                               sliderInput(session$ns('adjust'),
