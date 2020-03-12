@@ -12,6 +12,7 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
   default_args <- reactiveValues("notch" = FALSE,    # Show notches?
                                  "notchwidth" = 0.5, # Width of notches
                                  "varwidth" = FALSE, # Variable width boxes (weight by n)
+                                 "width" = 0.75, # Not actually shown as a parameter
                                  "outlier.show" = TRUE,
                                  "outlier.colour" = NA_defaults[["colour"]],
                                  "outlier.fill" = NA_defaults[["fill"]],
@@ -52,31 +53,57 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
   output$params <- renderUI({
     isolate({
       tagList(
+        h5('Show notches?'),
         div(
           class = "switch-numeric-input",
           div(
             class = "SNI-switch",
             shinyWidgets::switchInput(session$ns('notch'),
-                                      label = 'Notches?',
+                                      label = '',
                                       value = input[['notch']] %||% default_args[['notch']],
                                       onLabel = "Yes",
                                       offLabel = "No"
             )
           ),
           div(
-            class = paste0("SNI-numeric", ifelse(default_args[['notch']], "", " hidden")),
+            class = "SNI-numeric",
             sliderInput(session$ns('notchwidth'),
                         label = 'Width',
                         value = input[['notchwidth']] %||% default_args[['notchwidth']],
                         min = 0,
                         max = 1,
                         step = 0.05
-            )
+            ) %>% {
+              .$attribs$style <- switch(input[['notch']] %||% default_args[['notch']], "display: none;")
+              .
+            }
           )
         ),
-        checkboxInput(session$ns('varwidth'),
-                      label = "Variable widths?",
-                      value = input[['varwidth']] %||% default_args[['varwidth']]
+        h5('Use variable widths?'),
+        div(
+          class = "switch-numeric-input",
+          div(
+            class = "SNI-switch",
+            shinyWidgets::switchInput(session$ns('varwidth'),
+                                      label = '',
+                                      value = input[['varwidth']] %||% default_args[['varwidth']],
+                                      onLabel = "Yes",
+                                      offLabel = "No"
+            )
+          ),
+          div(
+            class = "SNI-numeric",
+            sliderInput(session$ns('width'),
+                        label = 'Width',
+                        value = input[['width']] %||% default_args[['width']],
+                        min = 0,
+                        max = 1,
+                        step = 0.05
+            ) %>% {
+              .$attribs$style <- switch(input[['varwidth']] %||% default_args[['varwidth']], "display: none;")
+              .
+            }
+          )
         ),
         shinyWidgets::switchInput(session$ns('outlier.show'),
                                   label = 'Show outliers?',
@@ -112,9 +139,17 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
 
   observeEvent(input$notch, {
     if (input$notch) {
-      shinyjs::js$removeClass("hidden", paste0('#', session$ns("params"), ' .SNI-numeric'))
+      shinyjs::show("notchwidth")
     } else {
-      shinyjs::js$addClass("hidden", paste0('#', session$ns("params"), ' .SNI-numeric'))
+      shinyjs::hide("notchwidth")
+    }
+  })
+
+  observeEvent(input$varwidth, {
+    if (input$varwidth) {
+      shinyjs::hide("width")
+    } else {
+      shinyjs::show("width")
     }
   })
 
@@ -165,6 +200,9 @@ layerParamsGeomBoxplotServer <- function(input, output, session, base_data) {
     req(!is.null(input$outlier.show))
 
     default_args_list <- reactiveValuesToList(default_args)
+    default_args_list <- default_args_list[setdiff(names(default_args_list),
+                                           c(switch(!input$notch, "notchwidth"),
+                                             switch(input$varwidth, "width")))]
     pos_outliers <- grepl("outlier", names(default_args_list))
 
     # First, no outliers
