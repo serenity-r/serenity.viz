@@ -75,7 +75,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
     reorderElements(c(geom_aesthetics, stat_aesthetics()),
                     orderBy = unique(c(
                       reorderElements(c(geom_proto$geom$required_aes,
-                                        stat_proto()$required_aes),
+                                        stat_proto()$required_aes,
+                                        names(stat_additional_defaults[[stringr::str_split(geom_type, "-")[[1]][2]]])),
                                       orderBy = unique(unlist(gg_aesthetics))),
                       unlist(gg_aesthetics))
                     ))

@@ -432,6 +432,7 @@ stat_computed_vars <- list(
 
 computed_word <- ifelse(packageVersion("ggplot2") < "3.3.0", "stat", "after_stat")
 stat_additional_defaults <- list(
+  "smooth" = c("ymin", "ymax"),
   "boxplot" = c("x", "ymin", "ymax", "lower", "middle", "upper")
 )
 stat_additional_defaults <- lapply(stat_additional_defaults,
