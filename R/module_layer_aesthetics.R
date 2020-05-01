@@ -49,6 +49,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   stat_proto <- reactive({ get(paste0("Stat", snakeToCamel(layer_stat(), capFirst = TRUE))) })
   geom_aesthetics <- gg_aesthetics[[geom_type]]
+  geom_required_aesthetics <- (stringr::str_split(geom_proto$geom$required_aes, "[|]", simplify=TRUE) %T||% NULL)[,1]
 
   # Create trigger for this layers update
   triggerAesUpdate <- makeReactiveTrigger()
@@ -67,6 +68,12 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
     )
   })
 
+  # Refactor: This will become more involved when implementing true ggplot2 3.0.0
+  #   support of axis choice
+  stat_required_aesthetics <- reactive({
+    (stringr::str_split(stat_proto()$required_aes, "[|]", simplify=TRUE) %T||% NULL)[,1]
+  })
+
   # Possible refactor:  Probably more efficient to just use insertUI and removeUI for
   #  each aesthetic, rather than rerendering all aeasthetics on every stat change.
   #  Also, the "side-effect" in this reactive is making me twitch.
@@ -74,8 +81,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
     triggerAesUpdate$trigger() # Make sure individual aesthetics update as well (probably bad form as side effect)
     reorderElements(c(geom_aesthetics, stat_aesthetics()),
                     orderBy = unique(c(
-                      reorderElements(c(geom_proto$geom$required_aes,
-                                        stat_proto()$required_aes,
+                      reorderElements(c(geom_required_aesthetics,
+                                        stat_required_aesthetics(),
                                         names(stat_additional_defaults[[stringr::str_split(geom_type, "-")[[1]][2]]])),
                                       orderBy = unique(unlist(gg_aesthetics))),
                       unlist(gg_aesthetics))
@@ -102,7 +109,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
                inherit.aes = inherit.aes,
                default_geom_aes = geom_proto$geom$default_aes[[.]],
                default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
-               required = reactive({ . %in% c(stat_proto()$required_aes, geom_proto$geom$required_aes) }),
+               required = reactive({ . %in% c(stat_required_aesthetics(), geom_required_aesthetics) }),
                dataset = dataset,
                computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }))})
 
@@ -115,7 +122,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
                                                                  inherit.aes = inherit.aes,
                                                                  default_geom_aes = geom_proto$geom$default_aes[[.]],
                                                                  default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
-                                                                 required = reactive({ . %in% c(stat_proto()$required_aes, geom_proto$geom$required_aes) }),
+                                                                 required = reactive({ . %in% c(stat_required_aesthetics(), geom_required_aesthetics) }),
                                                                  dataset = dataset,
                                                                  computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
   })
