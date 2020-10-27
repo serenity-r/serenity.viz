@@ -25,6 +25,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
     tags$head(includeCSS(file.path(resourcePath, "css", "app.css"))),
     tags$head(includeCSS(file.path(resourcePath, "css", "geom_icons.css"))),
     tags$head(includeScript(file.path(resourcePath, "js", "serenity_viz.js"))),
+    tags$head(includeScript(file.path(resourcePath, "js", "shinyjs-funcs.js"))),
     switch(titlebar,
            miniUI::gadgetTitleBar("Serenity Viz",
                                   left = miniUI::miniTitleBarCancelButton(ns("cancel")),
