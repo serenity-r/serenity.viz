@@ -4,8 +4,12 @@
 \alias{dataInputChoices}
 \title{UI for data choices, either for dropzone or picker}
 \usage{
-dataInputChoices(vars = NULL, zone = "varzone", inherited = NULL,
-  session = getDefaultReactiveDomain())
+dataInputChoices(
+  vars = NULL,
+  zone = "varzone",
+  inherited = NULL,
+  session = getDefaultReactiveDomain()
+)
 }
 \arguments{
 \item{vars}{Dataset, if not computed; otherwise, element of stat_computed_vars}

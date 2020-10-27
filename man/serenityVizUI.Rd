@@ -4,8 +4,7 @@
 \alias{serenityVizUI}
 \title{UI for Serenity Viz module}
 \usage{
-serenityVizUI(id, dataset, titlebar = FALSE, showcode = TRUE,
-  height = NULL)
+serenityVizUI(id, dataset, titlebar = FALSE, showcode = TRUE, height = NULL)
 }
 \arguments{
 \item{id}{Serenity Viz module ID}

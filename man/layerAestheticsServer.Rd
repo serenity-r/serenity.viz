@@ -4,8 +4,16 @@
 \alias{layerAestheticsServer}
 \title{Server for layer aesthetics module}
 \usage{
-layerAestheticsServer(input, output, session, layer_selected,
-  base_layer_mappings, dataset, inherit.aes, layer_stat)
+layerAestheticsServer(
+  input,
+  output,
+  session,
+  layer_selected,
+  base_layer_mappings,
+  dataset,
+  inherit.aes,
+  layer_stat
+)
 }
 \arguments{
 \item{input}{Shiny inputs}

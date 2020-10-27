@@ -4,9 +4,19 @@
 \alias{layerAesServer}
 \title{Server for layer aesthetic submodule}
 \usage{
-layerAesServer(input, output, session, aesUpdateDependency,
-  base_layer_mapping, inherit.aes, default_geom_aes, default_stat_aes,
-  required, dataset, computed_vars)
+layerAesServer(
+  input,
+  output,
+  session,
+  aesUpdateDependency,
+  base_layer_mapping,
+  inherit.aes,
+  default_geom_aes,
+  default_stat_aes,
+  required,
+  dataset,
+  computed_vars
+)
 }
 \arguments{
 \item{input}{Shiny inputs}

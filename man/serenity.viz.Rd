@@ -3,18 +3,12 @@
 \docType{package}
 \name{serenity.viz}
 \alias{serenity.viz}
-\alias{serenity.viz-package}
 \title{Serenity Viz}
 \usage{
 serenity.viz(dataset = NULL)
 }
 \arguments{
 \item{dataset}{Passed in dataset for visualization}
-}
-\description{
-Serenity Viz
-
-Launch Serenity Viz in the default browser.
 }
 \examples{
 \dontrun{

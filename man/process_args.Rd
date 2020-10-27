@@ -4,8 +4,13 @@
 \alias{process_args}
 \title{Process arguments}
 \usage{
-process_args(default_args, input, base_data, modify_args = NULL,
-  allowNULL = NULL)
+process_args(
+  default_args,
+  input,
+  base_data,
+  modify_args = NULL,
+  allowNULL = NULL
+)
 }
 \arguments{
 \item{default_args}{List of default arguments}

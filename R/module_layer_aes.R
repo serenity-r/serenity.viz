@@ -516,7 +516,7 @@ create_aes_empty <- function(content='Not set', class=NULL) {
 # http://www.melissaclarkson.com/resources/R_guides/documents/colors_Ver2.pdf
 crgb <- col2rgb(cc <- colors())
 colnames(crgb) <- cc
-colours_tbl <- dplyr::tbl_df(t(crgb)) %>%
+colours_tbl <- dplyr::as_tibble(t(crgb)) %>%
   dplyr::mutate(name = cc,
                 hex = rgb(red, green, blue, maxColorValue = 255)) %>%
   dplyr::select(name, hex, red, green, blue)

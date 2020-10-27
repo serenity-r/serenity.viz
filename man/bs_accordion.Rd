@@ -4,11 +4,10 @@
 \alias{bs_accordion}
 \title{Wrapper for bsplus::bs_accordion}
 \usage{
-bs_accordion(id, panel_type = "default", use_heading_link = TRUE,
-  class = NULL)
+bs_accordion(id, panel_type = "default", use_heading_link = TRUE, class = NULL)
 }
 \arguments{
-\item{id}{character, unique id for accordion \code{<div/>},
+\item{id}{character, unique id for accordion \verb{<div/>},
 also serves as root id for panels appended using \code{bs_append()}}
 
 \item{panel_type}{character, one of the standard Bootstrap types
