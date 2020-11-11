@@ -14,18 +14,19 @@
 serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height = NULL) {
   ns <- NS(id)
 
+  addResourcePath("js", file.path(resourcePath, "js")) # Not sure why this is needed for shinyJS
+
   miniUI::miniPage(
     style = switch(!is.null(height), paste("height:", height), height),
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(
-      script = file.path(resourcePath, "js", "shinyjs-funcs.js"),
+      script = "js/shinyjs-funcs.js",
       functions = c("close_window", "toggleClass", "addClass", "removeClass", "myshow", "myhide")
     ),
     bsplus::use_bs_tooltip(),
     tags$head(includeCSS(file.path(resourcePath, "css", "app.css"))),
     tags$head(includeCSS(file.path(resourcePath, "css", "geom_icons.css"))),
     tags$head(includeScript(file.path(resourcePath, "js", "serenity_viz.js"))),
-    tags$head(includeScript(file.path(resourcePath, "js", "shinyjs-funcs.js"))),
     switch(titlebar,
            miniUI::gadgetTitleBar("Serenity Viz",
                                   left = miniUI::miniTitleBarCancelButton(ns("cancel")),

@@ -10,6 +10,9 @@ serenity.viz(dataset = NULL)
 \arguments{
 \item{dataset}{Passed in dataset for visualization}
 }
+\description{
+A platform-independent browser-based interface to data science tools for the classroom.
+}
 \examples{
 \dontrun{
 serenity.viz::serenity.viz()

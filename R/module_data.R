@@ -20,6 +20,7 @@ dataUI <- function(id) {
 #' UI for computed data
 #'
 #' @param id  Data ID
+#' @param stat  Currently active stat
 #'
 #' @return UI for data
 #'

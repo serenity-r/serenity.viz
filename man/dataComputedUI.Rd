@@ -8,6 +8,8 @@ dataComputedUI(id, stat = "identity")
 }
 \arguments{
 \item{id}{Data ID}
+
+\item{stat}{Currently active stat}
 }
 \value{
 UI for data

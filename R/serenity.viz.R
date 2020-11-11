@@ -3,6 +3,8 @@
 #
 #' Serenity Viz
 #'
+#' A platform-independent browser-based interface to data science tools for the classroom.
+#'
 #' @name serenity.viz
 #' @docType package
 NULL
