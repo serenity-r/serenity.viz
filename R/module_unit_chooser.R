@@ -51,7 +51,7 @@ unitChooserServer <- function(input, output, session = getDefaultReactiveDomain(
   }, ignoreInit = TRUE)
 
   observeEvent(input$value, {
-    previous_unit <<- unit(input$value, input$unit)
+    previous_unit <<- grid::unit(input$value, input$unit)
   }, priority = 1)
 
   return(
@@ -59,17 +59,17 @@ unitChooserServer <- function(input, output, session = getDefaultReactiveDomain(
       req(input$value)
 
       isolate({
-        unit(input$value, input$unit)
+        grid::unit(input$value, input$unit)
       })
     })
   )
 }
 
 `==.unit` <- function (x, y) {
-  abs(as.numeric(x) - as.numeric(grid::convertUnit(y, attr(x, "unit")))) < .Machine$double.eps
+  abs(as.numeric(x) - as.numeric(grid::convertUnit(y, grid::unitType(x)))) < .Machine$double.eps
 }
 
 `!=.unit` <- function (x, y) {
-  abs(as.numeric(x) - as.numeric(grid::convertUnit(y, attr(x, "unit")))) >= .Machine$double.eps
+  abs(as.numeric(x) - as.numeric(grid::convertUnit(y, grid::unitType(x)))) >= .Machine$double.eps
 }
 

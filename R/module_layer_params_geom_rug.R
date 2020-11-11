@@ -112,7 +112,7 @@ layerParamsGeomRugServer <- function(input, output, session, base_data) {
 modify_geom_rug_args <- function(param, value, base_data) {
   return(
     switch(param,
-           "length" = paste0("unit(", as.numeric(value), ", '", attr(value, "unit"), "')"),
+           "length" = paste0("unit(", as.numeric(value), ", '", grid::unitType(value), "')"),
            value
     )
   )
