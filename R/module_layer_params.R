@@ -122,6 +122,20 @@ common_params_ui <- function(input, session) {
 }
 
 # Utils ----
+
+#' Filter out default values
+#'
+#' In general, return \code{value} (surrounded by double quotes) if
+#' \code{default} is not NA or \code{value} is not equal to \code{default}.
+#' Also converts Shiny inputs to ggplot2 parameter values, depending on
+#' \code{param}.
+#'
+#' @param param ggplot2 parameter
+#' @param default default of ggplot2 parameter
+#' @param value current value of ggplot2 parameter
+#'
+#' @return \code{value} or NULL
+#' @noRd
 filter_out_defaults <- function(param, default, value) {
   if (is.null(value)) {
     return(NULL)
@@ -162,6 +176,10 @@ filter_out_defaults <- function(param, default, value) {
 #'
 #' @return Comma separated string of function arguments, with defaults/NULLs
 #'   removed and modified if necessary.
+#' @examples
+#' process_args(list(sides = c("b", "t"), bins = 20), list(sides = c("b", "l"), bins = 25), NULL)
+#' process_args(list(arg1 = "a", bins = 20), list(arg1 = "a", bins = 25), NULL)
+#' @noRd
 process_args <- function(default_args, input, base_data, modify_args = NULL, allowNULL = NULL) {
   purrr::imap(default_args, ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
     dropNulls(allowNULL) %>%
