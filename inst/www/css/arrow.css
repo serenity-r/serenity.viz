@@ -1,0 +1,18 @@
+.endpoints {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: flex-start;
+}
+
+.endpoints div {
+  flex: 0 1 auto;
+}
+
+.endpoints label {
+  margin-right: 5px;
+}
+
+.arrow-length {
+  margin-top: -80px;
+}
