@@ -183,10 +183,10 @@ filter_out_defaults <- function(param, default, value) {
 process_args <- function(default_args, input, base_data, modify_args = NULL, allowNULL = NULL) {
   purrr::imap(default_args, ~ filter_out_defaults(.y, .x, input[[.y]])) %>%
     dropNulls(allowNULL) %>%
-    purrr::imap(~ ifelse(!is.null(modify_args),
-                         do.call(modify_args, list(param = .y, value = .x, base_data = base_data)),
-                         .x)) %>%
-    purrr::imap(~ paste(.y, "=", .x)) %>%
+    purrr::imap(~ switch(as.character(!is.null(modify_args)),
+                         "TRUE" = do.call(modify_args, list(param = .y, value = .x, base_data = base_data)),
+                         "FALSE" = .x)) %>%
+    purrr::imap(~ paste(.y, "=", as.character(.x))) %>%
     paste(., collapse = ", ")
 }
 

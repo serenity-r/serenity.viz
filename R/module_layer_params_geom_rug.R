@@ -8,7 +8,7 @@ layerParamsGeomRugUI <- function(id) {
 layerParamsGeomRugServer <- function(input, output, session, base_data) {
   # Reactive since sides defaults changes based on data
   default_args <- reactiveValues("sides" = c("b", "l"),
-                                 "length" = unit(0.03, 'npc'),
+                                 "length" = grid::unit(0.03, 'npc'),
                                  "outside" = FALSE)
 
   # Need to hijack sides input as shinyWidgets returns NULL instead
@@ -99,21 +99,11 @@ layerParamsGeomRugServer <- function(input, output, session, base_data) {
       processed_geom_params_code <- process_args(reactiveValuesToList(default_args),
                                                  c(reactiveValuesToList(input),
                                                    reactiveValuesToList(layer_data)),
-                                                 NULL,
-                                                 modify_geom_rug_args)
+                                                 NULL)
     })
 
     return(processed_geom_params_code)
   })
 
   return(geom_params_code)
-}
-
-modify_geom_rug_args <- function(param, value, base_data) {
-  return(
-    switch(param,
-           "length" = paste0("unit(", as.numeric(value), ", '", grid::unitType(value), "')"),
-           value
-    )
-  )
 }

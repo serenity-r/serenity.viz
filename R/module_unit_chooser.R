@@ -73,3 +73,6 @@ unitChooserServer <- function(input, output, session = getDefaultReactiveDomain(
   abs(as.numeric(x) - as.numeric(grid::convertUnit(y, grid::unitType(x)))) >= .Machine$double.eps
 }
 
+as.character.unit <- function (x, ...) {
+  paste0("unit(", as.numeric(x), ", '", grid::unitType(x), "')")
+}
