@@ -334,6 +334,9 @@ revList <- function(x) {
 resourcePath <- system.file("www", package = "serenity.viz")
 
 plot_names_one <- list(
+  "Primitive" = list(
+    "geom-segment" = "Segment"
+  ),
   "Discrete" = list(
     "geom-bar" = "Bar Plot"
   ),
@@ -503,6 +506,8 @@ gg_aesthetics <- reorderElements(
                      "xupper",
                      "middle",
                      "xmiddle",
+                     "xend",
+                     "yend",
                      "sample"),
     "geom-bar" = ggplot2::GeomBar$aesthetics(),
     "geom-histogram" = ggplot2::GeomBar$aesthetics(),
@@ -512,7 +517,8 @@ gg_aesthetics <- reorderElements(
     "geom-boxplot" = ggplot2::GeomBoxplot$aesthetics(),
     "geom-violin" = ggplot2::GeomViolin$aesthetics(),
     "geom-rug" = ggplot2::GeomRug$aesthetics(),
-    "geom-smooth" = ggplot2::GeomSmooth$aesthetics()
+    "geom-smooth" = ggplot2::GeomSmooth$aesthetics(),
+    "geom-segment" = ggplot2::GeomSegment$aesthetics()
   )
 )
 
