@@ -1019,3 +1019,14 @@ i.fa.inactive {
 	background-size: 100%;
 }
 
+/* Misc icon adjustments */
+
+.linejoin-icon {
+  width: 20px;
+  height: 15px;
+}
+
+.linejoin button {
+  padding-left: 8px;
+  padding-right: 5px;
+}

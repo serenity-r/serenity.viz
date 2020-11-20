@@ -1,0 +1,18 @@
+.linejoin-icon.bevel {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%22275.00%20280.50%2020%2015%22%3E%3Cdefs%3E%3Cstyle%3E%3C%21%5BCDATA%5Bpolygon%2Cpath%2Ccircle%7Bfill%3Anone%3Bstroke%3A%23000000%3Bstroke-linecap%3Around%3Bstroke-linejoin%3Around%3Bstroke-miterlimit%3A10.00%7D%5D%5D%3E%3C/style%3E%3C/defs%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20style%3D%22stroke%3Anone%3Bfill%3A%23FFFFFF%3Bstroke-linecap%3Around%3Bstroke-linejoin%3Around%3Bstroke-miterlimit%3A10.00%22/%3E%3Cpath%20style%3D%22stroke-width%3A8.54%3Bstroke-linecap%3Abutt%3Bstroke-linejoin%3Abevel%3Bfill%3Anone%3Bstroke%3A%23000000%3Bstroke-miterlimit%3A10.00%22%20d%3D%22M273%20303l15-15-15-15%22/%3E%3C/svg%3E%0A");
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+
+.linejoin-icon.mitre {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%22275.00%20280.50%2020%2015%22%3E%3Cdefs%3E%3Cstyle%3E%3C%21%5BCDATA%5Bpolygon%2Cpath%2Ccircle%7Bfill%3Anone%3Bstroke%3A%23000000%3Bstroke-linecap%3Around%3Bstroke-linejoin%3Around%3Bstroke-miterlimit%3A10.00%7D%5D%5D%3E%3C/style%3E%3C/defs%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20style%3D%22stroke%3Anone%3Bfill%3A%23FFFFFF%3Bstroke-linecap%3Around%3Bstroke-linejoin%3Around%3Bstroke-miterlimit%3A10.00%22/%3E%3Cpath%20style%3D%22stroke-width%3A8.54%3Bstroke-linecap%3Abutt%3Bstroke-linejoin%3Amiter%3Bfill%3Anone%3Bstroke%3A%23000000%3Bstroke-miterlimit%3A10.00%22%20d%3D%22M273%20303l15-15-15-15%22/%3E%3C/svg%3E%0A");
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+
+.linejoin-icon.round {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%22275.00%20280.50%2020%2015%22%3E%3Cdefs%3E%3Cstyle%3E%3C%21%5BCDATA%5Bpolygon%2Cpath%2Ccircle%7Bfill%3Anone%3Bstroke%3A%23000000%3Bstroke-linecap%3Around%3Bstroke-linejoin%3Around%3Bstroke-miterlimit%3A10.00%7D%5D%5D%3E%3C/style%3E%3C/defs%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20style%3D%22stroke%3Anone%3Bfill%3A%23FFFFFF%3Bstroke-linecap%3Around%3Bstroke-linejoin%3Around%3Bstroke-miterlimit%3A10.00%22/%3E%3Cpath%20style%3D%22stroke-width%3A8.54%3Bstroke-linecap%3Abutt%3Bfill%3Anone%3Bstroke%3A%23000000%3Bstroke-linejoin%3Around%3Bstroke-miterlimit%3A10.00%22%20d%3D%22M273%20303l15-15-15-15%22/%3E%3C/svg%3E%0A");
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+

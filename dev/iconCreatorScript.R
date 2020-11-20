@@ -521,15 +521,85 @@ pointrange <- theme_serenity(a + theme_layer)
 
 save_plot(pointrange)
 
-## A. Create icon css file ====
+## A. Create geom icon css file ====
 
 fileConn <- file(here::here("inst", "www", "css", "geom_icons.css"))
 
-icons <- list.files(here::here("inst", "www", "img"), ".svg", full.names = TRUE)
+icons <- list.files(here::here("inst", "www", "img"), pattern = "geom.*?svg", full.names = TRUE)
 css <- sapply(icons, function(x) {
   geom <- paste(strsplit(strsplit(strsplit(x, "/")[[1]][length(strsplit(x, "/")[[1]])], ".svg")[[1]], "_")[[1]], collapse = "-")
   encoding <- htmltools::urlEncodePath(readChar(x, file.info(x)$size))
   paste0('.geom-icon.', geom, ' {\n  background-image: url("data:image/svg+xml,', encoding, '");\n  background-size: 100%;\n}\n')
+}, USE.NAMES = FALSE)
+
+writeLines(css, fileConn)
+close(fileConn)
+
+## B.1 Miscellaneous ====
+
+save_misc_plot <- function(ggobj, filename, W = 8, H = 8) {
+  ggsave(file = here::here(paste0(img_repo, "/", filename, ".svg")), plot = ggobj, width = W, height = H)
+  system2("svgo", args = paste0(img_repo, "/", filename, ".svg --disable=minifyStyles,convertStyleToAttrs --precision=0"))
+}
+
+### __ linejoin ====
+
+# Zoom function
+# "260.00 268.00 40 40"
+linejoin_zoom <- function(f, viewBox = "275.00 280.50 20 15") {
+  f <- here::here("inst", "www", "img", paste0(f, ".svg"))
+  x <- readLines(f)
+  y <- gsub('viewBox=\"0 0 576 576\"', paste0('viewBox=\"', viewBox, '\"'), x)
+  cat(y, file=f, sep="\n")
+}
+
+# linejoin round
+a <- ggplot(mapping = aes(x = 1, y = 1, xend = 1+1e-8, yend = 1)) +
+  geom_segment(lineend = "butt", linejoin = "round",
+               size = 4, arrow = arrow(angle = 45, length = unit(0.3, "inches"))) +
+  xlim(0.5, 1.5) +
+  ylim(0.5, 1.5)
+
+linejoin_round <- a + theme_void()
+
+save_misc_plot(linejoin_round, "misc_linejoin_round")
+linejoin_zoom("misc_linejoin_round")
+
+ # linejoin mitre
+a <- ggplot(mapping = aes(x = 1, y = 1, xend = 1+1e-8, yend = 1)) +
+  geom_segment(lineend = "butt", linejoin = "mitre",
+               size = 4, arrow = arrow(angle = 45, length = unit(0.3, "inches"))) +
+  xlim(0.5, 1.5) +
+  ylim(0.5, 1.5)
+
+linejoin_mitre <- a + theme_void()
+
+save_misc_plot(linejoin_mitre, "misc_linejoin_mitre")
+linejoin_zoom("misc_linejoin_mitre")
+
+# linejoin bevel
+a <- ggplot(mapping = aes(x = 1, y = 1, xend = 1+1e-8, yend = 1)) +
+  geom_segment(lineend = "butt", linejoin = "bevel",
+               size = 4, arrow = arrow(angle = 45, length = unit(0.3, "inches"))) +
+  xlim(0.5, 1.5) +
+  ylim(0.5, 1.5)
+
+linejoin_bevel <- a + theme_void()
+
+save_misc_plot(linejoin_bevel, "misc_linejoin_bevel")
+linejoin_zoom("misc_linejoin_bevel")
+
+## B.2 Create misc icon css file ====
+
+fileConn <- file(here::here("inst", "www", "css", "misc_icons.css"))
+
+icons <- list.files(here::here("inst", "www", "img"), pattern = "misc.*?svg", full.names = TRUE)
+css <- sapply(icons, function(x) {
+  parts <- strsplit(strsplit(strsplit(x, "/")[[1]][length(strsplit(x, "/")[[1]])], ".svg")[[1]], "_")[[1]]
+  type <- parts[2]
+  subtype <- parts[3]
+  encoding <- htmltools::urlEncodePath(readChar(x, file.info(x)$size))
+  paste0('.', type, '-icon.', subtype, ' {\n  background-image: url("data:image/svg+xml,', encoding, '");\n  background-size: 100%;\n  background-repeat: no-repeat;\n}\n')
 }, USE.NAMES = FALSE)
 
 writeLines(css, fileConn)
