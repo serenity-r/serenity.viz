@@ -546,17 +546,19 @@ save_misc_plot <- function(ggobj, filename, W = 8, H = 8) {
 
 # Zoom function
 # "260.00 268.00 40 40"
-linejoin_zoom <- function(f, viewBox = "275.00 280.50 20 15") {
+linejoin_zoom <- function(f, viewBox = "278.00 280.50 20 15") {
   f <- here::here("inst", "www", "img", paste0(f, ".svg"))
   x <- readLines(f)
   y <- gsub('viewBox=\"0 0 576 576\"', paste0('viewBox=\"', viewBox, '\"'), x)
   cat(y, file=f, sep="\n")
 }
 
+angle <- 25
+
 # linejoin round
 a <- ggplot(mapping = aes(x = 1, y = 1, xend = 1+1e-8, yend = 1)) +
   geom_segment(lineend = "butt", linejoin = "round",
-               size = 4, arrow = arrow(angle = 45, length = unit(0.3, "inches"))) +
+               size = 4, arrow = arrow(angle = angle, length = unit(0.3, "inches"))) +
   xlim(0.5, 1.5) +
   ylim(0.5, 1.5)
 
@@ -568,7 +570,7 @@ linejoin_zoom("misc_linejoin_round")
  # linejoin mitre
 a <- ggplot(mapping = aes(x = 1, y = 1, xend = 1+1e-8, yend = 1)) +
   geom_segment(lineend = "butt", linejoin = "mitre",
-               size = 4, arrow = arrow(angle = 45, length = unit(0.3, "inches"))) +
+               size = 4, arrow = arrow(angle = angle, length = unit(0.3, "inches"))) +
   xlim(0.5, 1.5) +
   ylim(0.5, 1.5)
 
@@ -580,7 +582,7 @@ linejoin_zoom("misc_linejoin_mitre")
 # linejoin bevel
 a <- ggplot(mapping = aes(x = 1, y = 1, xend = 1+1e-8, yend = 1)) +
   geom_segment(lineend = "butt", linejoin = "bevel",
-               size = 4, arrow = arrow(angle = 45, length = unit(0.3, "inches"))) +
+               size = 4, arrow = arrow(angle = angle, length = unit(0.3, "inches"))) +
   xlim(0.5, 1.5) +
   ylim(0.5, 1.5)
 
