@@ -591,6 +591,62 @@ linejoin_bevel <- a + theme_void()
 save_misc_plot(linejoin_bevel, "misc_linejoin_bevel")
 linejoin_zoom("misc_linejoin_bevel")
 
+### __ linejoin ====
+
+# Zoom function
+# "260.00 268.00 40 40"
+lineend_zoom <- function(f, viewBox = "278.00 280.50 20 15") {
+  f <- here::here("inst", "www", "img", paste0(f, ".svg"))
+  x <- readLines(f)
+  y <- gsub('viewBox=\"0 0 576 576\"', paste0('viewBox=\"', viewBox, '\"'), x)
+  cat(y, file=f, sep="\n")
+}
+
+ref_line_colour <- "#660000"
+ref_line_size <- 1.0
+
+# lineend butt
+a <- ggplot() +
+  geom_segment(mapping = aes(x = 1, y = 0, xend = 1, yend = 2), size = ref_line_size,
+               colour = ref_line_colour) +
+  geom_segment(mapping = aes(x = 1, y = 1, xend = 2, yend = 1),
+               lineend = "butt", size = 4) +
+  scale_x_continuous(oob = scales::oob_keep, limits = c(0.5, 1.5)) +
+  scale_y_continuous(oob = scales::oob_keep, limits = c(0.5, 1.5))
+
+lineend_butt <- a + theme_void()
+
+save_misc_plot(lineend_butt, "misc_lineend_butt")
+lineend_zoom("misc_lineend_butt")
+
+# lineend square
+a <- ggplot() +
+  geom_segment(mapping = aes(x = 1, y = 0, xend = 1, yend = 2), size = ref_line_size,
+               colour = ref_line_colour) +
+  geom_segment(mapping = aes(x = 1, y = 1, xend = 2, yend = 1),
+               lineend = "square", size = 4) +
+  scale_x_continuous(oob = scales::oob_keep, limits = c(0.5, 1.5)) +
+  scale_y_continuous(oob = scales::oob_keep, limits = c(0.5, 1.5))
+
+lineend_square <- a + theme_void()
+
+save_misc_plot(lineend_square, "misc_lineend_square")
+lineend_zoom("misc_lineend_square")
+
+# lineend round
+a <- ggplot() +
+  geom_segment(mapping = aes(x = 1, y = 0, xend = 1, yend = 2), size = ref_line_size,
+               colour = ref_line_colour) +
+  geom_segment(mapping = aes(x = 1, y = 1, xend = 2, yend = 1),
+               lineend = "round", size = 4) +
+  scale_x_continuous(oob = scales::oob_keep, limits = c(0.5, 1.5)) +
+  scale_y_continuous(oob = scales::oob_keep, limits = c(0.5, 1.5))
+
+lineend_round <- a + theme_void()
+
+save_misc_plot(lineend_round, "misc_lineend_round")
+lineend_zoom("misc_lineend_round")
+
 ## B.2 Create misc icon css file ====
 
 fileConn <- file(here::here("inst", "www", "css", "misc_icons.css"))

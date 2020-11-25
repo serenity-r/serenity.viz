@@ -1021,12 +1021,20 @@ i.fa.inactive {
 
 /* Misc icon adjustments */
 
-.linejoin-icon {
+.segment-ends {
+  display: flex;
+}
+
+.segment-ends > div {
+  margin-right: 20px;
+}
+
+.linejoin-icon, .lineend-icon {
   width: 20px;
   height: 15px;
 }
 
-.linejoin button {
+.linejoin button, .lineend button {
   padding-left: 8px;
   padding-right: 5px;
 }

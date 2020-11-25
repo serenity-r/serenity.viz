@@ -8,7 +8,8 @@ layerParamsGeomSegmentUI <- function(id) {
 layerParamsGeomSegmentServer <- function(input, output, session, base_data) {
   default_args <- reactiveValues("arrow" = NULL,
                                  "arrow.fill" = base_data()[["colour"]] %T||% NA_defaults[["colour"]],
-                                 "linejoin" = "round")
+                                 "linejoin" = "round",
+                                 "lineend" = "butt")
 
   layer_data <- reactiveValues(arrow = NULL)
 
@@ -17,6 +18,7 @@ layerParamsGeomSegmentServer <- function(input, output, session, base_data) {
       input$arrow.fill,
       input$arrow_fill_inherit,
       input$linejoin,
+      input$lineend,
       layer_data$arrow,
       default_args$arrow.fill
     )
@@ -30,7 +32,7 @@ layerParamsGeomSegmentServer <- function(input, output, session, base_data) {
                                             NA)
   }, priority = 1)
 
-  # Initialize starting aes input
+  # Set starting aes input after layer initialized
   observeEvent(base_data(), {
     update_aes_input(session, 'arrow.fill', 'fill', default_args[['arrow.fill']] %T||% base_data()[["colour"]])
   }, priority = 0, once = TRUE)
@@ -40,17 +42,31 @@ layerParamsGeomSegmentServer <- function(input, output, session, base_data) {
     isolate({
       tagList(
         arrowUI(session$ns("myarrow")),
-        shinyWidgets::radioGroupButtons(
-          session$ns("linejoin"),
-          label = "Linejoin:",
-          selected = input[['linejoin']] %||% default_args[['linejoin']],
-          choices = c(`<div class='linejoin-icon round'></div>` = "round",
-                      `<div class='linejoin-icon mitre'></div>` = "mitre",
-                      `<div class='linejoin-icon bevel'></div>` = "bevel")
-        ) %>% {
-          .$attribs$class <- paste(.$attribs$class, "linejoin")
-          .
-        },
+        div(
+          class = "segment-ends",
+          shinyWidgets::radioGroupButtons(
+            session$ns("lineend"),
+            label = "Lineend:",
+            selected = input[['lineend']] %||% default_args[['lineend']],
+            choices = c(`<div class='lineend-icon butt'></div>` = "butt",
+                        `<div class='lineend-icon square'></div>` = "square",
+                        `<div class='lineend-icon round'></div>` = "round")
+          ) %>% {
+            .$attribs$class <- paste(.$attribs$class, "lineend")
+            .
+          },
+          shinyWidgets::radioGroupButtons(
+            session$ns("linejoin"),
+            label = "Linejoin:",
+            selected = input[['linejoin']] %||% default_args[['linejoin']],
+            choices = c(`<div class='linejoin-icon round'></div>` = "round",
+                        `<div class='linejoin-icon mitre'></div>` = "mitre",
+                        `<div class='linejoin-icon bevel'></div>` = "bevel")
+          ) %>% {
+            .$attribs$class <- paste(.$attribs$class, "linejoin")
+            .
+          }
+        ),
         tags$label("Arrow fill:", class = "control-label") %>% { .$attribs[['for']] = session$ns('arrow.fill'); . },
         div(
           class = "arrow-fill-content",
