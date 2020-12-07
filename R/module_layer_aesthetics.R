@@ -75,7 +75,7 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
   })
 
   # Possible refactor:  Probably more efficient to just use insertUI and removeUI for
-  #  each aesthetic, rather than rerendering all aeasthetics on every stat change.
+  #  each aesthetic, rather than rerendering all aesthetics on every stat change.
   #  Also, the "side-effect" in this reactive is making me twitch.
   aesthetics <- reactive({
     triggerAesUpdate$trigger() # Make sure individual aesthetics update as well (probably bad form as side effect)

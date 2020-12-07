@@ -49,6 +49,12 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
 
   customized <- reactiveValues(mapping = "", values = "")
 
+  # https://github.com/tidyverse/ggplot2/issues/4279
+  # Remove when available on CRAN
+  if (layer == "geom-polygon" && aesthetic == "colour") {
+    default_geom_aes <- NA
+  }
+
   # Convert default colour values to hex (if applicable)
   if ((aesthetic %in% c('colour', 'fill')) && isTruthy(default_geom_aes)) {
     default_geom_aes <- colour_to_hex(default_geom_aes)
@@ -512,15 +518,6 @@ create_aes_empty <- function(content='Not set', class=NULL) {
   )
 }
 
-# Set color palette rosetta stone
-# http://www.melissaclarkson.com/resources/R_guides/documents/colors_Ver2.pdf
-crgb <- col2rgb(cc <- colors())
-colnames(crgb) <- cc
-colours_tbl <- dplyr::as_tibble(t(crgb)) %>%
-  dplyr::mutate(name = cc,
-                hex = rgb(red, green, blue, maxColorValue = 255)) %>%
-  dplyr::select(name, hex, red, green, blue)
-
 # Importing .data from rlang
 # https://community.rstudio.com/t/how-to-solve-no-visible-binding-for-global-variable-note/28887
 
@@ -531,7 +528,7 @@ colours_tbl <- dplyr::as_tibble(t(crgb)) %>%
 #' @importFrom rlang .data
 colour_to_hex <- function(col) {
   if (!grepl("^#[0-9a-fA-F]{6}", col)) {
-    return(dplyr::filter(colours_tbl, .data$name == col)$hex)
+    return(farver::encode_colour(farver::decode_colour(col)))
   } else {
     return(col)
   }
@@ -575,7 +572,9 @@ create_aes_input <- function(inputId, aes, aes_val, class=NULL) {
                                               value = colour_to_hex(aes_val)),
            'weight' = ,
            'size' = ,
-           'stroke' = sliderInput(inputId = inputId,
+           'stroke' = ,
+           'width' = ,
+           'height' = sliderInput(inputId = inputId,
                                   label = "",
                                   min = 0.1,
                                   max = 10,
@@ -611,7 +610,9 @@ update_aes_input <- function(session, inputId, aes, aes_val) {
          'shape' = ,
          'weight' = ,
          'size' = ,
-         'stroke' = updateSliderInput(session, inputId, value = aes_val),
+         'stroke' = ,
+         'width' = ,
+         'height' = updateSliderInput(session, inputId, value = aes_val),
          'linetype' = updateSelectInput(session, inputId, selected = linetype_to_string(aes_val)),
          ''
   )

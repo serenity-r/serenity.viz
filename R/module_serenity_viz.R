@@ -336,14 +336,23 @@ resourcePath <- system.file("www", package = "serenity.viz")
 
 plot_names_one <- list(
   "Primitive" = list(
-    "geom-segment" = "Segment"
+    "geom-segment" = "Segment",
+    "geom-curve" = "Curve",
+    "geom-path" = "Path",
+    "geom-rect" = "Rectangle",
+    "geom-tile" = "Tile",
+    "geom-polygon" = "Polygon",
+    "geom-ribbon" = "Ribbon",
+    "geom-area" = "Area Plot"
   ),
   "Discrete" = list(
     "geom-bar" = "Bar Plot"
   ),
   "Continuous" = list(
     "geom-histogram" = "Histogram",
-    "geom-dotplot" = "Dot Plot"
+    "geom-dotplot" = "Dot Plot",
+    "geom-density" = "Density",
+    "geom-freqpoly" = "Freq-Poly"
   )
 )
 
@@ -359,11 +368,19 @@ plot_names_two <- list(
   ),
   "Continuous Function" = list(
     "geom-line" = "Line Plot"
+  ),
+  "Visualizing Error" = list(
   )
 )
 
-plot_names <- unlist(c(plot_names_one, plot_names_two), recursive = FALSE)
-names(plot_names) <- unlist(lapply(c(plot_names_one, plot_names_two), function(x) { revList(x) }), recursive = FALSE)
+plot_names_three <- list(
+  "Misc" = list(
+    "geom-raster" = "Raster"
+  )
+)
+
+plot_names <- unlist(c(plot_names_one, plot_names_two, plot_names_three), recursive = FALSE)
+names(plot_names) <- unlist(lapply(c(plot_names_one, plot_names_two, plot_names_three), function(x) { revList(x) }), recursive = FALSE)
 
 geoms <- names(plot_names)
 
@@ -454,7 +471,9 @@ NA_defaults <- list(
   alpha = 1,
   shape = 19,
   size = 1.5,
-  stroke = 0.5
+  stroke = 0.5,
+  width = 1,
+  height = 1
 )
 
 help_panes <- lapply(geoms, function(x) {
@@ -494,8 +513,11 @@ gg_aesthetics <- reorderElements(
                      "size",
                      "stroke",
                      "shape",
+                     "width",
+                     "height",
                      "linetype",
                      "group",
+                     "subgroup",
                      "weight",
                      "xmin",
                      "xmax",
@@ -519,7 +541,17 @@ gg_aesthetics <- reorderElements(
     "geom-violin" = ggplot2::GeomViolin$aesthetics(),
     "geom-rug" = ggplot2::GeomRug$aesthetics(),
     "geom-smooth" = ggplot2::GeomSmooth$aesthetics(),
-    "geom-segment" = ggplot2::GeomSegment$aesthetics()
+    "geom-segment" = ggplot2::GeomSegment$aesthetics(),
+    "geom-curve" = ggplot2::GeomCurve$aesthetics(),
+    "geom-path" = ggplot2::GeomPath$aesthetics(),
+    "geom-rect" = ggplot2::GeomRect$aesthetics(),
+    "geom-tile" = ggplot2::GeomTile$aesthetics(),
+    "geom-polygon" = ggplot2::GeomPolygon$aesthetics(),
+    "geom-raster" = ggplot2::GeomRaster$aesthetics(),
+    "geom-ribbon" = ggplot2::GeomRibbon$aesthetics(),
+    "geom-area" = ggplot2::GeomArea$aesthetics(),
+    "geom-density" = ggplot2::GeomDensity$aesthetics(),
+    "geom-freqpoly" = ggplot2::geom_freqpoly()$geom$aesthetics()
   )
 )
 

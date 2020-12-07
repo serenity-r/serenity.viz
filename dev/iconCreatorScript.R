@@ -88,7 +88,7 @@ polygon_data <- data.frame(
 )
 
 a <- ggplot(polygon_data, aes(x, y)) +
-  geom_polygon(fill = serenity.fill)
+  geom_polygon(fill = serenity.fill, alpha = 0.5)
 
 polygon <- theme_serenity(a + theme_layer)
 
@@ -102,11 +102,30 @@ rect_data <- data.frame(
 )
 
 a <- ggplot(rect_data, aes(x, y)) +
-  geom_polygon(fill = serenity.fill)
+  geom_polygon(fill = serenity.fill, alpha = 0.5) +
+  geom_point(size = 25, colour = "black")
 
 rect <- theme_serenity(a + theme_layer)
 
 save_plot(rect)
+
+# __ geom_tile ----
+
+tile_data <- data.frame(
+  x = 5, y = 5, width = 8, height = 4
+)
+
+a <- ggplot(tile_data, aes(x, y, width = width, height = height)) +
+  geom_tile(fill = serenity.fill, alpha = 0.5) +
+  geom_segment(aes(x = 1, y = 5, xend = 9, yend = 5),
+               colour = "#3366FF", size = 10) +
+  geom_segment(aes(x = 5, y = 3, xend = 5, yend = 7),
+               colour = "#3366FF", size = 10) +
+  geom_point(size = 25, fill = "black", shape = 21)
+
+tile <- theme_serenity(a + theme_layer)
+
+save_plot(tile)
 
 ## 1.1 Lines ====
 
@@ -347,6 +366,21 @@ a <- ggplot(smooth_data, aes(x,y)) +
 smooth <- theme_serenity(a + theme_layer, X = 2, W = 8)
 
 save_plot(smooth)
+
+# __ geom_raster ----
+
+S <- data.frame(
+  x = c(1, 1, 2, 2),
+  y = c(1, 2, 1, 2),
+  z = c(1, 0, 0, 1)
+)
+
+a <- ggplot(S, aes(x,y, fill = z)) +
+  geom_raster(show.legend = FALSE)
+
+raster <- theme_serenity(a + theme_layer, X = 0.5, Y = 0.5, W = 2.5, H = 2.5)
+
+save_plot(raster)
 
 # __ geom_text ----
 
@@ -591,7 +625,7 @@ linejoin_bevel <- a + theme_void()
 save_misc_plot(linejoin_bevel, "misc_linejoin_bevel")
 linejoin_zoom("misc_linejoin_bevel")
 
-### __ linejoin ====
+### __ lineend ====
 
 # Zoom function
 # "260.00 268.00 40 40"
