@@ -24,9 +24,7 @@ layerParamsUI <- function(id) {
 layerParamsServer <- function(input, output, session, base_data, layer_stat) {
   ns <- session$ns
 
-  ns_levels <- stringr::str_split(ns(''), '-')[[1]]
-  geom_ns_ind <- which(ns_levels == "geom")
-  geom_fun <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="_")
+  geom_fun <- stringr::str_replace(getLayerInfo(ns)$geom, "-", "_")
 
   # This stores returned reactives from stat modules
   stat_modules <- reactiveValues()

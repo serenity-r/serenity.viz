@@ -7,9 +7,7 @@
 layerAestheticsUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
-  ns_levels <- stringr::str_split(ns(''), '-')[[1]]
-  geom_ns_ind <- which(ns_levels == "geom")
-  geom_type <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="-")
+  geom_type <- getLayerInfo(ns)$geom
 
   tagList(
       widgetHeader(
@@ -42,10 +40,9 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
   ns <- session$ns
 
   # Get layer, geom, and aesthetics information
-  ns_levels <- stringr::str_split(ns(''), '-')[[1]]
-  geom_ns_ind <- which(ns_levels == "geom")
-  layer_id <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+3)], collapse="-")
-  geom_type <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="-")
+  layer_info <- getLayerInfo(ns)
+  layer_id <- layer_info$layer_id
+  geom_type <- layer_info$geom
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   stat_proto <- reactive({ get(paste0("Stat", snakeToCamel(layer_stat(), capFirst = TRUE))) })
   geom_aesthetics <- gg_aesthetics[[geom_type]]

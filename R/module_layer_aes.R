@@ -41,10 +41,9 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                            inherit.aes, default_geom_aes, default_stat_aes, required,
                            dataset, computed_vars) {
   # Get aesthetic from namespace
-  ns_levels <- stringr::str_split(session$ns(''), '-')[[1]]
-  geom_ns_ind <- which(ns_levels == "geom")
-  aesthetic <- ns_levels %>% { .[length(.)-1] }
-  layer <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="-")
+  layer_info <- getLayerInfo(session$ns)
+  aesthetic <- layer_info$aesthetic
+  layer <- layer_info$geom
   entangled <- FALSE
 
   customized <- reactiveValues(mapping = "", values = "")

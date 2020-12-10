@@ -10,9 +10,7 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
   # Create a namespace function using the provided id
   ns <- NS(session$ns(id))
 
-  ns_levels <- stringr::str_split(ns(''), '-')[[1]]
-  geom_ns_ind <- which(ns_levels == "geom")
-  geom_type <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="-")
+  geom_type <- getLayerInfo(ns)$geom
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
 
@@ -95,9 +93,11 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
 #'
 #' @param geom  Layer geom
 #'
-#' @return UI for layer chioce
+#' @return UI for layer choice
 #'
 layerChoiceUI <- function(geom) {
+  geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom, "-", "_"), "()")))
+  default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
   div(
     class = "layer-wrap choice",
     tagList(
@@ -112,7 +112,7 @@ layerChoiceUI <- function(geom) {
         class = "layer-icons",
         tagList(
           icon("question"),
-          icon("check")
+          switch(default_stat != "identity", icon("calculator"))
         )
       )
     )
@@ -139,10 +139,9 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
   # _ Initialization and Setup ====
 
   # _ _ Get layer, geom, and aesthetics information ====
-  ns_levels <- stringr::str_split(ns(''), '-')[[1]]
-  geom_ns_ind <- which(ns_levels == "geom")
-  layer_id <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+3)], collapse="-")
-  geom_type <- paste(ns_levels[geom_ns_ind:(geom_ns_ind+1)], collapse="-")
+  layer_info <- getLayerInfo(ns)
+  layer_id <- layer_info$layer_id
+  geom_type <- layer_info$geom
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
 

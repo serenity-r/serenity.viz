@@ -95,3 +95,20 @@ reorderElements <- function(x, orderBy = NULL) {
     return(ordering[ordering %in% x])
   }
 }
+
+#' Get layer information from namespace string
+#'
+#' @param ns Namespace function
+#'
+#' @return List of layer information, including app name, geom, layer id, and
+#'   aesthetic
+getLayerInfo <- function(ns) {
+  ns_levels <- stringr::str_split(ns(''), '-')[[1]]
+  ns_length <- length(ns_levels)
+  list(
+    app = ns_levels[1],
+    geom = switch(ns_length >= 4, paste(ns_levels[3:4], collapse="-")),
+    layer_id = switch(ns_length >= 6, paste(ns_levels[3:6], collapse = "-")),
+    aesthetic = switch(ns_length >= 8, paste(ns_levels[8], collapse = "-"))
+  )
+}
