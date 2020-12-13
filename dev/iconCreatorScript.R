@@ -9,8 +9,10 @@ theme_serenity <- function(ggobj, X = 0, Y = 0, W = 10, H = 10) {
     scale_y_continuous(limits = c(Y, H+1)) +
     coord_cartesian(xlim = c(X, W), ylim = c(Y, H))
 }
-save_plot <- function(ggobj, W = 8, H = 8) {
-  geom_name <- rlang::quo_name(enquo(ggobj))
+save_plot <- function(ggobj, data_dim = 0) {
+  W = 8
+  H = 8
+  geom_name <- paste0(rlang::quo_name(enquo(ggobj)), "_", data_dim)
   ggsave(file = here::here(paste0(img_repo, "/geom_", geom_name, ".svg")), plot = ggobj, width = W, height = H)
   system2("svgo", args = paste0(img_repo, "/geom_", geom_name, ".svg --disable=minifyStyles,convertStyleToAttrs --precision=0"))
 }
@@ -187,6 +189,8 @@ save_plot(spoke)
 
 ## 2. One Variable ====
 
+data_dim <- 1
+
 ## 2.1 Continuous ====
 
 # __ geom_area ----
@@ -196,7 +200,7 @@ a <- ggplot(ribbon_data, aes(x = x, y = ymax)) +
 
 area <- theme_serenity(a + theme_layer)
 
-save_plot(area)
+save_plot(area, data_dim)
 
 # __ geom_density ----
 
@@ -208,7 +212,7 @@ a <- ggplot() +
 
 density <- theme_serenity(a + theme_layer)
 
-save_plot(density)
+save_plot(density, data_dim)
 
 # __ geom_dotplot ----
 
@@ -217,11 +221,11 @@ dotplot_data <- data.frame(
 )
 
 a <- ggplot(dotplot_data, aes(x)) +
-  geom_dotplot(binwidth = 2, dotsize = 0.6, stackratio = 1.35)
+  geom_dotplot(binwidth = 2, dotsize = 0.8, stackratio = 1.0)
 
 dotplot <- theme_serenity(a + theme_layer)
 
-save_plot(dotplot)
+save_plot(dotplot, data_dim)
 
 # __ geom_freqpoly ----
 
@@ -234,7 +238,7 @@ a <- ggplot(freqpoly_data, aes(x)) +
 
 freqpoly <- theme_serenity(a + theme_layer)
 
-save_plot(freqpoly)
+save_plot(freqpoly, data_dim)
 
 # __ geom_histogram ----
 
@@ -247,7 +251,7 @@ a <- ggplot(histogram_data, aes(x)) +
 
 histogram <- theme_serenity(a + theme_layer, H = 200)
 
-save_plot(histogram)
+save_plot(histogram, data_dim)
 
 # __ geom_qq ----
 
@@ -260,7 +264,7 @@ a <- ggplot(qq_data, aes(sample = x)) +
 
 qq <- theme_serenity(a + theme_layer, X = -2, Y = -2, W = 2, H = 2)
 
-save_plot(qq)
+save_plot(qq, data_dim)
 
 
 ## 2.2 Discrete ====
@@ -276,9 +280,11 @@ a <- ggplot(bar_data, aes(x)) +
 
 bar <- theme_serenity(a + theme_layer)
 
-save_plot(bar)
+save_plot(bar, data_dim)
 
 ## 3. Two Variables ====
+
+data_dim <- 2
 
 ## 3.1 Continuous X, Continuous Y ====
 
@@ -292,13 +298,13 @@ label_data <- data.frame(
 
 a <- ggplot(label_data, aes(x, y)) +
   geom_label(aes(label = label), size = 70,
-             label.padding = unit(2.0, "lines"),
+             label.padding = unit(1.8, "lines"),
              label.r = unit(0.5, "lines"),
-             label.size = 2.0)
+             label.size = 1.8)
 
 label <- theme_serenity(a + theme_layer)
 
-save_plot(label)
+save_plot(label, data_dim)
 
 # __ geom_point ----
 
@@ -317,7 +323,7 @@ a <- ggplot(point_data, aes(x,y)) +
 
 point <- theme_serenity(a + theme_layer)
 
-save_plot(point)
+save_plot(point, data_dim)
 
 # __ geom_quantile ----
 
@@ -333,7 +339,7 @@ a <- ggplot(quantile_data, aes(x,y)) +
 
 quantile <- theme_serenity(a + theme_layer)
 
-save_plot(quantile)
+save_plot(quantile, data_dim)
 
 # __ geom_rug ----
 
@@ -349,7 +355,7 @@ a <- ggplot(rug_data, aes(x,y)) +
 
 rug <- theme_serenity(a + theme_layer)
 
-save_plot(rug)
+save_plot(rug, data_dim)
 
 # __ geom_smooth ----
 
@@ -365,7 +371,7 @@ a <- ggplot(smooth_data, aes(x,y)) +
 
 smooth <- theme_serenity(a + theme_layer, X = 2, W = 8)
 
-save_plot(smooth)
+save_plot(smooth, data_dim)
 
 # __ geom_raster ----
 
@@ -380,7 +386,7 @@ a <- ggplot(S, aes(x,y, fill = z)) +
 
 raster <- theme_serenity(a + theme_layer, X = 0.5, Y = 0.5, W = 2.5, H = 2.5)
 
-save_plot(raster)
+save_plot(raster, data_dim)
 
 # __ geom_text ----
 
@@ -390,7 +396,7 @@ a <- ggplot(label_data, aes(x,y)) +
 text <- theme_serenity(a + theme_layer) +
   scale_x_continuous(breaks = seq(0, 10, 2.5))
 
-save_plot(text)
+save_plot(text, data_dim)
 
 ## 3.2 Discrete X, Continuous Y
 
@@ -419,7 +425,7 @@ a <- ggplot(boxplot_data, aes(x)) +
 
 boxplot <- theme_serenity(a + theme_layer)
 
-save_plot(boxplot)
+save_plot(boxplot, data_dim)
 
 # __ geom_violin ----
 
@@ -444,7 +450,7 @@ a <- ggplot(violin_data, aes(x, y)) +
 
 violin <- theme_serenity(a + theme_layer)
 
-save_plot(violin)
+save_plot(violin, data_dim)
 
 ## 3.2 Continuous Bivariate Distribution ----
 
@@ -466,7 +472,7 @@ a <- ggplot(bin2d_data, aes(x, y)) +
 bin2d <- theme_serenity(a + theme_layer) +
   coord_cartesian(xlim = c(0.45, 9.45), ylim = c(0.45, 9.45))
 
-save_plot(bin2d)
+save_plot(bin2d, data_dim)
 
 # __ geom_density2d ----
 
@@ -475,7 +481,7 @@ a <- ggplot(bin2d_data, aes(x, y)) +
 
 density2d <- theme_serenity(a + theme_layer)
 
-save_plot(density2d)
+save_plot(density2d, data_dim)
 
 # __ geom_hex ----
 
@@ -488,7 +494,7 @@ a <- ggplot(hex_data, aes(x, y)) +
 hex <- theme_serenity(a + theme_layer) +
   coord_cartesian(xlim = c(1, 9), ylim = c(1, 9))
 
-save_plot(hex)
+save_plot(hex, data_dim)
 
 ## 3.3 Continuous Function ====
 
@@ -499,7 +505,7 @@ a <- ggplot(ribbon_data, aes(x = x, y = ymax)) +
 
 line <- theme_serenity(a + theme_layer)
 
-save_plot(line)
+save_plot(line, data_dim)
 
 # __ geom_step ----
 
@@ -508,7 +514,7 @@ a <- ggplot(ribbon_data, aes(x = x, y = ymax)) +
 
 step <- theme_serenity(a + theme_layer)
 
-save_plot(step)
+save_plot(step, data_dim)
 
 ## 3.4 Visualizing Error ====
 
@@ -526,7 +532,7 @@ a <- ggplot(error_data, aes(x, y)) +
 
 crossbar <- theme_serenity(a + theme_layer)
 
-save_plot(crossbar)
+save_plot(crossbar, data_dim)
 
 # __ geom_errorbar ----
 
@@ -535,7 +541,7 @@ a <- ggplot(error_data, aes(x, y)) +
 
 errorbar <- theme_serenity(a + theme_layer)
 
-save_plot(errorbar)
+save_plot(errorbar, data_dim)
 
 # __ geom_linerange ----
 
@@ -544,7 +550,7 @@ a <- ggplot(error_data, aes(x, y)) +
 
 linerange <- theme_serenity(a + theme_layer)
 
-save_plot(linerange)
+save_plot(linerange, data_dim)
 
 # __ geom_pointrange ----
 
@@ -553,17 +559,17 @@ a <- ggplot(error_data, aes(x, y)) +
 
 pointrange <- theme_serenity(a + theme_layer)
 
-save_plot(pointrange)
+save_plot(pointrange, data_dim)
 
 ## A. Create geom icon css file ====
 
-fileConn <- file(here::here("inst", "www", "css", "geom_icons.css"))
+fileConn <- file(here::here("inst", "www", "css", "plot_icons.css"))
 
 icons <- list.files(here::here("inst", "www", "img"), pattern = "geom.*?svg", full.names = TRUE)
 css <- sapply(icons, function(x) {
-  geom <- paste(strsplit(strsplit(strsplit(x, "/")[[1]][length(strsplit(x, "/")[[1]])], ".svg")[[1]], "_")[[1]], collapse = "-")
+  plot <- paste(strsplit(strsplit(strsplit(x, "/")[[1]][length(strsplit(x, "/")[[1]])], ".svg")[[1]], "_")[[1]], collapse = "-")
   encoding <- htmltools::urlEncodePath(readChar(x, file.info(x)$size))
-  paste0('.geom-icon.', geom, ' {\n  background-image: url("data:image/svg+xml,', encoding, '");\n  background-size: 100%;\n}\n')
+  paste0('.plot-icon.', plot, ' {\n  background-image: url("data:image/svg+xml,', encoding, '");\n  background-size: 100%;\n}\n')
 }, USE.NAMES = FALSE)
 
 writeLines(css, fileConn)
