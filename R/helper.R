@@ -100,15 +100,19 @@ reorderElements <- function(x, orderBy = NULL) {
 #'
 #' @param ns Namespace function
 #'
-#' @return List of layer information, including app name, geom, layer id, and
-#'   aesthetic
+#' @return List of layer information, including app name, plot id, geom,
+#'   layer id, and aesthetic
 getLayerInfo <- function(ns) {
   ns_levels <- stringr::str_split(ns(''), '-')[[1]]
-  ns_length <- length(ns_levels)
+
+  # Get plot_id, geom, layer_id, and aesthetic
+  ds_ind <- which(ns_levels == "ds")
+  aes_ind <- which(ns_levels == "aesthetics")
   list(
     app = ns_levels[1],
-    geom = switch(ns_length >= 4, paste(ns_levels[3:4], collapse="-")),
-    layer_id = switch(ns_length >= 6, paste(ns_levels[3:6], collapse = "-")),
-    aesthetic = switch(ns_length >= 8, paste(ns_levels[8], collapse = "-"))
+    plot_id = ifelse(length(ds_ind) > 0, paste(ns_levels[3:(ds_ind-1)], collapse="-"), "geom-blank"),
+    geom = ifelse(length(ds_ind) > 0, plots[plots$id == paste(ns_levels[3:(ds_ind-1)], collapse="-"), "geom"], "geom-blank"),
+    layer_id = ifelse(length(ds_ind) > 0, paste(ns_levels[3:(ds_ind+1)], collapse = "-"), "geom-blank-ds-1"),
+    aesthetic = switch(length(aes_ind) > 0, paste(ns_levels[aes_ind+1], collapse = "-"))
   )
 }

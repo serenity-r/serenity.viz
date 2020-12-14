@@ -7,11 +7,14 @@
 layerAestheticsUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
-  geom_type <- getLayerInfo(ns)$geom
+
+  layer_info <- getLayerInfo(ns)
+  geom_type <- layer_info$geom
+  plot_name <- plots[plots$id == layer_info$plot_id, "name"]
 
   tagList(
       widgetHeader(
-        span(em(paste("Layer:", ifelse(geom_type == "geom-blank", "Base Layer", plot_names[[geom_type]]))),
+        span(em(paste("Layer:", ifelse(geom_type == "geom-blank", "Base Layer", plot_name))),
              style="float:right;margin-right:10px")
       ),
       widgetBody(

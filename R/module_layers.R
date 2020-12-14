@@ -87,7 +87,7 @@ layersServer <- function(input, output, session, dataset) {
         dndselectr::dropZoneInput(
           session$ns("layers"),
           class = "layers",
-          choices = sapply(geoms, function(geom) { layerUI(geom) }, simplify = FALSE, USE.NAMES = TRUE),
+          choices = sapply(setdiff(plots$id, "geom-blank"), function(plot_id) { layerUI(plot_id) }, simplify = FALSE, USE.NAMES = TRUE),
           server = layerUI,
           placeholder = "Add a layer",
           multivalued = TRUE,
@@ -99,13 +99,13 @@ layersServer <- function(input, output, session, dataset) {
       div(
         class = "layer-chooser-wrapper",
         style = "display: none;",
-        dndselectr::dropZoneInput(session$ns("ds-layer-chooser"), choices = sapply(geoms, function(geom) { layerChoiceUI(geom) }, simplify = FALSE),
+        dndselectr::dropZoneInput(session$ns("ds-layer-chooser"), choices = sapply(setdiff(plots$id, "geom-blank"), function(plot) { layerChoiceUI(plot) }, simplify = FALSE),
                                   class = "layer-chooser",
                                   flex = TRUE,
                                   selectable = TRUE,
                                   direction = "horizontal",
-                                  presets = list(values = geoms,
-                                                 locked = geoms)
+                                  presets = list(values = setdiff(plots$id, "geom-blank"),
+                                                 locked = setdiff(plots$id, "geom-blank"))
         )
       )
     )

@@ -25,7 +25,7 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
     ),
     bsplus::use_bs_tooltip(),
     tags$head(includeCSS(file.path(resourcePath, "css", "app.css"))),
-    tags$head(includeCSS(file.path(resourcePath, "css", "geom_icons.css"))),
+    tags$head(includeCSS(file.path(resourcePath, "css", "plot_icons.css"))),
     tags$head(includeCSS(file.path(resourcePath, "css", "misc_icons.css"))),
     tags$head(includeScript(file.path(resourcePath, "js", "serenity_viz.js"))),
     switch(titlebar,
@@ -192,7 +192,7 @@ serenityVizServer <- function(input, output, session, dataset) {
     }
   })
 
-  # _ Plot ====
+  ## Plot ====
   output$viz <- renderPlot({
     req(ggobj())
     failure <- FALSE
@@ -230,7 +230,7 @@ serenityVizServer <- function(input, output, session, dataset) {
     )
   })
 
-  # _ Code ====
+  ## Code ====
   output$code <- renderUI({
     req(ggcode())
     lines <- fansi::sgr_to_html(prettycode::highlight(ggcode(),
@@ -324,7 +324,7 @@ serenityVizServer <- function(input, output, session, dataset) {
   return(ggcode)
 }
 
-# GLOBALS ----
+# GLOBALS ====
 
 revList <- function(x) {
   tmp <- names(x)
@@ -334,17 +334,22 @@ revList <- function(x) {
 
 resourcePath <- system.file("www", package = "serenity.viz")
 
-plot_names_one <- list(
+## Plots ====
+
+plot_names_zero <- list(
   "Primitive" = list(
+    "geom-point" = "Point",
     "geom-segment" = "Segment",
     "geom-curve" = "Curve",
     "geom-path" = "Path",
     "geom-rect" = "Rectangle",
     "geom-tile" = "Tile",
     "geom-polygon" = "Polygon",
-    "geom-ribbon" = "Ribbon",
-    "geom-area" = "Area Plot"
-  ),
+    "geom-ribbon" = "Ribbon"
+  )
+)
+
+plot_names_one <- list(
   "Discrete" = list(
     "geom-bar" = "Bar Plot"
   ),
@@ -357,32 +362,79 @@ plot_names_one <- list(
 )
 
 plot_names_two <- list(
-  "Continuous X, Continuous Y" = list(
+  "Continuous, Continuous" = list(
     "geom-point" = "Scatter Plot",
+    "geom-line" = "Line Plot",
+    "geom-area" = "Area Plot",
     "geom-smooth" = "Smoother",
-    "geom-rug" = "Rug Plot"
+    "geom-rug" = "Rug Plot",
+    "geom-raster" = "Raster Plot"
   ),
-  "Discrete X, Continuous Y" = list(
+  "Discrete, Continuous" = list(
     "geom-boxplot" = "Box Plot",
     "geom-violin" = "Violin Plot"
-  ),
-  "Continuous Function" = list(
-    "geom-line" = "Line Plot"
-  ),
-  "Visualizing Error" = list(
   )
 )
 
-plot_names_three <- list(
-  "Misc" = list(
-    "geom-raster" = "Raster"
+#' Add plots with data to plot list
+#'
+#' When recipes are implemented, this will be refactored to include recipe
+#'   information, such as which geoms and arguments (and/or) which plots.
+#'
+#' @param plots List of plots (name is geom, value is name - don't ask)
+#' @param primitive Is this geom a primitive?
+#' @param data_dim Number of data dimensions
+#' @param data_types String of "C"s and "D"s
+#'
+#' @return data.frame
+addPlots <- function(plots, primitive = FALSE, data_dim = 0, data_types = "") {
+  do.call(rbind,
+          lapply(seq_along(plots),
+                 function(y, n, i) {
+                   data.frame(
+                     id = paste0(n[[i]], '-', data_dim),
+                     geom = n[[i]],
+                     name = y[[i]],
+                     primitive = primitive,
+                     data_dim = data_dim,
+                     data_types = data_types
+                   )
+                 },
+                 y = plots,
+                 n = names(plots)
+          )
   )
+}
+
+# Convert easy-to-read (but temporary) list form to plots data frame
+plots <- data.frame(
+  id = "geom-blank",
+  geom = "geom-blank",
+  name = "Blank Plot",
+  primitive = TRUE,
+  data_dim = 0,
+  data_types = ""
 )
-
-plot_names <- unlist(c(plot_names_one, plot_names_two, plot_names_three), recursive = FALSE)
-names(plot_names) <- unlist(lapply(c(plot_names_one, plot_names_two, plot_names_three), function(x) { revList(x) }), recursive = FALSE)
-
-geoms <- names(plot_names)
+plots <- rbind(plots,
+               addPlots(plot_names_zero$Primitive,
+                        primitive = TRUE)
+)
+plots <- rbind(plots,
+               addPlots(plot_names_one$Discrete,
+                        data_dim = 1,
+                        data_types = "D"))
+plots <- rbind(plots,
+               addPlots(plot_names_one$Continuous,
+                        data_dim = 1,
+                        data_types = "C"))
+plots <- rbind(plots,
+               addPlots(plot_names_two$`Continuous, Continuous`,
+                        data_dim = 2,
+                        data_types = "CC"))
+plots <- rbind(plots,
+               addPlots(plot_names_two$`Discrete, Continuous`,
+                        data_dim = 2,
+                        data_types = "DC"))
 
 stat_names <- list(
   "1D distributions" = list(
@@ -476,12 +528,12 @@ NA_defaults <- list(
   height = 1
 )
 
-help_panes <- lapply(geoms, function(x) {
+help_panes <- lapply(plots$name, function(x) {
   paste0("<h2>", x, "</h2>
          <div class='axis' id='xaxis'></div>
          <div class='axis' id='yaxis'></div>")
 })
-names(help_panes) <- stringr::str_replace(geoms, "-", "_")
+names(help_panes) <- plots$id
 
 makeReactiveTrigger <- function(init_val = NULL) {
   rv <- reactiveValues(a = 0)

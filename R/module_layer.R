@@ -10,14 +10,17 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
   # Create a namespace function using the provided id
   ns <- NS(session$ns(id))
 
-  geom_type <- getLayerInfo(ns)$geom
+  layer_info <- getLayerInfo(ns)
+  plot_id <- layer_info$plot_id
+  geom_type <- layer_info$geom
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
   default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
 
   if (geom_type == "geom-blank") {
-    geom_name <- tagList("Base Layer")
+    plot_id <- "geom-blank"
+    plot_name <- tagList("Base Layer")
   } else {
-    geom_name <- plot_names[[geom_type]]
+    plot_name <- plots[plots$id == plot_id, "name"]
   }
 
   div(
@@ -27,10 +30,10 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
         class = "layer-title",
         tagList(
           div(
-            class = "geom-layer-title",
+            class = "plot-layer-title",
             switch(geom_type != "geom-blank", icon("sort", class = "ds-handle")),
-            div(class = paste("geom-icon", geom_type)),
-            span(class = "geom-name", geom_name)
+            div(class = paste("plot-icon", plot_id)),
+            span(class = "plot-name", plot_name)
           ),
           switch(geom_type != "geom-blank", span("Other stuff", class="hidden"), NULL)
         )
@@ -95,7 +98,8 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
 #'
 #' @return UI for layer choice
 #'
-layerChoiceUI <- function(geom) {
+layerChoiceUI <- function(plot_id) {
+  geom <- plots[plots$id == plot_id, "geom"]
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom, "-", "_"), "()")))
   default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
   div(
@@ -104,8 +108,8 @@ layerChoiceUI <- function(geom) {
       div(
         class = "layer-title",
         tagList(
-          div(class = paste("geom-icon", geom)),
-          div(plot_names[geom], class = "plot-name")
+          div(class = paste("plot-icon", plot_id)),
+          div(plots[plots$id == plot_id, "name"], class = "plot-name")
         )
       ),
       div(

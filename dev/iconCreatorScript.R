@@ -28,6 +28,15 @@ theme_layer <- theme_bw() +
 
 ## 1. Graphical Primitives ====
 
+# __ geom_point ----
+
+a <- ggplot(mapping = aes(x = 5, y = 5)) +
+  geom_point(size = 25)
+
+point <- theme_serenity(a + theme_layer)
+
+save_plot(point)
+
 # __ geom_ribbon ----
 
 y <- exp(seq(from = 0, to = 2, length.out = 11)) + rnorm(11)
@@ -193,15 +202,6 @@ data_dim <- 1
 
 ## 2.1 Continuous ====
 
-# __ geom_area ----
-
-a <- ggplot(ribbon_data, aes(x = x, y = ymax)) +
-  geom_area()
-
-area <- theme_serenity(a + theme_layer)
-
-save_plot(area, data_dim)
-
 # __ geom_density ----
 
 x <- seq(from = 0, to = 10, length.out = 100)
@@ -324,6 +324,15 @@ a <- ggplot(point_data, aes(x,y)) +
 point <- theme_serenity(a + theme_layer)
 
 save_plot(point, data_dim)
+
+# __ geom_area ----
+
+a <- ggplot(ribbon_data, aes(x = x, y = ymax)) +
+  geom_area()
+
+area <- theme_serenity(a + theme_layer)
+
+save_plot(area, data_dim)
 
 # __ geom_quantile ----
 

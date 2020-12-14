@@ -619,7 +619,7 @@ i.fa.inactive {
   vertical-align: top;
 }
 
-.layer-wrap.layer .geom-layer-title {
+.layer-wrap.layer .plot-layer-title {
   font-size: 20px;
   font-weight: 500;
   margin-top: 5px;
@@ -627,24 +627,24 @@ i.fa.inactive {
   flex-direction: row;
 }
 
-.layer-wrap.layer .geom-layer-title > .ds-handle,
-.layer-wrap.layer .geom-layer-title > .geom-icon,
-.layer-wrap.layer .geom-layer-title > .geom-name {
+.layer-wrap.layer .plot-layer-title > .ds-handle,
+.layer-wrap.layer .plot-layer-title > .plot-icon,
+.layer-wrap.layer .plot-layer-title > .plot-name {
   height: 30px;
   margin-right: 5px;
   flex: auto 0 1;
 }
 
 /* Small adjustment for blank icon */
-.layer-wrap.layer .geom-layer-title > .geom-icon.geom-blank {
+.layer-wrap.layer .plot-layer-title > .plot-icon.geom-blank {
   margin-top: 5px;
 }
 
-.layer-wrap.layer .geom-layer-title > .geom-icon {
+.layer-wrap.layer .plot-layer-title > .plot-icon {
   flex-shrink: 0;
 }
 
-.layer-wrap.layer .geom-layer-title > .geom-icon {
+.layer-wrap.layer .plot-layer-title > .plot-icon {
   width: 30px;
 }
 
@@ -900,7 +900,7 @@ i.fa.inactive {
 }
 
 .ds-dropzone.layer-chooser .ds-locked.ds-selected {
-  background: #EEEEEE !important;
+  background: rgba(0, 100, 0, 0.25) !important;
 }
 
 .ds-dropzone.layer-chooser .layer-wrap {
@@ -918,7 +918,7 @@ i.fa.inactive {
   width: auto;
 }
 
-.ds-dropzone.layer-chooser .layer-title > div.geom-icon {
+.ds-dropzone.layer-chooser .layer-title > div.plot-icon {
   height: 50px;
   width: 50px;
   margin-left: 20px;
@@ -930,24 +930,29 @@ i.fa.inactive {
 
 .ds-dropzone.layer-chooser .layer-icons > i {
   position: absolute;
-  visibility: hidden;
+  font-size: 12px;
 }
 
-.ds-dropzone.layer-chooser .layer-icons > i.fa-question {
-  right: 0;
+.ds-dropzone.layer-chooser .layer-icons > i.fa-question,
+.ds-dropzone.layer-chooser .layer-icons > i.fa-calculator {
+  right: 2px;
+  top: 3px;
 }
 
 .ds-dropzone.layer-chooser .layer-icons > i.fa-check {
   left: 0;
 }
 
+.ds-dropzone.layer-chooser .ds-dropoption i.fa-question {
+  visibility: hidden;
+}
+
 .ds-dropzone.layer-chooser .ds-dropoption:hover i.fa-question {
   visibility: visible;
 }
 
-.ds-dropzone.layer-chooser .ds-dropoption.ds-selected i.fa-check {
-  visibility: visible;
-  color: green;
+.ds-dropzone.layer-chooser .ds-dropoption:hover i.fa-calculator {
+  visibility: hidden;
 }
 
 /* End: Style layer chooser */
@@ -966,17 +971,17 @@ i.fa.inactive {
   height: 20px;
 }
 
-.geom-picker-item > .geom-icon,
-.geom-picker-item > .geom-name {
+.geom-picker-item > .plot-icon,
+.geom-picker-item > .plot-name {
   height: 20px;
   display: inline-block;
 }
 
-.geom-picker-item > .geom-icon {
+.geom-picker-item > .plot-icon {
   width: 20px;
 }
 
-.geom-picker-item > .geom-name {
+.geom-picker-item > .plot-name {
   vertical-align: middle;
 }
 
@@ -984,7 +989,7 @@ i.fa.inactive {
   background: none !important;
 }
 
-.geom-icon.geom-blank {
+.plot-icon.geom-blank {
   background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTMiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCA1MyAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0yNS42MzYgMC4xMjc4OEMyNS45NTc5IC0wLjA0MjYyNjYgMjYuMzM2OCAtMC4wNDI2MjY4IDI2LjY1ODcgMC4xMjc4OEw1MS42NjIzIDEzLjM3MDVDNTIuNDk4OCAxMy44MTM1IDUyLjUwNzIgMTUuMDc1MiA1MS42NzY3IDE1LjUzMDhMMjYuNjczMiAyOS4yNDY0QzI2LjM0MzQgMjkuNDI3MyAyNS45NTEzIDI5LjQyNzMgMjUuNjIxNSAyOS4yNDY0TDAuNjE3OTM2IDE1LjUzMDhDLTAuMjEyNTcgMTUuMDc1MiAtMC4yMDQxMjcgMTMuODEzNSAwLjYzMjM5MiAxMy4zNzA1TDI1LjYzNiAwLjEyNzg4Wk0yNi4zMTc4IDAuODUwNTgxQzI2LjIxMDUgMC43OTM3NDUgMjYuMDg0MiAwLjc5Mzc0NSAyNS45NzY5IDAuODUwNTgxTDAuOTczMzE4IDE0LjA5MzJDMC42OTQ0NzggMTQuMjQwOSAwLjY5MTY2NCAxNC42NjE0IDAuOTY4NDk5IDE0LjgxMzNMMjUuOTcyMSAyOC41Mjg5QzI2LjA4MiAyOC41ODkyIDI2LjIxMjcgMjguNTg5MiAyNi4zMjI2IDI4LjUyODlMNTEuMzI2MiAxNC44MTMzQzUxLjYwMyAxNC42NjE0IDUxLjYwMDIgMTQuMjQwOSA1MS4zMjE0IDE0LjA5MzJMMjYuMzE3OCAwLjg1MDU4MVoiIGZpbGw9ImJsYWNrIi8+CjxwYXRoIGQ9Ik01MS40OTE4IDEzLjczMThMMjYuNDg4MiAwLjQ4OTIzQzI2LjI3MzYgMC4zNzU1NTkgMjYuMDIxIDAuMzc1NTU5IDI1LjgwNjQgMC40ODkyM0wwLjgwMjgyMSAxMy43MzE4QzAuMjQ1MTQxIDE0LjAyNzIgMC4yMzk1MTIgMTQuODY4MyAwLjc5MzE4MyAxNS4xNzJMMjUuNzk2NyAyOC44ODc2QzI2LjAxNjYgMjkuMDA4MiAyNi4yNzggMjkuMDA4MiAyNi40OTc5IDI4Ljg4NzZMNTEuNTAxNCAxNS4xNzJDNTIuMDU1MSAxNC44NjgzIDUyLjA0OTUgMTQuMDI3MiA1MS40OTE4IDEzLjczMThaIiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K) no-repeat;
   background-size: 100%;
 }
@@ -1050,4 +1055,90 @@ i.fa.inactive {
 
 .arrow-fill-content .aes-wrap {
   margin-top: -20px;
+}
+
+/* Layer icon variable type banner */
+
+.banner {
+  position: relative;
+  transform: scale(0.3);
+  transform-origin: left top;
+  z-index: 1;
+}
+
+.variable, .variable:after {
+  content: '';
+  width: 0;
+  height: 0;
+}
+
+.one.variable {
+  border-top: 100px solid black;
+  border-right: 100px solid transparent;
+}
+
+.one.variable:after {
+  position: absolute;
+  border-top: 90px solid white;
+  border-right: 90px solid transparent;
+  top: 3px;
+  left: 3px;
+}
+
+.one.variable.discrete:after {
+  border-top-color: #B2DF8A;
+}
+
+.one.variable.continuous:after {
+  border-top-color: #A6CEE3;
+}
+
+.two.variable, .two.variable:after {
+  position: absolute;
+}
+
+.two.variable:nth-child(1) {
+  border-left: 50px solid black;
+  border-top: 50px solid transparent;
+  border-right: 50px solid transparent;
+  border-bottom: 50px solid transparent;
+}
+
+.two.variable:nth-child(1):after {
+  border-left: 44px solid white;
+  border-top: 44px solid transparent;
+  border-right: 44px solid transparent;
+  border-bottom: 44px solid transparent;
+  top: -45px;
+  left: -47px;
+}
+
+.two.variable:nth-child(2) {
+  border-top: 50px solid black;
+  border-right: 50px solid transparent;
+  border-left: 50px solid transparent;
+}
+
+.two.variable:nth-child(2):after {
+  border-top: 44px solid white;
+  border-right: 44px solid transparent;
+  border-left: 44px solid transparent;
+  top: -47px;
+  left: -45px;
+}
+
+.two.variable:nth-child(1).discrete:after {
+  border-left-color: #B2DF8A;
+}
+
+.two.variable:nth-child(2).discrete:after {
+  border-top-color: #B2DF8A;
+}
+
+.two.variable:nth-child(1).continuous:after {
+  border-left-color: #A6CEE3;
+}
+
+.two.variable:nth-child(2).continuous:after {
+  border-top-color: #A6CEE3;
 }
