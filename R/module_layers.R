@@ -99,15 +99,43 @@ layersServer <- function(input, output, session, dataset) {
       div(
         class = "layer-chooser-wrapper",
         style = "display: none;",
-        dndselectr::dropZoneInput(session$ns("ds-layer-chooser"), choices = sapply(setdiff(plots$id, "geom-blank"), function(plot) { layerChoiceUI(plot) }, simplify = FALSE),
-                                  class = "layer-chooser",
-                                  flex = TRUE,
-                                  selectable = TRUE,
-                                  direction = "horizontal",
-                                  presets = list(values = setdiff(plots$id, "geom-blank"),
-                                                 locked = setdiff(plots$id, "geom-blank"))
+        tagList(
+          selectInput(session$ns("plot_type"),
+                      label = "Plots:",
+                      choices = c("All" = "all",
+                                  "One variable" = "one",
+                                  "Two variable" = "two",
+                                  "Primitives" = "primitives"),
+                      selected = "all"),
+          dndselectr::dropZoneInput(session$ns("ds-layer-chooser"),
+                                    choices = sapply(setdiff(plots$id, "geom-blank"), function(plot) { layerChoiceUI(plot) }, simplify = FALSE),
+                                    class = "layer-chooser",
+                                    flex = TRUE,
+                                    selectable = TRUE,
+                                    direction = "horizontal",
+                                    presets = list(values = setdiff(plots$id, "geom-blank"),
+                                                   locked = setdiff(plots$id, "geom-blank"))
+          )
         )
       )
+    )
+  })
+
+  observeEvent(input$plot_type, {
+    if (input$plot_type == "all") {
+      filtered_plots <- plots$id
+    } else {
+      filtered_plots <- filter(plots,
+                               data_dim == case_when(
+                                 input$plot_type == "one" ~ 1,
+                                 input$plot_type == "two" ~ 2,
+                                 input$plot_type == "primitives" ~ 0
+                               ))$id
+    }
+    filtered_plots <- setdiff(filtered_plots, "geom-blank")
+    dndselectr::updateDropZoneInput(session, "ds-layer-chooser",
+                                    presets = list(values = filtered_plots,
+                                                   locked = filtered_plots)
     )
   })
 

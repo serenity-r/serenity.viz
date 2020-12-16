@@ -922,6 +922,7 @@ i.fa.inactive {
   height: 50px;
   width: 50px;
   margin-left: 20px;
+  background-repeat: no-repeat;
 }
 
 .ds-dropzone.layer-chooser .layer-title > div.plot-name {
@@ -1057,88 +1058,3 @@ i.fa.inactive {
   margin-top: -20px;
 }
 
-/* Layer icon variable type banner */
-
-.banner {
-  position: relative;
-  transform: scale(0.3);
-  transform-origin: left top;
-  z-index: 1;
-}
-
-.variable, .variable:after {
-  content: '';
-  width: 0;
-  height: 0;
-}
-
-.one.variable {
-  border-top: 100px solid black;
-  border-right: 100px solid transparent;
-}
-
-.one.variable:after {
-  position: absolute;
-  border-top: 90px solid white;
-  border-right: 90px solid transparent;
-  top: 3px;
-  left: 3px;
-}
-
-.one.variable.discrete:after {
-  border-top-color: #B2DF8A;
-}
-
-.one.variable.continuous:after {
-  border-top-color: #A6CEE3;
-}
-
-.two.variable, .two.variable:after {
-  position: absolute;
-}
-
-.two.variable:nth-child(1) {
-  border-left: 50px solid black;
-  border-top: 50px solid transparent;
-  border-right: 50px solid transparent;
-  border-bottom: 50px solid transparent;
-}
-
-.two.variable:nth-child(1):after {
-  border-left: 44px solid white;
-  border-top: 44px solid transparent;
-  border-right: 44px solid transparent;
-  border-bottom: 44px solid transparent;
-  top: -45px;
-  left: -47px;
-}
-
-.two.variable:nth-child(2) {
-  border-top: 50px solid black;
-  border-right: 50px solid transparent;
-  border-left: 50px solid transparent;
-}
-
-.two.variable:nth-child(2):after {
-  border-top: 44px solid white;
-  border-right: 44px solid transparent;
-  border-left: 44px solid transparent;
-  top: -47px;
-  left: -45px;
-}
-
-.two.variable:nth-child(1).discrete:after {
-  border-left-color: #B2DF8A;
-}
-
-.two.variable:nth-child(2).discrete:after {
-  border-top-color: #B2DF8A;
-}
-
-.two.variable:nth-child(1).continuous:after {
-  border-left-color: #A6CEE3;
-}
-
-.two.variable:nth-child(2).continuous:after {
-  border-top-color: #A6CEE3;
-}

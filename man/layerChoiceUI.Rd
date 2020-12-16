@@ -4,13 +4,13 @@
 \alias{layerChoiceUI}
 \title{UI for layer choice}
 \usage{
-layerChoiceUI(geom)
+layerChoiceUI(plot_id)
 }
 \arguments{
 \item{geom}{Layer geom}
 }
 \value{
-UI for layer chioce
+UI for layer choice
 }
 \description{
 UI for layer choice

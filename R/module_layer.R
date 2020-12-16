@@ -99,7 +99,10 @@ layerUI <- function(id, server=FALSE, session=getDefaultReactiveDomain()) {
 #' @return UI for layer choice
 #'
 layerChoiceUI <- function(plot_id) {
-  geom <- plots[plots$id == plot_id, "geom"]
+  plot_ind <- which(plots$id == plot_id)
+  geom <- plots[plot_ind, "geom"]
+  data_dim <- plots[plot_ind, "data_dim"]
+  data_types <- plots[plot_ind, "data_types"]
   geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom, "-", "_"), "()")))
   default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
   div(
