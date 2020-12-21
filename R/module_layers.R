@@ -240,7 +240,8 @@ layersServer <- function(input, output, session, dataset) {
     list(
       code = layer_code,
       selected_layer = selected_layer,
-      selected_stat = reactive({ layer_modules[[selected_layer()]]$stat() })
+      selected_stat = reactive({ layer_modules[[selected_layer()]]$stat() }),
+      aesthetics = reactive({ layer_modules[[selected_layer()]]$aesthetics() })
     )
   )
 }

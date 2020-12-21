@@ -257,7 +257,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
                               default_position = tolower(stringr::str_remove(class(geom_proto$position)[1], "Position")))
 
   base_layer_code <- dedupe(reactive({
-    req(!is.null(layer_aesthetics()))
+    req(!is.null(layer_aesthetics$code()))
 
     processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
                                           "ggplot",
@@ -272,12 +272,12 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
 
     # Layer aesthetics
     processed_layer_code <- paste0(processed_layer_code,
-                                   ifelse(show_stat && nchar(layer_aesthetics()), ", ", ""),
-                                   layer_aesthetics())
+                                   ifelse(show_stat && nchar(layer_aesthetics$code()), ", ", ""),
+                                   layer_aesthetics$code())
 
     # Layer parameters
     processed_layer_code <- paste0(processed_layer_code,
-                                   ifelse((show_stat || nchar(layer_aesthetics())) && nchar(layer_params$code()), ",\n", ""),
+                                   ifelse((show_stat || nchar(layer_aesthetics$code())) && nchar(layer_params$code()), ",\n", ""),
                                    layer_params$code())
 
     return(processed_layer_code)
@@ -291,7 +291,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
     # Add position arguments
     show_stat <- (geom_type != "geom-blank") && (isolate(input$stat) != default_stat)
     processed_layer_code <- paste0(base_layer_code(),
-                                   ifelse((show_stat || nchar(layer_aesthetics()) || nchar(layer_params$code())) && nchar(position_code()), ",\n", ""),
+                                   ifelse((show_stat || nchar(layer_aesthetics$code()) || nchar(layer_params$code())) && nchar(position_code()), ",\n", ""),
                                    position_code(),
                                    ")")
 
@@ -300,6 +300,7 @@ layerServer <- function(input, output, session, layers_selected, geom_blank_inpu
 
   return(list(
     code = layer_code,
-    stat = reactive({ input$stat %||% default_stat })
+    stat = reactive({ input$stat %||% default_stat }),
+    aesthetics = layer_aesthetics$aesthetics
   ))
 }

@@ -94,7 +94,7 @@ serenityVizServer <- function(input, output, session, dataset) {
                 insertmode = "split-left",
                 relsize = 0.33,
                 ui = dataUI(id = session$ns(attributes(dataset)$df_name)),
-                title = "Variables",
+                title = "Data",
                 icon = icon("database"),
                 closable = FALSE) %>%
       addWidget(id = session$ns("aesthetics"),
@@ -104,13 +104,6 @@ serenityVizServer <- function(input, output, session, dataset) {
                 ui = uiOutput(session$ns("aesthetics")),
                 title = "Aesthetics",
                 icon = icon("paint-brush"),
-                closable = FALSE) %>%
-      addWidget(id = session$ns("widget-computed-vars"),
-                refwidgetID = session$ns("widget-vars"),
-                insertmode = "split-right",
-                ui = dataComputedUI(id = session$ns("computed-vars")),
-                title = "Computed",
-                icon = icon("calculator"),
                 closable = FALSE) %>%
       addWidget(id = session$ns("widget-code"),
                 refwidgetID = session$ns('widget-ggplot'),
@@ -163,33 +156,21 @@ serenityVizServer <- function(input, output, session, dataset) {
     }
   })
 
-  # Data module
-  subsetted_data <- callModule(module = dataServer,
-                               id = attributes(dataset)$df_name,
-                               dataset = dataset)
-
   # Layers module
   layers <- callModule(module = layersServer,
                        id = 'layers',
                        dataset = dataset)
 
+  # Data module
+  subsetted_data <- callModule(module = dataServer,
+                               id = attributes(dataset)$df_name,
+                               dataset = dataset,
+                               layers = layers)
+
   # Aesthetics UI
   output$aesthetics <- renderUI({
     req(layers$selected_layer())
     layerAestheticsUI(id = paste0(session$ns(paste0('layers-', layers$selected_layer())),'-aesthetics'))
-  })
-
-  # Handle stat changes
-  observe({
-    req(layers$selected_stat())
-    dndselectr::updateDragZone(session,
-                               id = paste(session$ns("computed-vars"), "computeddatazone", sep = "-"),
-                               choices = dataInputChoices(stat_computed_vars[[layers$selected_stat()]]))
-    if (is.null(stat_computed_vars[[layers$selected_stat()]])) {
-      shinyjs::js$removeClass("hidden", "em.none-computed")
-    } else {
-      shinyjs::js$addClass("hidden", "em.none-computed")
-    }
   })
 
   ## Plot ====
@@ -505,7 +486,6 @@ stat_computed_vars <- list(
   "density_2d" = c("density", "ndensity")
 )
 
-computed_word <- ifelse(packageVersion("ggplot2") < "3.3.0", "stat", "after_stat")
 stat_additional_defaults <- list(
   "smooth" = c("ymin", "ymax"),
   "boxplot" = c("x", "ymin", "ymax", "lower", "middle", "upper")
@@ -515,7 +495,7 @@ stat_additional_defaults <- lapply(stat_additional_defaults,
          lapply(as.list(x) %>% {
            names(.) <- x
            .},
-           function(y) { quo(!!sym(paste0(computed_word, "(", y, ")"))) }) })
+           function(y) { quo(!!sym(paste0("after_stat(", y, ")"))) }) })
 
 NA_defaults <- list(
   fill = "#FFFFFF",

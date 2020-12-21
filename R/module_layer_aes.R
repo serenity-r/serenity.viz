@@ -209,7 +209,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
           dndselectr::dropZoneInput(session$ns("mapping"),
                                     choices = c(
                                       dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
-                                      dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
+                                      dataInputChoices(computed_vars(), zone="aeszone", type = "computed", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
                                     ),
                                     presets = init_mapping,
                                     placeholder = "Drag or select variable",
@@ -222,13 +222,13 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
             choices = list(" " = "",
                            "Variables" = names(dataset),
                            "Computed" = switch(!is.null(computed_vars()),
-                                               paste0(computed_word, "(", computed_vars(), ")"))
+                                               paste0("after_stat(", computed_vars(), ")"))
             ),
             choicesOpt = list(
               content = c(htmltools::doRenderTags(em("Clear variable")),
                           sapply(dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
                                  function(x) { htmltools::doRenderTags(x) }),
-                          sapply(dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
+                          sapply(dataInputChoices(computed_vars(), zone="aeszone", type = "computed", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
                                  function(x) { htmltools::doRenderTags(x) })
               )
             ),
@@ -394,7 +394,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                                     inputId = 'mapping',
                                     choices = c(
                                       dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
-                                      dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
+                                      dataInputChoices(computed_vars(), zone="aeszone", type = "computed", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
                                     )
     )
     shinyWidgets::updatePickerInput(session,
@@ -402,13 +402,13 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                                     choices = list(" " = "",
                                                    "Variables" = names(dataset),
                                                    "Computed" = switch(!is.null(computed_vars()),
-                                                                       paste0(computed_word, "(", computed_vars(), ")"))
+                                                                       paste0("after_stat(", computed_vars(), ")"))
                                     ),
                                     choicesOpt = list(
                                       content = c(htmltools::doRenderTags(em("Clear variable")),
                                                   sapply(dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
                                                          function(x) { htmltools::doRenderTags(x) }),
-                                                  sapply(dataInputChoices(computed_vars(), zone="aeszone", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
+                                                  sapply(dataInputChoices(computed_vars(), zone="aeszone", type = "computed", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
                                                          function(x) { htmltools::doRenderTags(x) })
                                       )),
                                     selected = input$mapping  # pickerInput needs current selection

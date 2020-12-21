@@ -164,6 +164,11 @@ body {
   background: #FDBF6F;
 }
 
+.varzone.aesthetics,
+.aeszone.aesthetics {
+  background: rgb(200, 199, 224);
+}
+
 .aesthetic .ds-dropzone .ds-dropoption,
 .ds-dropoption.gu-mirror,
 .aesthetic .ds-dragitem.gu-transit {

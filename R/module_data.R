@@ -11,34 +11,7 @@ dataUI <- function(id) {
   tagList(
     widgetHeader(),
     widgetBody(
-      uiOutput(ns("dataset_vars"),
-               class = "dataset-vars")
-    )
-  )
-}
-
-#' UI for computed data
-#'
-#' @param id  Data ID
-#' @param stat  Currently active stat
-#'
-#' @return UI for data
-#'
-dataComputedUI <- function(id, stat="identity") {
-  # Create a namespace function using the provided id
-  ns <- NS(id)
-
-  tagList(
-    widgetHeader(),
-    widgetBody(
-      div(
-        class = "dataset-vars",
-        em("No computed variables available for this layer.", class = "none-computed hidden"),
-        dndselectr::dragZone(
-          id = ns('computeddatazone'),
-          choices = dataInputChoices(stat_computed_vars[[stat]])
-        )
-      )
+      uiOutput(ns("dataset_vars"))
     )
   )
 }
@@ -53,14 +26,59 @@ dataComputedUI <- function(id, stat="identity") {
 #' @importFrom magrittr %>%
 #' @import shiny
 #'
-dataServer <- function(input, output, session, dataset) {
+dataServer <- function(input, output, session, dataset, layers) {
   var_names <- names(dataset)
 
   output$dataset_vars <- renderUI({
-    dndselectr::dragZone(
-      id = session$ns('datazone'),
-      choices = dataInputChoices(dataset)
+    tabsetPanel(
+      type = "tabs",
+      tabPanel(span(icon("database"), "Variables"),
+               div(
+                 class = "dataset-vars",
+                 dndselectr::dragZone(
+                   id = session$ns('datazone'),
+                   choices = dataInputChoices(dataset)
+                 )
+               )),
+      tabPanel(span(icon("calculator"), "Computed"),
+               div(
+                 class = "dataset-vars",
+                 em("No computed variables available for this layer.", class = "none-computed hidden"),
+                 dndselectr::dragZone(
+                   id = session$ns('computeddatazone'),
+                   choices = dataInputChoices(stat_computed_vars[["identity"]], type = "computed")
+                 )
+               )),
+      tabPanel(span(icon("paint-brush"), "Aesthetics"),
+               div(
+                 class = "dataset-vars",
+                 dndselectr::dragZone(
+                   id = session$ns('aestheticsdatazone'),
+                   choices = dataInputChoices(gg_aesthetics[["geom-blank"]], type = "aesthetics")
+                 )
+               ))
     )
+  })
+
+  # Handle stat changes
+  observe({
+    req(layers$selected_stat())
+    dndselectr::updateDragZone(session,
+                               id = session$ns("computeddatazone"),
+                               choices = dataInputChoices(stat_computed_vars[[layers$selected_stat()]], type = "computed"))
+    if (is.null(stat_computed_vars[[layers$selected_stat()]])) {
+      shinyjs::js$removeClass("hidden", "em.none-computed")
+    } else {
+      shinyjs::js$addClass("hidden", "em.none-computed")
+    }
+  })
+
+  # Handle aesthetic changes
+  observe({
+    req(layers$aesthetics())
+    dndselectr::updateDragZone(session,
+                               id = session$ns("aestheticsdatazone"),
+                               choices = dataInputChoices(layers$aesthetics(), type = "aesthetics"))
   })
 
   # load variable subset modules ====
@@ -108,12 +126,10 @@ dataServer <- function(input, output, session, dataset) {
 #' @param inherited Array of variable names denoting inherited status (from base or stat)
 #' @param session Shiny user session
 #'
-dataInputChoices <- function(vars = NULL, zone = "varzone", inherited = NULL, session = getDefaultReactiveDomain()) {
+dataInputChoices <- function(vars = NULL, zone = "varzone", type = "variables", inherited = NULL, session = getDefaultReactiveDomain()) {
   if (is.null(vars)) {
     return(list())
   }
-
-  computed <- is.null(names(vars))
 
   ns <- session$ns %||% function(x) { x }
 
@@ -121,11 +137,12 @@ dataInputChoices <- function(vars = NULL, zone = "varzone", inherited = NULL, se
     div(
       class = paste(
         c(zone,
-          switch(as.character(computed), "TRUE" = "computed", "FALSE" = dataTypeToUI(vars[[var_name]]))
+          type,
+          switch(type == "variables", dataTypeToUI(vars[[var_name]]))
         ), collapse = " "),
-      switch(as.character(computed), "TRUE" = icon("calculator"), "FALSE" = dataTypeToUI(vars[[var_name]], .icon = TRUE)),
-      span(var_name, class = paste(c("varname", switch(var_name %in% inherited, ifelse(computed, "default", "inherited"))), collapse = " ")),
-      switch(!computed && zone == "varzone", # Include filter
+      switch(type, "computed" = icon("calculator"), "aesthetics" = icon("paint-brush"), "variables" = dataTypeToUI(vars[[var_name]], .icon = TRUE)),
+      span(var_name, class = paste(c("varname", switch(type != "aesthetics" && (var_name %in% inherited), ifelse(type == "computed", "default", "inherited"))), collapse = " ")),
+      switch((type == "variables") && zone == "varzone", # Include filter
              shinyWidgets::dropdownButton(
                dataVarUI(id = ns(var_name), var = vars[[var_name]]),
                inputId = ns("data-filter-btn"),
@@ -138,8 +155,8 @@ dataInputChoices <- function(vars = NULL, zone = "varzone", inherited = NULL, se
     )
   }, simplify = FALSE, USE.NAMES = TRUE)
 
-  if (computed) {
-    names(itemsUI) <- paste0(computed_word, "(", vars, ")")
+  if (type != "variables") {
+    names(itemsUI) <- paste0(switch(type, "computed" = "after_stat", "aesthetics" = "after_scale"), "(", vars, ")")
   }
 
   return(itemsUI)

@@ -155,5 +155,10 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
     return(processed_aes_code)
   }, ignoreInit = TRUE)
 
-  return(aes_code)
+  return(
+    list(
+      code = aes_code,
+      aesthetics = aesthetics
+    )
+  )
 }
