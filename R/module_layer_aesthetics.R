@@ -111,7 +111,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
                default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
                required = reactive({ . %in% c(stat_required_aesthetics(), geom_required_aesthetics) }),
                dataset = dataset,
-               computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }))})
+               computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }),
+               aesthetics = aesthetics)})
 
   stat_aes_args <- list()
   observe({
@@ -124,7 +125,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
                                                                  default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
                                                                  required = reactive({ . %in% c(stat_required_aesthetics(), geom_required_aesthetics) }),
                                                                  dataset = dataset,
-                                                                 computed_vars = reactive({ stat_computed_vars[[layer_stat()]] })))
+                                                                 computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }),
+                                                                 aesthetics = aesthetics))
   })
 
   # _ process subset arguments ====

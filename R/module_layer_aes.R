@@ -39,7 +39,7 @@ layerAesUI <- function(id) {
 #'
 layerAesServer <- function(input, output, session, aesUpdateDependency, base_layer_mapping,
                            inherit.aes, default_geom_aes, default_stat_aes, required,
-                           dataset, computed_vars) {
+                           dataset, computed_vars, aesthetics) {
   # Get aesthetic from namespace
   layer_info <- getLayerInfo(session$ns)
   aesthetic <- layer_info$aesthetic
@@ -48,10 +48,16 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
 
   customized <- reactiveValues(mapping = "", values = "")
 
+  # Input checking for default_geom_aes ----
+
   # https://github.com/tidyverse/ggplot2/issues/4279
   # Remove when available on CRAN
   if (layer == "geom-polygon" && aesthetic == "colour") {
     default_geom_aes <- NA
+  }
+
+  if (!is.null(default_geom_aes)) {
+    default_geom_aes <- ifelse(!is.na(default_geom_aes), default_geom_aes, NA_defaults[[aesthetic]])
   }
 
   # Convert default colour values to hex (if applicable)
@@ -146,7 +152,10 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                    icon_on = icon("times"),
                    icon_off = icon("ruler"),
                    inline = TRUE
-                 )
+                 ) %>% {
+                   .$attribs$class <- paste(c(.$attribs$class, 'hidden', 'disabled'), collapse = " ")
+                   .
+                 }
           )
         )
       )
@@ -165,7 +174,6 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
     aesUpdateDependency()
 
     isolate({
-      # if (inheritable()$base && !inheritable()$stat) {
       if (inheritable()$base && !is.null(base_layer_mapping())) {
         init_mapping <- base_layer_mapping()
       } else
@@ -179,24 +187,15 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
             init_mapping <- NULL
           }
 
-      init_value <- input$value %T||% ifelse(!is.na(default_geom_aes), default_geom_aes, NA_defaults[[aesthetic]])
+      init_value <- input$value %T||% default_geom_aes
       # Icons
-      if (isTruthy(input$switch) && isTruthy(default_geom_aes)) {
+      if (!isTruthy(input$switch) && required()) {
         icons <- tagList(
-          actionLink(session$ns("aes-reset-value"),
-                     label = '',
-                     style = ifelse(is.na(default_geom_aes) || (init_value == default_geom_aes), "display: none;", ""),
-                     icon = icon("undo")
-          )
+          span(class = "required")
         )
-      } else
-        if (!isTruthy(input$switch) && required()) {
-          icons <- tagList(
-            span(class = "required")
-          )
-        } else {
-          icons <- NULL
-        }
+      } else {
+        icons <- NULL
+      }
       icons <- icons %>%
         conditionalPanel(condition = "input.customize == false",
                          ns = session$ns,
@@ -209,7 +208,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
           dndselectr::dropZoneInput(session$ns("mapping"),
                                     choices = c(
                                       dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
-                                      dataInputChoices(computed_vars(), zone="aeszone", type = "computed", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
+                                      dataInputChoices(computed_vars(), zone="aeszone", type = "computed", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
+                                      dataInputChoices(switch(layer != "geom-blank", aesthetics()), zone="aeszone", type = "aesthetics")
                                     ),
                                     presets = init_mapping,
                                     placeholder = "Drag or select variable",
@@ -222,13 +222,17 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
             choices = list(" " = "",
                            "Variables" = names(dataset),
                            "Computed" = switch(!is.null(computed_vars()),
-                                               paste0("after_stat(", computed_vars(), ")"))
+                                               paste0("after_stat(", computed_vars(), ")")),
+                           "Aesthetics" = switch(layer != "geom-blank",
+                                                 paste0("after_scale(", aesthetics(), ")"))
             ),
             choicesOpt = list(
               content = c(htmltools::doRenderTags(em("Clear variable")),
                           sapply(dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
                                  function(x) { htmltools::doRenderTags(x) }),
                           sapply(dataInputChoices(computed_vars(), zone="aeszone", type = "computed", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
+                                 function(x) { htmltools::doRenderTags(x) }),
+                          sapply(dataInputChoices(switch(layer != "geom-blank", aesthetics()), zone="aeszone", type = "aesthetics"),
                                  function(x) { htmltools::doRenderTags(x) })
               )
             ),
@@ -245,9 +249,17 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
         )
       } else {
         # Should satisfy !is.null(default_geom_aes)
-        content <- create_aes_input(session$ns('value'),
-                                    aesthetic,
-                                    init_value)
+        content <- tagList(
+          create_aes_input(session$ns('value'),
+                           aesthetic,
+                           init_value),
+          actionButton(
+            session$ns("aes-reset-value"),
+            label = "",
+            icon = icon("undo"),
+            class = switch(init_value == default_geom_aes, "disabled")
+          )
+        )
       }
       content <- content %>%
         conditionalPanel(condition = "input.customize == null || input.customize == false",
@@ -267,11 +279,12 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
             session$ns("custom_mapping_ready"),
             label = "",
             icon = icon("check"),
-            class = switch(
-              (is.null(input$custom_mapping) && (init_mapping == customized$mapping)) ||
-                (!is.null(input$custom_mapping) && (input$custom_mapping == customized$mapping)),
-              "disabled"
-            )
+            class = paste0(c("custom",
+                             switch(
+                               (is.null(input$custom_mapping) && (init_mapping == customized$mapping)) ||
+                                 (!is.null(input$custom_mapping) && (input$custom_mapping == customized$mapping)),
+                               "disabled"
+                             )), collapse = " ")
           )
         )
       } else {
@@ -279,17 +292,18 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
           textInput(
             session$ns("custom_value"),
             label = "",
-            value = input$custom_value %T||% init_value %T||% ifelse(!is.na(default_geom_aes), default_geom_aes, NA_defaults[[aesthetic]])
+            value = input$custom_value %T||% init_value %T||% default_geom_aes
           ),
           actionButton(
             session$ns("custom_value_ready"),
             label = "",
             icon = icon("check"),
-            class = switch(
-              (is.null(input$custom_value) && (init_value == customized$value)) ||
-                (!is.null(input$custom_value) && (input$custom_value == customized$value)),
-              "disabled"
-            )
+            class = paste0(c("custom",
+                             switch(
+                               (is.null(input$custom_value) && (init_value == customized$value)) ||
+                                 (!is.null(input$custom_value) && (input$custom_value == customized$value)),
+                               "disabled"
+                             )), collapse = " ")
           )
         )
       }
@@ -345,12 +359,12 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
 
   # Show or hide aesthetic value reset button
   observe({
-    req(!is.null(input$value) && !is.na(default_geom_aes))
+    req(!is.null(input$value))
 
     if (input$value != default_geom_aes) {
-      shinyjs::show("aes-reset-value")
+      shinyjs::js$removeClass("disabled", paste0('#', session$ns("aes-reset-value")))
     } else {
-      shinyjs::hide("aes-reset-value")
+      shinyjs::js$addClass("disabled", paste0('#', session$ns("aes-reset-value")))
     }
   })
 
@@ -394,7 +408,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                                     inputId = 'mapping',
                                     choices = c(
                                       dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
-                                      dataInputChoices(computed_vars(), zone="aeszone", type = "computed", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
+                                      dataInputChoices(computed_vars(), zone="aeszone", type = "computed", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
+                                      dataInputChoices(switch(layer != "geom-blank", aesthetics()), zone="aeszone", type = "aesthetics")
                                     )
     )
     shinyWidgets::updatePickerInput(session,
@@ -402,13 +417,17 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                                     choices = list(" " = "",
                                                    "Variables" = names(dataset),
                                                    "Computed" = switch(!is.null(computed_vars()),
-                                                                       paste0("after_stat(", computed_vars(), ")"))
+                                                                       paste0("after_stat(", computed_vars(), ")")),
+                                                   "Aesthetics" = switch(layer != "geom-blank",
+                                                                         paste0("after_scale(", aesthetics(), ")"))
                                     ),
                                     choicesOpt = list(
                                       content = c(htmltools::doRenderTags(em("Clear variable")),
                                                   sapply(dataInputChoices(dataset, zone="aeszone", inherited = switch(inheritable()$base, base_layer_mapping())),
                                                          function(x) { htmltools::doRenderTags(x) }),
                                                   sapply(dataInputChoices(computed_vars(), zone="aeszone", type = "computed", inherited = switch(inheritable()$stat, strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2])),
+                                                         function(x) { htmltools::doRenderTags(x) }),
+                                                  sapply(dataInputChoices(switch(layer != "geom-blank", aesthetics()), zone="aeszone", type = "aesthetics"),
                                                          function(x) { htmltools::doRenderTags(x) })
                                       )),
                                     selected = input$mapping  # pickerInput needs current selection
@@ -473,8 +492,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                                      customized$value)
           )
         } else if (!is.null(input$value) &&
-                   (is.na(default_geom_aes) ||
-                    (input$value != default_geom_aes) ||
+                   ((input$value != default_geom_aes) ||
                     (inheritable()$base))) {
           # Set value (non-null)
           arg$values <- paste(aesthetic, "=",

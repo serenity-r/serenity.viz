@@ -289,7 +289,7 @@ span.varname {
   right: 10px;
 }
 
-.aesthetic .mapping-section .aes-content,
+.aesthetic .aes-content,
 .aesthetic .aes-custom-content {
   display: flex;
   align-items: center;
@@ -298,10 +298,15 @@ span.varname {
 }
 
 /* Style dropzone and custom input */
-.aesthetic section.mapping-section .aes-content div.ds-dropzone,
-.aesthetic section .aes-custom-content > div {
+.aesthetic .aes-content div.ds-dropzone,
+.aesthetic section .aes-custom-content > div,
+.aesthetic section .aes-content > div.aes-wrap {
   flex: 1 0 auto;
   width: unset;
+}
+
+.aes-wrap > div.form-group {
+    width: initial;
 }
 
 /* Style custom input only */
@@ -310,7 +315,8 @@ span.varname {
 }
 
 /* Style choose data dropdown button and custom ready button */
-.aesthetic section.mapping-section .aes-content div.aes-choose-data,
+.aesthetic .aes-content div.aes-choose-data,
+.aesthetic .aes-content > button,
 .aesthetic section .aes-custom-content > button {
   position: initial;
   flex: 0 0 35px;
@@ -319,21 +325,25 @@ span.varname {
   max-width: 35px;
 }
 
-.aesthetic section .aes-custom-content > button.disabled {
+.aesthetic section .aes-custom-content > button.disabled,
+.aesthetic section .aes-content > button.disabled {
   background-color: inherit;
   color: inherit;
 }
 
-.aesthetic section .aes-custom-content > button.disabled:hover {
+.aesthetic section .aes-custom-content > button.disabled:hover,
+.aesthetic section .aes-content > button.disabled:hover {
   background-color: inherit;
 }
 
-.aesthetic section .aes-custom-content > button {
+.aesthetic section .aes-custom-content > button.custom,
+.aesthetic section .aes-content > button.custom {
   background-color: #00a65a;
   color: white;
 }
 
-.aesthetic section .aes-custom-content > button:hover {
+.aesthetic section .aes-custom-content > button.custom:hover,
+.aesthetic section .aes-content > button.custom:hover {
   background-color: #008d4c;
 }
 
@@ -441,10 +451,6 @@ i.fa.inactive {
 
 .aes-header div.btn-dropdown-input > button {
   background: transparent;
-}
-
-.aes-wrap {
-  margin: 10px;
 }
 
 .aes-wrap.message {
