@@ -70,6 +70,7 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
     default_geom_aes <- linetype_to_string(default_geom_aes)
   }
 
+  # Reactive: inheritable ----
   # Inheritable mapping exists from base layer or stat
   inheritable <- reactive({
     list(
@@ -91,6 +92,16 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
       tags$header(
         class = "aes-header",
         span(class = "aes-name", aesthetic),
+        radioGroupButtons(
+          "stages",
+          choices = c(`<i class='fa fa-database'></i>` = "start",
+                      `<i class='fa fa-calculator'></i>` = "after_stat",
+                      `<i class='fa fa-paint-brush'></i>` = "after_scale")
+        ) %>% {
+          .$attribs$class <- paste(c(.$attribs$class, "stagezone",
+                                     switch(is.null(input$mapping), "hiddenn")), collapse=" ")
+          .
+        },
         div(
           class = paste(c("aes-select", switch((layer == "geom-blank") || is.null(default_geom_aes), "hidden")), collapse = " "),
           icon("database", class = ifelse(isTruthy(input$switch), 'inactive', '')),
@@ -108,9 +119,9 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
         ),
         div(
           class = "header-icons",
-          switch(as.character(layer != "geom-blank"),
-                 "TRUE" = tagList(
-                   prettyToggle(
+          tagList(
+            switch(as.character(layer != "geom-blank"),
+                   "TRUE" = prettyToggle(
                      inputId = session$ns("linked"),
                      value = input$linked %||% TRUE,
                      label_on = "",
@@ -127,9 +138,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                      .$attribs$class <- paste(c(.$attribs$class, switch(!inherit.aes() || isTruthy(input$switch), 'hidden')), collapse = " ")
                      .
                    },
-                   prettyToggle(
-                     inputId = session$ns("customize"),
-                     value = input$customize %||% FALSE,
+                   "FALSE" = prettyToggle(
+                     inputId = session$ns("scale"),
                      label_on = "",
                      label_off = "",
                      status_on = "default",
@@ -137,25 +147,26 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
                      outline = TRUE,
                      plain = TRUE,
                      icon_on = icon("times"),
-                     icon_off = icon("pencil"),
+                     icon_off = icon("ruler"),
                      inline = TRUE
-                   )
-                 ),
-                 "FALSE" = prettyToggle(
-                   inputId = session$ns("scale"),
-                   label_on = "",
-                   label_off = "",
-                   status_on = "default",
-                   status_off = "default",
-                   outline = TRUE,
-                   plain = TRUE,
-                   icon_on = icon("times"),
-                   icon_off = icon("ruler"),
-                   inline = TRUE
-                 ) %>% {
-                   .$attribs$class <- paste(c(.$attribs$class, 'hidden', 'disabled'), collapse = " ")
-                   .
-                 }
+                   ) %>% {
+                     .$attribs$class <- paste(c(.$attribs$class, 'hidden', 'disabled'), collapse = " ")
+                     .
+                   }
+            ),
+            prettyToggle(
+              inputId = session$ns("customize"),
+              value = input$customize %||% FALSE,
+              label_on = "",
+              label_off = "",
+              status_on = "default",
+              status_off = "default",
+              outline = TRUE,
+              plain = TRUE,
+              icon_on = icon("times"),
+              icon_off = icon("pencil"),
+              inline = TRUE
+            )
           )
         )
       )
@@ -189,17 +200,8 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
 
       init_value <- input$value %T||% default_geom_aes
       # Icons
-      if (!isTruthy(input$switch) && required()) {
-        icons <- tagList(
-          span(class = "required")
-        )
-      } else {
-        icons <- NULL
-      }
-      icons <- icons %>%
-        conditionalPanel(condition = "input.customize == false",
-                         ns = session$ns,
-                         class = "aes-content-icons")
+      icons <- switch(required(), span(class = "required")) %>%
+        div(class = "aes-content-icons")
 
       # Content
       if (!isTruthy(input$switch)) {
@@ -324,6 +326,11 @@ layerAesServer <- function(input, output, session, aesUpdateDependency, base_lay
 
   custom_server("mapping", input, customized, session)
   custom_server("value", input, customized, session)
+
+  # Is mapping set?
+  # mapping_set <- reactive({
+  #   isTruthy(input$map_start) || isTruthy(input$map_after_stat) || isTruthy(input$map_after_scale)
+  # })
 
   # Entangle aesthetic picker and dropzone
   observeEvent(input$`aes-choose-data`, {
@@ -668,3 +675,15 @@ custom_server <- function(type, input, customized, session) {
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
   })
 }
+
+stageUI <- function(type = "variable") {
+  span(
+    class=paste("fa-stack fa-2x stage", type),
+    icon("square", class="fa-stack-2x"),
+    icon(switch(type,
+                "variable" = "database",
+                "computed" = "calculator",
+                "aesthetic" = "paint-brush"), class="fa-stack-1x snug")
+  )
+}
+

@@ -243,6 +243,7 @@ span.varname {
   white-space: nowrap;
   width: 30%;
   margin-left: 5px;
+  vertical-align: top;
 }
 
 .aesthetic .aes-header > .header-icons {
@@ -1069,3 +1070,40 @@ i.fa.inactive {
   margin-top: -20px;
 }
 
+/* Aesthetic stage zone */
+.stagezone {
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+.stagezone .btn {
+  font-size: 0.8em;
+  padding: 2px 5px;
+  color: #000;
+  border-color: #333;
+}
+
+.stagezone .btn.active {
+  border-color: #000;
+  box-shadow: 0 0 0 1.5px #ff0000 inset;
+}
+
+.stagezone .btn-group-toggle.active:nth-child(1) .btn {
+  background-color: #ACD7B7;
+}
+
+.stagezone .btn-group-toggle.active:nth-child(2) .btn {
+  background-color: #FDBF6F;
+}
+
+.stagezone .btn-group-toggle.active:nth-child(3) .btn {
+  background-color: #c8c7e0;
+}
+
+.stagezone .btn-group-toggle .btn.active {
+  background-color: #fff;
+}
+
+.stagezone .btn-group-toggle .btn:hover {
+  filter: brightness(95%);
+}
