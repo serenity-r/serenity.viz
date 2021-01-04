@@ -206,9 +206,15 @@ layersServer <- function(input, output, session, dataset) {
 
   # Preps geom_blank dropzone inputs for layer modules
   geom_blank_inputs_to_reactives <- function() {
-    geom_blank_inputs <- as.list(paste0('geom-blank-ds-1-aesthetics-', gg_aesthetics[["geom-blank"]], '-mapping'))
+    geom_blank_inputs <- as.list(paste0('geom-blank-ds-1-aesthetics-', gg_aesthetics[["geom-blank"]]))
     names(geom_blank_inputs) <- gg_aesthetics[["geom-blank"]]
-    return(geom_blank_inputs %>% purrr::map(~ reactive({ input[[.]] })))
+    return(
+      geom_blank_inputs %>%
+        purrr::map(~ list(
+          start = reactive({ input[[paste0(.,'-start')]] }),
+          after_scale = reactive({ input[[paste0(.,'-after_scale')]] })
+        ))
+    )
   }
 
   # Update layer module output reactives - create only once!
@@ -217,7 +223,7 @@ layersServer <- function(input, output, session, dataset) {
     purrr::map(setdiff(all_layers(), names(layer_modules)), ~ {
       layer_modules[[.]] <- callModule(module = layerServer, id = .,
                                        selected_layer,
-                                       geom_blank_inputs_to_reactives(),
+                                       geom_blank_inputs_to_reactives,
                                        dataset = dataset,
                                        ggbase = switch(as.character(. != "geom-blank-ds-1"),
                                                        "TRUE" = layer_modules[["geom-blank-ds-1"]]$code,

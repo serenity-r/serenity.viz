@@ -116,3 +116,13 @@ getLayerInfo <- function(ns) {
     aesthetic = switch(length(aes_ind) > 0, paste(ns_levels[aes_ind+1], collapse = "-"))
   )
 }
+
+`%||%` <- function(a, b) if (!is.null(a)) a else b
+
+`%T||%` <- function(a, b) if (isTruthy(a)) a else b
+
+# Given a vector or list, drop all the NULL items in it except for
+#  NULL items given by \code{except}
+dropNulls <- function(x, except = NULL) {
+  x[unlist(mapply(function(key, value) { switch(!is.null(value) || (key %in% except), key) }, names(x), x))]
+}

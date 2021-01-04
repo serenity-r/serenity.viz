@@ -123,10 +123,10 @@ dataServer <- function(input, output, session, dataset, layers) {
 #'
 #' @param vars    Dataset, if not computed; otherwise, element of stat_computed_vars
 #' @param zone    "varzone" or "aeszone"
-#' @param inherited Array of variable names denoting inherited status (from base or stat)
+#' @param default Array of variable names denoting default status (inherited from base or stat)
 #' @param session Shiny user session
 #'
-dataInputChoices <- function(vars = NULL, zone = "varzone", type = "variables", inherited = NULL, session = getDefaultReactiveDomain()) {
+dataInputChoices <- function(vars = NULL, zone = "varzone", type = "variables", default = NULL, session = getDefaultReactiveDomain()) {
   if (is.null(vars)) {
     return(list())
   }
@@ -141,7 +141,7 @@ dataInputChoices <- function(vars = NULL, zone = "varzone", type = "variables", 
           switch(type == "variables", dataTypeToUI(vars[[var_name]]))
         ), collapse = " "),
       switch(type, "computed" = icon("calculator"), "aesthetics" = icon("paint-brush"), "variables" = dataTypeToUI(vars[[var_name]], .icon = TRUE)),
-      span(var_name, class = paste(c("varname", switch(type != "aesthetics" && (var_name %in% inherited), ifelse(type == "computed", "default", "inherited"))), collapse = " ")),
+      span(var_name, class = paste(c("varname", switch(var_name %in% default, "default")), collapse = " ")),
       switch((type == "variables") && zone == "varzone", # Include filter
              shinyWidgets::dropdownButton(
                dataVarUI(id = ns(var_name), var = vars[[var_name]]),
@@ -154,10 +154,6 @@ dataInputChoices <- function(vars = NULL, zone = "varzone", type = "variables", 
              ))
     )
   }, simplify = FALSE, USE.NAMES = TRUE)
-
-  if (type != "variables") {
-    names(itemsUI) <- paste0(switch(type, "computed" = "after_stat", "aesthetics" = "after_scale"), "(", vars, ")")
-  }
 
   return(itemsUI)
 }

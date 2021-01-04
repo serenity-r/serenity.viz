@@ -29,6 +29,11 @@ Imports:
     prettycode,
     markdown,
     DT
+Suggests: 
+    testthat,
+    shinytest,
+    reactlog,
+    covr
 Remotes: 
     serenity-r/dndselectr,
     serenity-r/luminophor

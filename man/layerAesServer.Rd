@@ -15,7 +15,8 @@ layerAesServer(
   default_stat_aes,
   required,
   dataset,
-  computed_vars
+  computed_vars,
+  aesthetics
 )
 }
 \arguments{

@@ -35,8 +35,8 @@ body {
 .required::after {
   content: 'Required';
   position: absolute;
+  right: 5px;
   top: 0;
-  right: 0;
   font-style: italic;
   font-size: 0.9em;
   color: red;
@@ -285,25 +285,51 @@ span.varname {
 }
 
 .aesthetic section > .aes-content-icons {
-  position: absolute;
-  top: 5px;
-  right: 10px;
+  position: relative;
 }
 
-.aesthetic .aes-content,
-.aesthetic .aes-custom-content {
+.aesthetic section > .aes-content-icons .link-toggle {
+  position: absolute;
+  right: -5px;
+  top: 5px;
+}
+
+/* Toggle custom icon */
+.aesthetic section > .aes-content-icons .custom-toggle {
+  position: absolute;
+  left: 10px;
+  top: 5px;
+}
+
+.aesthetic section .aes-content,
+.aesthetic section .aes-custom-content {
   display: flex;
   align-items: center;
   height: 100%;
   margin: 0 10px;
 }
 
+.aesthetic section .aes-custom-content {
+  margin-top: 12px;
+}
+
 /* Style dropzone and custom input */
-.aesthetic .aes-content div.ds-dropzone,
+.aesthetic section .aes-content .ds-dropzone,
 .aesthetic section .aes-custom-content > div,
 .aesthetic section .aes-content > div.aes-wrap {
   flex: 1 0 auto;
   width: unset;
+}
+
+.aesthetic section .aes-content .ds-dropzone {
+  margin-bottom: 0;
+  border-right: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+/* Snug with custom reset button */
+.aesthetic section .aes-custom-content > div .form-control {
+  border-radius: 4px 0 0 4px;
 }
 
 .aes-wrap > div.form-group {
@@ -316,20 +342,31 @@ span.varname {
 }
 
 /* Style choose data dropdown button and custom ready button */
-.aesthetic .aes-content div.aes-choose-data,
-.aesthetic .aes-content > button,
+.aesthetic section .aes-content .ds-chooser,
+.aesthetic section .aes-content > button,
 .aesthetic section .aes-custom-content > button {
   position: initial;
-  flex: 0 0 35px;
+  flex: 0 0 34px;
   margin-left: 5px;
   margin-bottom: 0;
-  max-width: 35px;
+  max-width: 34px;
+}
+
+/* Adjust custom ready button */
+.aesthetic section .aes-content .ds-chooser,
+.aesthetic section .aes-custom-content > button.custom {
+  margin-left: 0;
 }
 
 .aesthetic section .aes-custom-content > button.disabled,
 .aesthetic section .aes-content > button.disabled {
   background-color: inherit;
   color: inherit;
+}
+
+/* Adjust custom ready button */
+.aesthetic section .aes-custom-content > button.custom.disabled {
+  background-color: #aaa !important;
 }
 
 .aesthetic section .aes-custom-content > button.disabled:hover,
@@ -341,6 +378,8 @@ span.varname {
 .aesthetic section .aes-content > button.custom {
   background-color: #00a65a;
   color: white;
+  border-color: #aaa;
+  border-radius: 0 4px 4px 0;
 }
 
 .aesthetic section .aes-custom-content > button.custom:hover,
@@ -349,41 +388,51 @@ span.varname {
 }
 
 /* Style custom ready button only */
-.aesthetic section .aes-custom-content > button > i {
+.aesthetic section .aes-custom-content > button.custom > i {
   margin-left: -2px;
 }
 
 /* Make sure dropdown placed in correct spot */
-.aesthetic section.mapping-section .aes-content div.aes-choose-data .dropdown {
+.aesthetic section.mapping-section .aes-content .ds-chooser .dropdown {
   position: initial;
 }
 
+.aesthetic section.mapping-section .aes-content .ds-dropoption {
+  /* margin: 3px 2px 0 2px; */
+}
+
 /* Small button */
-.aesthetic section.mapping-section .aes-content div.aes-choose-data .dropdown button.dropdown-toggle {
-  width: 35px;
+.aesthetic section.mapping-section .aes-content .ds-chooser .dropdown button.dropdown-toggle {
+  /* width: 35px; */
+}
+
+.aesthetic section .aes-content .ds-chooser .dropdown button.dropdown-toggle {
+  border-radius: 0 4px 4px 0;
+  height: 34px;
 }
 
 /* Bigger caret */
-.aesthetic section.mapping-section .aes-content div.aes-choose-data .dropdown button.dropdown-toggle .caret {
+.aesthetic section .aes-content .ds-chooser .dropdown button.dropdown-toggle span.caret {
   border-top: 6px dashed;
   border-right: 6px solid transparent;
   border-left: 6px solid transparent;
+  right: 11px;
 }
 
-div.ds-dropzone:not(.ds-max-input) ~ div.aes-choose-data .dropdown button.dropdown-toggle span.caret {
+div.ds-dropzone:not(.ds-max-input) ~ .ds-chooser .dropdown button.dropdown-toggle span.caret {
   border-color: transparent !important;
   font-weight: 900;
   font-family: "Font Awesome 5 Free";
   top: 7%;
-  left: 10%;
+  left: 11%;
 }
 
-div.ds-dropzone:not(.ds-max-input) ~ div.aes-choose-data .dropdown button.dropdown-toggle span.caret:before {
+div.ds-dropzone:not(.ds-max-input) ~ .ds-chooser .dropdown button.dropdown-toggle span.caret:before {
   content:'\f067';
 }
 
 /* Make sure icon isn't de-emphasized */
-.aesthetic section.mapping-section .aes-content div.aes-choose-data .dropdown button.dropdown-toggle.bs-placeholder {
+.aesthetic section .aes-content .ds-chooser .dropdown button.dropdown-toggle.bs-placeholder {
   color: unset;
 }
 

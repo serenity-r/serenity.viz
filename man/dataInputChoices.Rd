@@ -7,7 +7,8 @@
 dataInputChoices(
   vars = NULL,
   zone = "varzone",
-  inherited = NULL,
+  type = "variables",
+  default = NULL,
   session = getDefaultReactiveDomain()
 )
 }
@@ -16,7 +17,7 @@ dataInputChoices(
 
 \item{zone}{"varzone" or "aeszone"}
 
-\item{inherited}{Array of variable names denoting inherited status (from base or stat)}
+\item{default}{Array of variable names denoting default status (inherited from base or stat)}
 
 \item{session}{Shiny user session}
 }

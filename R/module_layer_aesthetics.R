@@ -104,8 +104,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
   # _ load variable subset modules ====
   geom_aes_args <- purrr::map(geom_aesthetics, ~ {
     callModule(module = layerAesServer, id = .,
-               reactive({ triggerAesUpdate$depend() }),
-               base_layer_mappings[[.]],
+               aesUpdateDependency = reactive({ triggerAesUpdate$depend() }),
+               base_layer_mapping = base_layer_mappings[[.]],
                inherit.aes = inherit.aes,
                default_geom_aes = geom_proto$geom$default_aes[[.]],
                default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
@@ -118,8 +118,8 @@ layerAestheticsServer <- function(input, output, session, layer_selected, base_l
   observe({
     req(stat_aesthetics())
     stat_aes_args <<- purrr::map(stat_aesthetics(), ~ callModule(module = layerAesServer, id = .,
-                                                                 reactive({ triggerAesUpdate$depend() }),
-                                                                 base_layer_mappings[[.]],
+                                                                 aesUpdateDependency = reactive({ triggerAesUpdate$depend() }),
+                                                                 base_layer_mapping = base_layer_mappings[[.]],
                                                                  inherit.aes = inherit.aes,
                                                                  default_geom_aes = geom_proto$geom$default_aes[[.]],
                                                                  default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),

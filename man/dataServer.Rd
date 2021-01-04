@@ -4,7 +4,7 @@
 \alias{dataServer}
 \title{Server for data module}
 \usage{
-dataServer(input, output, session, dataset)
+dataServer(input, output, session, dataset, layers)
 }
 \arguments{
 \item{input}{Shiny inputs}
