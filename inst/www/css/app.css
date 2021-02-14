@@ -260,8 +260,6 @@ span.varname {
 
 .aesthetic section {
   position: relative;
-  border: 1px solid #979797;
-  box-sizing: border-box;
   height: 100px;
 }
 
@@ -280,7 +278,7 @@ span.varname {
   color: #000;
 }
 
-.aesthetic .mapping-section .action-button {
+.aesthetic .stage-section .action-button {
   margin-right: 0;
 }
 
@@ -288,7 +286,12 @@ span.varname {
   position: relative;
 }
 
-.aesthetic section > .aes-content-icons .link-toggle {
+.aesthetic section.mapping-section {
+  border: 1px solid #979797;
+  box-sizing: border-box;
+}
+
+.aesthetic section.mapping-section .link-toggle {
   position: absolute;
   right: -5px;
   top: 5px;
@@ -393,16 +396,16 @@ span.varname {
 }
 
 /* Make sure dropdown placed in correct spot */
-.aesthetic section.mapping-section .aes-content .ds-chooser .dropdown {
+.aesthetic section.stage-section .aes-content .ds-chooser .dropdown {
   position: initial;
 }
 
-.aesthetic section.mapping-section .aes-content .ds-dropoption {
+.aesthetic section.stage-section .aes-content .ds-dropoption {
   /* margin: 3px 2px 0 2px; */
 }
 
 /* Small button */
-.aesthetic section.mapping-section .aes-content .ds-chooser .dropdown button.dropdown-toggle {
+.aesthetic section.stage-section .aes-content .ds-chooser .dropdown button.dropdown-toggle {
   /* width: 35px; */
 }
 
@@ -590,7 +593,7 @@ i.fa.inactive {
 }
 
 .widget-header .header-icon,
-.mapping-section .header-icon,
+.stage-section .header-icon,
 .value-section .header-icon,
 .widget-header .btn-header-icon {
   float: right;
@@ -1120,39 +1123,34 @@ i.fa.inactive {
 }
 
 /* Aesthetic stage zone */
-.stagezone {
-  display: inline-block;
-  vertical-align: bottom;
-}
-
-.stagezone .btn {
+.stageszone .btn {
   font-size: 0.8em;
   padding: 2px 5px;
   color: #000;
   border-color: #333;
 }
 
-.stagezone .btn.active {
+.stageszone .btn.active {
   border-color: #000;
   box-shadow: 0 0 0 1.5px #ff0000 inset;
 }
 
-.stagezone .btn-group-toggle.active:nth-child(1) .btn {
+.stageszone .btn-group-toggle.active:nth-child(1) .btn {
   background-color: #ACD7B7;
 }
 
-.stagezone .btn-group-toggle.active:nth-child(2) .btn {
+.stageszone .btn-group-toggle.active:nth-child(2) .btn {
   background-color: #FDBF6F;
 }
 
-.stagezone .btn-group-toggle.active:nth-child(3) .btn {
+.stageszone .btn-group-toggle.active:nth-child(3) .btn {
   background-color: #c8c7e0;
 }
 
-.stagezone .btn-group-toggle .btn.active {
+.stageszone .btn-group-toggle .btn.active {
   background-color: #fff;
 }
 
-.stagezone .btn-group-toggle .btn:hover {
+.stageszone .btn-group-toggle .btn:hover {
   filter: brightness(95%);
 }

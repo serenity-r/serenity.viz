@@ -104,7 +104,7 @@ layerAesMappingStageServer <- function(id, stage, choices,
           )
 
           tags$section(
-            class = "mapping-section",
+            class = "stage-section",
             icons,
             conditionalPanel(condition = "input.custom_toggle == null || input.custom_toggle == false",
                              ns = session$ns,
