@@ -7,7 +7,8 @@
 layerAesValueUI <- function(id) {
   ns <- NS(id)
 
-  uiOutput(ns('value_ui'))
+  uiOutput(ns('value_ui'),
+           container = tags$section)
 }
 
 #' Server for layer aesthetic submodule
@@ -27,6 +28,8 @@ layerAesValueServer <- function(id, aesthetic, initial, show_initial = reactive(
 
       if (!is.null(initial)) {
         initial <- ifelse(!is.na(initial), initial, NA_defaults[[aesthetic]])
+      } else {
+        return(reactive({ NULL }))
       }
 
       # Convert default colour values to hex (if applicable)
