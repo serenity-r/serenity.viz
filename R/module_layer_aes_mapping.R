@@ -14,15 +14,28 @@ layerAesMappingUI <- function(id) {
   )
 }
 
-#' Server for layer aesthetic stage submodule
+#' Server for layer aesthetic mapping submodule
 #'
-#' @param id  ID of layer aesthetic stage submodule
-#' @param aesthetics Aesthetics
-#' @param computed_vars Reactive value of stat computed variables
+#' @param id ID of layer aesthetic mapping submodule
+#' @param stage Reactive of currently selected stage. Stage is one of
+#'   \code{start}, \code{after_stat}, or \code{after_scale}.
+#' @param aesthetic Aesthetic for this mapping.
+#' @param inheritable List of two logical reactives: \code{from_base} and
+#'   \code{from_stat}. \code{from_base} is TRUE if mapping can inherit from
+#'   the base layer. \code{from_stat} is TRUE if a non-identity stat is set.
+#' @param base_layer_stages Returned list of reactives from the
+#'   \code{\link{layerAesMappingStageServer}} that stores the state of the
+#'   base layer stages. Used for inheritance and linking.
+#' @param aesthetics Reactive of aesthetics for \code{after_scale} stage.
+#' @param default_stat_aes Reactive value of default stat aesthetic - might be mapping!
+#' @param dataset Dataset
+#' @param computed_vars Reactive of stat computed variables for \code{after_stat}
+#'   stage.
 #'
 #' @return
 #' @export
-layerAesMappingServer <- function(id, stage, inheritable, base, aesthetic, aesthetics, default_stat_aes, dataset, computed_vars) {
+layerAesMappingServer <- function(id, stage, aesthetic, inheritable, base_layer_stages,
+                                  aesthetics, default_stat_aes, dataset, computed_vars) {
   moduleServer(
     id,
     function (input, output, session) {
@@ -55,7 +68,7 @@ layerAesMappingServer <- function(id, stage, inheritable, base, aesthetic, aesth
               .
             },
             conditionalPanel(
-              condition = "output.stage == 'start'",
+              condition = "output.stage == null || output.stage == 'start'",
               ns = session$ns,
               layerAesMappingStageUI(session$ns("start"))
             ),
@@ -74,20 +87,20 @@ layerAesMappingServer <- function(id, stage, inheritable, base, aesthetic, aesth
       })
       outputOptions(output, "mapping_ui", suspendWhenHidden = FALSE)
 
-      after_scale_default <- reactive({ ifelse(inheritable$from_base(), base$after_scale$mapping(), aesthetic) })
-      after_scale_custom_mapping <- reactive({ ifelse(inheritable$from_base(), base$after_scale$custom_mapping(), aesthetic) })
+      after_scale_default <- reactive({ ifelse(inheritable$from_base(), base_layer_stages$after_scale$mapping(), aesthetic) })
+      after_scale_custom_mapping <- reactive({ ifelse(inheritable$from_base(), base_layer_stages$after_scale$custom_mapping(), aesthetic) })
       stages <- list(
         # callModule: Call start mapping module ----
         start = layerAesMappingStageServer(
           id = "start",
           stage = "start",
           choices = reactive({
-            dataInputChoices(dataset, zone="aeszone", default = switch(inheritable$from_base(), base$start$mapping()))
+            dataInputChoices(dataset, zone="aeszone", default = switch(inheritable$from_base(), base_layer_stages$start$mapping()))
           }),
           default = list(
-            mapping = reactive({ switch(inheritable$from_base(), base$start$mapping()) }),
-            custom_mapping = reactive({ ifelse(inheritable$from_base(), base$start$custom_mapping(), character(0)) }),
-            custom_toggle = reactive({ ifelse(inheritable$from_base(), base$start$custom_toggle(), FALSE) })
+            mapping = reactive({ switch(inheritable$from_base(), base_layer_stages$start$mapping()) }),
+            custom_mapping = reactive({ ifelse(inheritable$from_base(), base_layer_stages$start$custom_mapping(), character(0)) }),
+            custom_toggle = reactive({ ifelse(inheritable$from_base(), base_layer_stages$start$custom_toggle(), FALSE) })
           ),
           inherit = reactive({ inheritable$from_base() }),
           linked = reactive({ input$linked })
@@ -100,8 +113,8 @@ layerAesMappingServer <- function(id, stage, inheritable, base, aesthetic, aesth
             dataInputChoices(computed_vars(), zone="aeszone", type = "computed", default = switch(inheritable$from_stat(), strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]))
           }),
           default = list(
-            mapping = reactive({ switch(inheritable$from_stat(), rlang::quo_name(default_stat_aes())) }),
-            custom_mapping = reactive({ ifelse(inheritable$from_stat(), rlang::quo_name(default_stat_aes()), character(0)) }),
+            mapping = reactive({ switch(inheritable$from_stat(), strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2]) }),
+            custom_mapping = reactive({ ifelse(inheritable$from_stat(), strsplit(rlang::quo_name(default_stat_aes()), "[()]")[[1]][2], character(0)) }),
             custom_toggle = reactive({ FALSE })
           ),
           inherit = reactive({ FALSE }),
@@ -117,7 +130,7 @@ layerAesMappingServer <- function(id, stage, inheritable, base, aesthetic, aesth
           default = list(
             mapping = after_scale_default,
             custom_mapping = after_scale_custom_mapping,
-            custom_toggle = reactive({ ifelse(inheritable$from_base(), base$after_scale$custom_toggle(), FALSE) })
+            custom_toggle = reactive({ ifelse(inheritable$from_base(), base_layer_stages$after_scale$custom_toggle(), FALSE) })
           ),
           inherit = reactive({ inheritable$from_base() }),
           linked = reactive({ input$linked })

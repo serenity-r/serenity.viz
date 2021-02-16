@@ -2,8 +2,10 @@
 
 export(layerAesCustomServer)
 export(layerAesCustomUI)
+export(layerAesMappingServer)
 export(layerAesMappingStageServer)
 export(layerAesMappingStageUI)
+export(layerAesMappingUI)
 export(layerAesValueServer)
 export(layerAesValueUI)
 export(serenity.viz)

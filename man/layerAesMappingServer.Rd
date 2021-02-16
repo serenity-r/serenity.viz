@@ -4,18 +4,38 @@
 \alias{layerAesMappingServer}
 \title{Server for layer aesthetic stage submodule}
 \usage{
-layerAesMappingServer(id, stage, geom, aesthetics, computed_vars)
+layerAesMappingServer(
+  id,
+  stage,
+  aesthetic,
+  inheritable,
+  base_layer_stages,
+  aesthetics,
+  default_stat_aes,
+  dataset,
+  computed_vars
+)
 }
 \arguments{
 \item{id}{ID of layer aesthetic stage submodule}
 
-\item{stage}{Stage}
+\item{stage}{Reactive of currently selected stage. Stage is one of
+\code{start}, \code{after_stat}, or \code{after_scale}.}
 
-\item{geom}{Geom}
+\item{aesthetic}{Aesthetic for this mapping.}
 
-\item{aesthetics}{Aesthetics}
+\item{inheritable}{List of two logical reactives: \code{from_base} and
+\code{from_stat}. \code{from_base} is TRUE if mapping can inherit from
+the base layer. \code{from_stat} is TRUE if a non-identity stat is set.}
 
-\item{computed_vars}{Reactive value of stat computed variables}
+\item{base_layer_stages}{Returned list of reactives from the
+\code{\link{layerAesMappingStageServer}} that stores the state of the
+base layer stages. Used for inheritance and linking.}
+
+\item{aesthetics}{Reactive of aesthetics for \code{after_scale} stage.}
+
+\item{computed_vars}{Reactive of stat computed variables for \code{after_stat}
+stage.}
 }
 \value{
 

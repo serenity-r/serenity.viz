@@ -35,38 +35,33 @@ server <- function(input, output, session) {
   computed_vars <- c("count", "density", "ncount", "ndensity")
   aesthetics <- ggplot2::GeomBar$aesthetics()
 
-  base <- layerAesMappingServer(
+  base_layer <- layerAesMappingServer(
     "base",
     stage = reactive({ input$stage }),
+    aesthetic = "y",
     inheritable = list(
       from_base = reactive({ FALSE }),
       from_stat = reactive({ FALSE })
     ),
-    base = reactive({ NULL }),
-    aesthetic = "y",
+    base_layer_stages = reactive({ NULL }),
     aesthetics = reactive({ aesthetics }),
     default_stat_aes = reactive({ NULL }),
     dataset = iris,
     computed_vars = reactive({ computed_vars })
   )
 
-  # Trigger linked if inherit turned on
-  observeEvent(input$inherit, {
-    updateCheckboxInput(session, "linked", value = input$inherit)
-  }, ignoreInit = TRUE)
-
   observeEvent(input$add_layer, {
     layer <<- layerAesMappingServer(
       "layer",
       stage = reactive({ input$stage }),
+      aesthetic = "y",
       inheritable = list(
         from_base = reactive({ input$inherit }),
         from_stat = reactive({ TRUE })
       ),
-      base = base$stages,
-      aesthetic = "y",
+      base_layer_stages = base_layer$stages,
       aesthetics = reactive({ aesthetics }),
-      default_stat_aes = reactive({ "count" }),
+      default_stat_aes = reactive({ StatCount$default_aes[['y']] }),
       dataset = iris,
       computed_vars = reactive({ computed_vars })
     )
@@ -80,7 +75,7 @@ server <- function(input, output, session) {
   }, ignoreInit = TRUE, ignoreNULL = TRUE, once = TRUE)
 
   output$base_code <- renderText({
-    base$code()
+    base_layer$code()
   })
 
   # reactlog_module_server()
