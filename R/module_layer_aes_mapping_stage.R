@@ -233,8 +233,7 @@ layerAesMappingStageServer <- function(id, stage, choices,
         mapping <- NULL
         if (input$custom_toggle) {
           # Custom override
-          if (isolate(inherit() && !linked()) ||
-              (!identical(custom_mapping(), isolate(default$custom_mapping())))) {
+          if (!identical(custom_mapping(), default$custom_mapping())) {
             if (identical(custom_mapping(), character(0))) {
               # Only show NULL when default is not empty
               mapping <- "NULL"
@@ -244,8 +243,7 @@ layerAesMappingStageServer <- function(id, stage, choices,
           }
         } else {
           # Mapping
-          if (isolate(inherit() && !linked()) ||
-              !identical(input$mapping, isolate(default$mapping()))) {
+          if (!identical(input$mapping, default$mapping())) {
             if (is.null(input$mapping)) {
               # Only show NULL when default is not NULL
               mapping <- "NULL"
