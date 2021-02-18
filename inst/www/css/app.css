@@ -224,12 +224,9 @@ span.varname {
 
 .aesthetic .aes-header {
   height: 24px;
-  position: relative;
   background: #D8D8D8;
   border: 1px solid #979797;
-  box-sizing: border-box;
-  display: block;
-  line-height: 1.3em;
+  display: flex;
 }
 
 .aesthetic .aes-header .aes-name,
@@ -286,7 +283,8 @@ span.varname {
   position: relative;
 }
 
-.aesthetic section.mapping-section {
+.aesthetic section.mapping-section,
+.aesthetic section.value-section {
   border: 1px solid #979797;
   box-sizing: border-box;
 }
@@ -1135,15 +1133,15 @@ i.fa.inactive {
   box-shadow: 0 0 0 1.5px #ff0000 inset;
 }
 
-.stageszone .btn-group-toggle.active:nth-child(1) .btn {
+.stageszone .btn-group-toggle.set:nth-child(1) .btn {
   background-color: #ACD7B7;
 }
 
-.stageszone .btn-group-toggle.active:nth-child(2) .btn {
+.stageszone .btn-group-toggle.set:nth-child(2) .btn {
   background-color: #FDBF6F;
 }
 
-.stageszone .btn-group-toggle.active:nth-child(3) .btn {
+.stageszone .btn-group-toggle.set:nth-child(3) .btn {
   background-color: #c8c7e0;
 }
 

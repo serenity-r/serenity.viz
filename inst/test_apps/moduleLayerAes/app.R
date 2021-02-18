@@ -6,7 +6,7 @@ ui <- function() {
   fluidPage(
     shinyjs::useShinyjs(),
     tags$head(includeCSS(file.path(system.file("www", package = "serenity.viz"), "css", "app.css"))),
-    h1("Example: Bar plot y aesthetic"),
+    h1("Example: Bar plot aesthetic"),
     checkboxInput("inherit",
                   "Inherit from base?",
                   value = FALSE),
@@ -34,10 +34,12 @@ server <- function(input, output, session) {
   computed_vars <- c("count", "density", "ncount", "ndensity")
   aesthetics <- ggplot2::GeomBar$aesthetics()
 
+  aesthetic <- "colour"
+
   base_layer <- layerAesServer(
     "base",
     geom = "geom-blank",
-    aesthetic = "y",
+    aesthetic = aesthetic,
     base_layer_stages = reactive({ NULL }),
     inherit_aes = reactive({ FALSE }),
     default_geom_aes = NULL,
@@ -51,12 +53,12 @@ server <- function(input, output, session) {
   observeEvent(input$add_layer, {
     layer <<- layerAesServer(
       "layer",
-      geom = "geom-blank",
-      aesthetic = "y",
+      geom = "geom-bar",
+      aesthetic = aesthetic,
       base_layer_stages = base_layer$stages,
       inherit_aes = reactive({ input$inherit }),
-      default_geom_aes = NULL,
-      default_stat_aes = reactive({ StatCount$default_aes[['y']] }),
+      default_geom_aes = geom_bar()$geom$default_aes[[aesthetic]],
+      default_stat_aes = reactive({ StatCount$default_aes[[aesthetic]] }),
       required = TRUE,
       dataset = iris,
       computed_vars = reactive({ computed_vars }),
@@ -64,7 +66,8 @@ server <- function(input, output, session) {
     )
 
     output$layer_code <<- renderText({
-      layer$code()
+      paste0("Mapping: ", layer$code()$mapping, "\n",
+             "Value: ", layer$code()$value)
     })
 
     # Deactivate button

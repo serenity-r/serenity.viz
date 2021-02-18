@@ -7,8 +7,7 @@
 layerAesValueUI <- function(id) {
   ns <- NS(id)
 
-  uiOutput(ns('value_ui'),
-           container = tags$section)
+  uiOutput(ns('value_ui'))
 }
 
 #' Server for layer aesthetic submodule

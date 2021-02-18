@@ -3,6 +3,7 @@
 #' @param id  ID of layer aesthetic
 #'
 #' @return UI for layer aesthetic
+#' @export
 layerAesUI <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
@@ -44,6 +45,7 @@ layerAesUI <- function(id) {
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
+#' @export
 layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, default_geom_aes,
                            default_stat_aes, required, dataset, computed_vars,
                            aesthetics) {
@@ -132,17 +134,15 @@ layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, 
       )
 
       observeEvent(input$edit_value, {
-        # REFACTOR: Change to shinyjs::toggleClass
-        shinyjs::toggleClass("inactive",
-                             selector = paste(paste0('#', session$ns('aes_header_ui')), '.aes-select', '.fa-database'))
-        # if (input$edit_value) {
-        #   shinyjs::js$addClass('inactive', paste(paste0('#', session$ns('aes_header_ui')), '.aes-select', '.fa-database'))
-        #   shinyjs::js$removeClass('inactive', paste(paste0('#', session$ns('aes_header_ui')), '.aes-select', '.fa-sliders-h'))
-        # } else {
-        #   shinyjs::js$removeClass('inactive', paste(paste0('#', session$ns('aes_header_ui')), '.aes-select', '.fa-database'))
-        #   shinyjs::js$addClass('inactive', paste(paste0('#', session$ns('aes_header_ui')), '.aes-select', '.fa-sliders-h'))
-        # }
+        shinyjs::toggleClass(class = "inactive",
+                             condition = !input$edit_value,
+                             selector = paste(paste0('#', session$ns('aes_header_ui')), '.aes-select', '.fa-sliders-h'))
+        shinyjs::toggleState(id = "stage", condition = !input$edit_value)
       }, ignoreInit = TRUE)
+
+      createStageStateChangeEvent("start", mapping)
+      createStageStateChangeEvent("after_stat", mapping)
+      createStageStateChangeEvent("after_scale", mapping)
 
       # _ Aesthetic to code ====
       aesToCode <- reactive({
@@ -164,4 +164,31 @@ layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, 
       )
     }
   )
+}
+
+#' Creates observeEvent to change state of stage button
+#'
+#' @param stage Which stage?
+#' @param mapping Mapping
+#' @param session Session
+#'
+#' @return observeEvent
+createStageStateChangeEvent <- function(stage = "start", mapping, session = getDefaultReactiveDomain()) {
+  return(eval(rlang::expr(
+    observeEvent(c(
+      mapping$stages[[!!stage]]$mapping(),
+      mapping$stages[[!!stage]]$custom_mapping()
+    ), {
+      shinyjs::toggleClass(
+        class = "set",
+        condition = isTruthy(
+          switch(as.character(!mapping$stages[[!!stage]]$custom_toggle()),
+                 "TRUE" = mapping$stages[[!!stage]]$mapping(),
+                 "FALSE" = mapping$stages[[!!stage]]$custom_mapping())
+        ),
+        selector = paste(paste0("#", session$ns("stage")), ".btn-group-toggle:nth-child(",
+                         switch(!!stage, "start" = 1, "after_stat" = 2, "after_scale" = 3),
+                         ")"))
+    }, ignoreNULL = FALSE)
+  )))
 }
