@@ -2,7 +2,7 @@
 % Please edit documentation in R/module_layer_aes_mapping.R
 \name{layerAesMappingServer}
 \alias{layerAesMappingServer}
-\title{Server for layer aesthetic stage submodule}
+\title{Server for layer aesthetic mapping submodule}
 \usage{
 layerAesMappingServer(
   id,
@@ -17,7 +17,7 @@ layerAesMappingServer(
 )
 }
 \arguments{
-\item{id}{ID of layer aesthetic stage submodule}
+\item{id}{ID of layer aesthetic mapping submodule}
 
 \item{stage}{Reactive of currently selected stage. Stage is one of
 \code{start}, \code{after_stat}, or \code{after_scale}.}
@@ -34,6 +34,10 @@ base layer stages. Used for inheritance and linking.}
 
 \item{aesthetics}{Reactive of aesthetics for \code{after_scale} stage.}
 
+\item{default_stat_aes}{Reactive value of default stat aesthetic - might be mapping!}
+
+\item{dataset}{Dataset}
+
 \item{computed_vars}{Reactive of stat computed variables for \code{after_stat}
 stage.}
 }
@@ -41,5 +45,5 @@ stage.}
 
 }
 \description{
-Server for layer aesthetic stage submodule
+Server for layer aesthetic mapping submodule
 }

@@ -5,12 +5,11 @@
 \title{Server for layer aesthetic submodule}
 \usage{
 layerAesServer(
-  input,
-  output,
-  session,
-  aesUpdateDependency,
-  base_layer_mapping,
-  inherit.aes,
+  id,
+  geom,
+  aesthetic,
+  base_layer_stages,
+  inherit_aes,
   default_geom_aes,
   default_stat_aes,
   required,
@@ -20,17 +19,15 @@ layerAesServer(
 )
 }
 \arguments{
-\item{input}{Shiny inputs}
+\item{id}{ID of layer aesthetic submodule}
 
-\item{output}{Shiny outputs}
+\item{geom}{Geom}
 
-\item{session}{Shiny user session}
+\item{aesthetic}{Aesthetic}
 
-\item{aesUpdateDependency}{Trigger update on layer change}
+\item{base_layer_stages}{Need base layer aesthetic mapping to use for inheritance}
 
-\item{base_layer_mapping}{Need base layer aesthetic mapping to use for inheritance}
-
-\item{inherit.aes}{Reactive: Is this aesthetic inheritable?}
+\item{inherit_aes}{Reactive: Is this aesthetic inheritable?}
 
 \item{default_geom_aes}{Default value for geom aesthetic}
 
@@ -41,6 +38,8 @@ layerAesServer(
 \item{dataset}{Dataset}
 
 \item{computed_vars}{Reactive value of stat computed variables}
+
+\item{aesthetics}{Reactive value of aesthetics (combines layer and stat aesthetics)}
 }
 \description{
 Server for layer aesthetic submodule

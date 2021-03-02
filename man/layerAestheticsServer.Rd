@@ -5,30 +5,30 @@
 \title{Server for layer aesthetics module}
 \usage{
 layerAestheticsServer(
-  input,
-  output,
-  session,
+  id,
+  layer_id,
+  geom,
   layer_selected,
-  base_layer_mappings,
+  base_layer_stages,
   dataset,
-  inherit.aes,
+  inherit_aes,
   layer_stat
 )
 }
 \arguments{
-\item{input}{Shiny inputs}
+\item{id}{ID of layer aesthetics submodule}
 
-\item{output}{Shiny outputs}
+\item{layer_id}{Layer ID}
 
-\item{session}{Shiny user session}
+\item{geom}{Geom}
 
-\item{layer_selected}{Reactive value of currently selected layer}
+\item{layer_selected}{Reactive value of ID of currently selected layer}
 
-\item{base_layer_mappings}{Need base layer aesthetic mappings for inheritance}
+\item{base_layer_stages}{Need base layer aesthetic mappings for inheritance}
 
 \item{dataset}{Dataset}
 
-\item{inherit.aes}{Inherit aesthetics from base layer? (reactive)}
+\item{inherit_aes}{Reactive: Is this aesthetic inheritable?}
 
 \item{layer_stat}{Reactive value of currently selected layer stat}
 }

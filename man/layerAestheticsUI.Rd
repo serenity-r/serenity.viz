@@ -4,10 +4,12 @@
 \alias{layerAestheticsUI}
 \title{UI for layer aesthetics module}
 \usage{
-layerAestheticsUI(id)
+layerAestheticsUI(id, name)
 }
 \arguments{
 \item{id}{Layer ID}
+
+\item{name}{Layer name}
 }
 \value{
 UI for layer
