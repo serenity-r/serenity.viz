@@ -20,7 +20,7 @@ ui <- function() {
              verbatimTextOutput("base_code")),
       column(6, h2("Bar Plot"),
              h3("Mapping"),
-             div(class = "layer-aesthetics", layerAesUI("layer")),
+             div(class = "layer-aesthetics", layerAesUI("bar_layer")),
              h3("Code"),
              verbatimTextOutput("layer_code"))
     )
@@ -40,7 +40,7 @@ server <- function(input, output, session) {
     "base",
     geom = "geom-blank",
     aesthetic = aesthetic,
-    base_layer_stages = reactive({ NULL }),
+    base_layer_stages = NULL,
     inherit_aes = reactive({ FALSE }),
     default_geom_aes = NULL,
     default_stat_aes = reactive({ NULL }),
@@ -51,8 +51,8 @@ server <- function(input, output, session) {
   )
 
   observeEvent(input$add_layer, {
-    layer <<- layerAesServer(
-      "layer",
+    bar_layer <<- layerAesServer(
+      "bar_layer",
       geom = "geom-bar",
       aesthetic = aesthetic,
       base_layer_stages = base_layer$stages,
@@ -66,8 +66,8 @@ server <- function(input, output, session) {
     )
 
     output$layer_code <<- renderText({
-      paste0("Mapping: ", layer$code()$mapping, "\n",
-             "Value: ", layer$code()$value)
+      paste0("Mapping: ", bar_layer$code()$mapping, "\n",
+             "Value: ", bar_layer$code()$value)
     })
 
     # Deactivate button

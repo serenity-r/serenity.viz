@@ -1,8 +1,5 @@
 library(shiny)
-library(reactlog)
 library(serenity.viz)
-
-reactlog_enable()
 
 ui <- function() {
   fluidPage(
@@ -79,8 +76,7 @@ ui <- function() {
              tags$h3("Output"),
              verbatimTextOutput("custom_string_size")
       )
-    ),
-    reactlog_module_ui()
+    )
   )
 }
 
@@ -108,8 +104,6 @@ server <- function(input, output, session) {
   output$custom_string_size <- renderText({
     custom_string_size()
   })
-
-  reactlog_module_server()
 }
 
 shinyApp(ui, server)

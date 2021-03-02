@@ -90,7 +90,7 @@ layerAesCustomServer <- function(id, custom_for, custom_value = reactive({ NULL 
       # Custom ready button events ----
       ## _ observeEvent: Enable/disable custom ready button ----
       # Adding a minor debounce to avoid double call
-      observeEvent(debounce(reactive({ c(input$custom_text, customized()) }), 100)(), {
+      observeEvent(c(input$custom_text, customized()), {
         req(input$custom_text)
         if (!identical(input$custom_text, customized())) {
           shinyjs::enable("custom_ready")

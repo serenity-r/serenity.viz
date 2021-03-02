@@ -1,5 +1,4 @@
 library(shiny)
-library(reactlog)
 library(serenity.viz)
 
 ui <- function() {
@@ -25,8 +24,7 @@ ui <- function() {
                column(6, verbatimTextOutput("base_start_output")))),
       column(6, h2("Stage for Bar Plot"),
              uiOutput("stage"))
-    ),
-    reactlog_module_ui()
+    )
   )
 }
 
@@ -99,8 +97,6 @@ server <- function(input, output, session) {
     # Deactivate button
     shinyjs::disable("add_stage")
   }, ignoreInit = TRUE, ignoreNULL = TRUE, once = TRUE)
-
-  reactlog_module_server()
 }
 
 shinyApp(ui, server)

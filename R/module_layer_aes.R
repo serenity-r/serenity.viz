@@ -145,7 +145,7 @@ layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, 
       createStageStateChangeEvent("after_scale", mapping)
 
       # _ Aesthetic to code ====
-      aesToCode <- reactive({
+      aes_code <- reactive({
         req(!is.null(input$edit_value))
 
         list(
@@ -159,7 +159,7 @@ layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, 
       return(
         list(
           stages = mapping$stages,
-          code = aesToCode
+          code = aes_code
         )
       )
     }

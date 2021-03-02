@@ -1,5 +1,4 @@
 library(shiny)
-library(reactlog)
 library(serenity.viz)
 
 ui <- function() {
@@ -30,7 +29,6 @@ ui <- function() {
       layerAesValueUI("shape") # Slider (which will show initial value)
     ),
     verbatimTextOutput("shape_output"),
-    reactlog_module_ui()
   )
 }
 
@@ -65,8 +63,6 @@ server <- function(input, output, session) {
                    colour = aes_values$colour(),
                    linetype = aes_values$linetype(),
                    shape = aes_values$shape())
-
-  reactlog_module_server()
 }
 
 shinyApp(ui, server)
