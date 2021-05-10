@@ -227,8 +227,7 @@ layerAesMappingStageServer <- function(id, stage, choices,
 
       # Reactive: State of stage module to code ----
       stage_to_code <- reactive({
-        req(!is.null(input$custom_toggle),
-            !linked() || isolate(inherit())) # All possible states
+        req(!is.null(input$custom_toggle))
 
         mapping <- NULL
         if (input$custom_toggle) {

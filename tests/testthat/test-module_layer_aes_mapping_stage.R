@@ -3,7 +3,7 @@ library(shinytest)
 
 context("Test layer aesthetic stage module")
 
-test_that("Outputs correct when inheriting, linking turned on and default is not NULL", {
+test_that("Linking turned on and default is not NULL", {
   testServer(layerAesMappingStageServer, {
     session$setInputs(custom_toggle = FALSE)
     session$setInputs(mapping = "Species")
@@ -25,7 +25,7 @@ test_that("Outputs correct when inheriting, linking turned on and default is not
   ))
 })
 
-test_that("Outputs correct when inheriting, linking turned on and default is NULL", {
+test_that("Linking turned on and default is NULL", {
   testServer(layerAesMappingStageServer, {
     session$setInputs(custom_toggle = FALSE)
     session$setInputs(mapping = "Species")
@@ -44,14 +44,14 @@ test_that("Outputs correct when inheriting, linking turned on and default is NUL
   ))
 })
 
-test_that("Outputs correct when inheriting, linking turned off and default is not NULL", {
+test_that("Linking turned off and default is not NULL", {
   testServer(layerAesMappingStageServer, {
     session$setInputs(custom_toggle = FALSE)
 
     # When default is Species and mapping is Species...
     session$setInputs(mapping = "Species")
     # ...output is null
-    expect_equal(stage_to_code(), "Species")
+    expect_null(stage_to_code())
 
     # When default is Species and mapping is Sepal.Length...
     session$setInputs(mapping = "Sepal.Length")
@@ -73,7 +73,7 @@ test_that("Outputs correct when inheriting, linking turned off and default is no
   ))
 })
 
-test_that("Outputs correct when inheriting, linking turned off and default is NULL", {
+test_that("Linking turned off and default is NULL", {
   testServer(layerAesMappingStageServer, {
     session$setInputs(custom_toggle = FALSE)
     session$setInputs(mapping = "Species")
@@ -83,7 +83,7 @@ test_that("Outputs correct when inheriting, linking turned off and default is NU
     expect_equal(stage_to_code(), "Sepal.Length")
 
     session$setInputs(mapping = NULL)
-    expect_equal(stage_to_code(), "NULL")
+    expect_null(stage_to_code())
   }, args = list(id = "start", stage = "start",
                  choices = reactive({
                    isolate({ serenity.viz:::dataInputChoices(iris, zone="aeszone") })

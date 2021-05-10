@@ -154,7 +154,7 @@ layerAesMappingServer <- function(id, stage, aesthetic, inheritable, base_layer_
 
       # Reactive: State of stage module to code ----
       mapping_to_code <- reactive({
-        req(paste(stages$start$code(), stages$after_stat$code(), stages$after_scale$code()))
+        mapping <- NULL
         mapping <- dropNulls(
           list(
             start = stages$start$code(),
@@ -162,6 +162,9 @@ layerAesMappingServer <- function(id, stage, aesthetic, inheritable, base_layer_
             after_scale = stages$after_scale$code()
           )
         )
+        if (length(mapping) == 0) {
+          mapping <- NULL
+        } else
         if (length(mapping) == 1) {
           mapping <- paste0(
             switch(names(mapping),
