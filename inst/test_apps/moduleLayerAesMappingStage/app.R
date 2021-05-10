@@ -1,5 +1,4 @@
 library(shiny)
-library(reactlog)
 library(serenity.viz)
 
 ui <- function() {
@@ -33,8 +32,7 @@ ui <- function() {
       column(6, h2("Stages for Bar Plot"),
              uiOutput("stages"))
     ),
-    verbatimTextOutput("input"),
-    reactlog_module_ui()
+    verbatimTextOutput("input")
   )
 }
 

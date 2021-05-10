@@ -42,69 +42,71 @@ dataVarUI <- function(id, var, default='') {
   )
 }
 
-#' Server for data variable submodule
+#' Server for data variable module
 #'
-#' @param input   Shiny inputs
-#' @param output  Shiny outputs
-#' @param session Shiny user session
+#' @param id ID of data variable module
 #' @param var Variable from data frame
 #'
-dataVarServer <- function(input, output, session, var) {
+dataVarServer <- function(id, var) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      varToCode <- reactive({
+        init <- init_vals(var)
+        arg <- list(filter = c(), mutate = c())
+        if (!is.null(input$filter)) {
+          ns <- session$ns
+          var_name <- stringr::str_split(ns(''), '-')[[1]][3] %>% {
+            ifelse(!stringr::str_detect(., ' '),
+                   .,
+                   paste0("`", ., "`"))
+          }
+          if (any(class(input$filter[1]) %in% c('integer', 'numeric'))) {
+            if (init$min < input$filter[1]) {
+              arg$filter <- paste(input$filter[1], "<", var_name)
+            }
 
-  varToCode <- reactive({
-    init <- init_vals(var)
-    arg <- list(filter = c(), mutate = c())
-    if (!is.null(input$filter)) {
-      ns <- session$ns
-      var_name <- stringr::str_split(ns(''), '-')[[1]][3] %>% {
-        ifelse(!stringr::str_detect(., ' '),
-             .,
-             paste0("`", ., "`"))
-      }
-      if (any(class(input$filter[1]) %in% c('integer', 'numeric'))) {
-        if (init$min < input$filter[1]) {
-          arg$filter <- paste(input$filter[1], "<", var_name)
-        }
+            if (input$filter[2] < init$max) {
+              arg$filter <- c(arg$filter,
+                              paste(var_name, "<", input$filter[2]))
+            }
+          } else {
+            # First, drop levels
+            dropme <- setdiff(init$levels, input$filter)
+            if (length(dropme) > 0) {
+              arg$filter <- paste0("!(",
+                                   var_name,
+                                   " %in% c(",
+                                   paste0("\"", dropme, "\"", collapse = ", "),
+                                   "))")
+              arg$mutate <- paste0(var_name,
+                                   " = fct_drop(",
+                                   var_name,
+                                   ", only = c(",
+                                   paste0("\"", dropme, "\"", collapse = ", "),
+                                   "))")
+            }
 
-        if (input$filter[2] < init$max) {
-          arg$filter <- c(arg$filter,
-                          paste(var_name, "<", input$filter[2]))
+            # Check if reordered
+            if (!all(intersect(init$levels, input$filter) ==
+                     intersect(input$filter, init$levels))) {
+              arg$mutate <- c(arg$mutate,
+                              paste0(var_name,
+                                     " = fct_relevel(",
+                                     var_name,
+                                     ", c(",
+                                     paste0("\"", input$filter, "\"", collapse = ", "),
+                                     "))")
+              )
+            }
+          }
         }
-      } else {
-        # First, drop levels
-        dropme <- setdiff(init$levels, input$filter)
-        if (length(dropme) > 0) {
-          arg$filter <- paste0("!(",
-                               var_name,
-                               " %in% c(",
-                               paste0("\"", dropme, "\"", collapse = ", "),
-                               "))")
-          arg$mutate <- paste0(var_name,
-                               " = fct_drop(",
-                               var_name,
-                               ", only = c(",
-                               paste0("\"", dropme, "\"", collapse = ", "),
-                               "))")
-        }
+        arg
+      })
 
-        # Check if reordered
-        if (!all(intersect(init$levels, input$filter) ==
-                 intersect(input$filter, init$levels))) {
-          arg$mutate <- c(arg$mutate,
-                          paste0(var_name,
-                                 " = fct_relevel(",
-                                 var_name,
-                                 ", c(",
-                                 paste0("\"", input$filter, "\"", collapse = ", "),
-                                 "))")
-          )
-        }
-      }
+      return(varToCode)
     }
-    arg
-  })
-
-  return(varToCode)
+  )
 }
 
 # UTILS ----

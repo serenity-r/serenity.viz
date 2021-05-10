@@ -4,16 +4,14 @@
 \alias{dataServer}
 \title{Server for data module}
 \usage{
-dataServer(input, output, session, dataset, layers)
+dataServer(id, dataset, layers)
 }
 \arguments{
-\item{input}{Shiny inputs}
-
-\item{output}{Shiny outputs}
-
-\item{session}{Shiny user session}
+\item{id}{ID of data module}
 
 \item{dataset}{Passed in dataset for visualization}
+
+\item{layers}{State object of layers module}
 }
 \description{
 Server for data module

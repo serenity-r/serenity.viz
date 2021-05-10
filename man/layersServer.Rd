@@ -2,19 +2,15 @@
 % Please edit documentation in R/module_layers.R
 \name{layersServer}
 \alias{layersServer}
-\title{Module server for all layers}
+\title{Server for all layers module}
 \usage{
-layersServer(input, output, session, dataset)
+layersServer(id, dataset)
 }
 \arguments{
-\item{input}{Shiny inputs}
-
-\item{output}{Shiny outputs}
-
-\item{session}{Shiny user session}
+\item{id}{ID of layers module}
 
 \item{dataset}{Dataset}
 }
 \description{
-Module server for all layers
+Server for all layers module
 }

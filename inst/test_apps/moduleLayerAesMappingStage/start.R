@@ -13,7 +13,7 @@ ui <- function() {
     conditionalPanel("input.inherit == true",
                      checkboxInput("linked",
                                    "Link stages?",
-                                   value = TRUE)
+                                   value = FALSE)
     ),
     hr(),
     fluidRow(
@@ -83,7 +83,7 @@ server <- function(input, output, session) {
       )
     )
 
-    # Turn of linking if stage changed
+    # Turn off linking if stage changed
     observeEvent(stages$start$changed(), {
       req(input$linked)
       cat(paste("Triggered! Changing linked to FALSE\n"))

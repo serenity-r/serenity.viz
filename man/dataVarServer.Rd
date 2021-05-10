@@ -2,19 +2,15 @@
 % Please edit documentation in R/module_data_var.R
 \name{dataVarServer}
 \alias{dataVarServer}
-\title{Server for data variable submodule}
+\title{Server for data variable module}
 \usage{
-dataVarServer(input, output, session, var)
+dataVarServer(id, var)
 }
 \arguments{
-\item{input}{Shiny inputs}
-
-\item{output}{Shiny outputs}
-
-\item{session}{Shiny user session}
+\item{id}{ID of data variable module}
 
 \item{var}{Variable from data frame}
 }
 \description{
-Server for data variable submodule
+Server for data variable module
 }

@@ -126,11 +126,9 @@ layerChoiceUI <- function(plot_id) {
   )
 }
 
-#' Server for layers module
+#' Server for layer module
 #'
-#' @param input   Shiny inputs
-#' @param output  Shiny outputs
-#' @param session Shiny user session
+#' @param id ID of layer module
 #' @param layers_selected Reactive value of currently selected layer
 #' @param geom_blank_input  Need geom_blank values to check for inheritance
 #' @param dataset Dataset
@@ -139,168 +137,175 @@ layerChoiceUI <- function(plot_id) {
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerServer <- function(input, output, session, layers_selected, geom_blank_input, dataset, ggbase = NULL) {
-  ggdata <- reactiveValues(base_data = NULL)
-  ns <- session$ns
+layerServer <- function(id, layers_selected, geom_blank_input, dataset, ggbase = NULL) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      ggdata <- reactiveValues(base_data = NULL)
+      ns <- session$ns
 
-  # _ Initialization and Setup ====
+      # _ Initialization and Setup ====
 
-  # _ _ Get layer, geom, and aesthetics information ====
-  layer_info <- getLayerInfo(ns)
-  layer_id <- layer_info$layer_id
-  geom_type <- layer_info$geom
-  geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
-  default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
+      # _ _ Get layer, geom, and aesthetics information ====
+      layer_info <- getLayerInfo(ns)
+      layer_id <- layer_info$layer_id
+      geom_type <- layer_info$geom
+      geom_proto <- eval(parse(text=paste0(stringr::str_replace(geom_type, "-", "_"), "()")))
+      default_stat <- camelToSnake(stringr::str_remove(class(geom_proto$stat)[1], "Stat"))
 
-  layer_instance <- dndselectr::multivalues(layer_id, ids=TRUE)
+      layer_instance <- dndselectr::multivalues(layer_id, ids=TRUE)
 
-  # _ _ load parameters module ====
+      # _ _ load parameters module ====
 
-  # Ignoring subsetted data for now
-  ggbaselayerobj <- reactive({
-    req(ggbase(), base_layer_code())
-    eval(parse(text=paste("dataset %>%", ggbase(), "+", paste0(base_layer_code(), ")"))))
-  })
+      # Ignoring subsetted data for now
+      ggbaselayerobj <- reactive({
+        req(ggbase(), base_layer_code())
+        eval(parse(text=paste("dataset %>%", ggbase(), "+", paste0(base_layer_code(), ")"))))
+      })
 
-  observeEvent(ggbaselayerobj(), {
-    failure <- FALSE
-    tryCatch(
-      withCallingHandlers(
-        withRestarts(
-          suppressMessages(print(ggbaselayerobj())),
-          muffleError = function() {
-            failure <<- TRUE
-            NULL
+      observeEvent(ggbaselayerobj(), {
+        failure <- FALSE
+        tryCatch(
+          withCallingHandlers(
+            withRestarts(
+              suppressMessages(print(ggbaselayerobj())),
+              muffleError = function() {
+                failure <<- TRUE
+                NULL
+              }
+            ),
+            error = function(e) {
+              invokeRestart("muffleError")
+            }),
+          finally = {
+            if (!failure) {
+              ggdata$base_data <- suppressMessages(layer_data(ggbaselayerobj(), 1))
+            } else {
+              ggdata$base_data <- NULL
+            }
           }
-        ),
-        error = function(e) {
-          invokeRestart("muffleError")
-        }),
-      finally = {
-        if (!failure) {
-          ggdata$base_data <- suppressMessages(layer_data(ggbaselayerobj(), 1))
-        } else {
-          ggdata$base_data <- NULL
-        }
-      }
-    )
-  })
-
-  output$selected_stat <- renderUI({
-    tagList(
-      "Calculation:",
-      br(),
-      em(stat_names_unlist[[input$stat]])
-    )
-  })
-
-  layer_params <- list(code = reactive({ "" }))
-  if (geom_type != "geom-blank") {
-    layer_params <- callModule(module = layerParamsServer,
-                               id = 'params',
-                               base_data = reactive({ ggdata$base_data }),
-                               layer_stat = reactive({ input$stat %||% default_stat })
-    )
-  }
-
-  # _ _ create reactive inherit.aes for aesthetics module ====
-  inherit.aes <- reactive({
-    if (isTruthy(layer_params$inherit.aes) && is.logical(layer_params$inherit.aes()))
-      layer_params$inherit.aes()
-    else
-      geom_proto$inherit.aes
-  })
-
-  # _ _ load aesthetics module ====
-  layer_aesthetics <- callModule(module = layerAestheticsServer, id = 'aesthetics',
-                                 layers_selected,
-                                 geom_blank_input,
-                                 dataset,
-                                 inherit.aes,
-                                 reactive({ input$stat %||% default_stat }))
-
-  # Could be conditionalPanel, but shinyWidget switch wasn't rendering correctly
-  output$params <- renderUI({
-    isolate({
-      wellPanel(
-        class = "layer-params",
-        style = switch(!(input$toggle_settings_or_params %||% FALSE), "display:none;"),
-        tabsetPanel(
-          type = "tabs",
-          tabPanel(span(icon(name = "sliders-h"), "Parameters"),
-                   layerParamsUI(ns('params'))
-          ),
-          tabPanel(span(icon(name = "arrows-alt"), "Position"),
-                   layerPositionUI(ns('position'))
-          )
         )
-      )
-    })
-  })
-  outputOptions(output, "params", suspendWhenHidden = FALSE)
+      })
 
-  # _ _ toggle hide/show of settings or params ====
-  observeEvent(input$`toggle_settings_or_params`, {
-    # Toggle class for params
-    if (input$`toggle_settings_or_params`) {
-      shinyjs::js$myshow(paste0("#", ns("params"), " .layer-params"))
-    } else {
-      shinyjs::js$myhide(paste0("#", ns("params"), " .layer-params"))
+      output$selected_stat <- renderUI({
+        tagList(
+          "Calculation:",
+          br(),
+          em(stat_names_unlist[[input$stat]])
+        )
+      })
+
+      layer_params <- list(code = reactive({ "" }))
+      if (geom_type != "geom-blank") {
+        layer_params <- callModule(module = layerParamsServer,
+                                   id = 'params',
+                                   base_data = reactive({ ggdata$base_data }),
+                                   layer_stat = reactive({ input$stat %||% default_stat })
+        )
+      }
+
+      # _ _ create reactive inherit.aes for aesthetics module ====
+      inherit.aes <- reactive({
+        if (isTruthy(layer_params$inherit.aes) && is.logical(layer_params$inherit.aes()))
+          layer_params$inherit.aes()
+        else
+          geom_proto$inherit.aes
+      })
+
+      # _ _ load aesthetics module ====
+      layer_aesthetics <- layerAestheticsServer(id = 'aesthetics',
+                                                layer_id = layer_id,
+                                                geom = geom_type,
+                                                layers_selected,
+                                                geom_blank_input,
+                                                dataset,
+                                                inherit.aes,
+                                                reactive({ input$stat %||% default_stat }))
+
+      # Could be conditionalPanel, but shinyWidget switch wasn't rendering correctly
+      output$params <- renderUI({
+        isolate({
+          wellPanel(
+            class = "layer-params",
+            style = switch(!(input$toggle_settings_or_params %||% FALSE), "display:none;"),
+            tabsetPanel(
+              type = "tabs",
+              tabPanel(span(icon(name = "sliders-h"), "Parameters"),
+                       layerParamsUI(ns('params'))
+              ),
+              tabPanel(span(icon(name = "arrows-alt"), "Position"),
+                       layerPositionUI(ns('position'))
+              )
+            )
+          )
+        })
+      })
+      outputOptions(output, "params", suspendWhenHidden = FALSE)
+
+      # _ _ toggle hide/show of settings or params ====
+      observeEvent(input$`toggle_settings_or_params`, {
+        # Toggle class for params
+        if (input$`toggle_settings_or_params`) {
+          shinyjs::js$myshow(paste0("#", ns("params"), " .layer-params"))
+        } else {
+          shinyjs::js$myhide(paste0("#", ns("params"), " .layer-params"))
+        }
+      })
+
+      # Call position module
+      # Only need isolated base_data for now
+      position_code <- callModule(module = layerPositionServer,
+                                  id = 'position',
+                                  base_data = reactive({ ggdata$base_data }),
+                                  default_position = tolower(stringr::str_remove(class(geom_proto$position)[1], "Position")))
+
+      base_layer_code <- dedupe(reactive({
+        req(!is.null(layer_aesthetics$code()))
+
+        processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
+                                              "ggplot",
+                                              stringr::str_replace(geom_type, "-", "_")), "(")
+
+        # Add stat, if appropriate
+        show_stat <- (geom_type != "geom-blank") && (input$stat != default_stat)
+        if (show_stat) {
+          processed_layer_code <- paste0(processed_layer_code,
+                                         "stat = ", squote(input$stat))
+        }
+
+        # Layer aesthetics
+        processed_layer_code <- paste0(processed_layer_code,
+                                       ifelse(show_stat && nchar(layer_aesthetics$code()), ", ", ""),
+                                       layer_aesthetics$code())
+
+        # Layer parameters
+        processed_layer_code <- paste0(processed_layer_code,
+                                       ifelse((show_stat || nchar(layer_aesthetics$code())) && nchar(layer_params$code()), ",\n", ""),
+                                       layer_params$code())
+
+        return(processed_layer_code)
+      }))
+
+      layer_code <- reactive({
+        req(!is.null(base_layer_code()),
+            !is.null(layer_params$code()),
+            !is.null(position_code()))
+
+        # Add position arguments
+        show_stat <- (geom_type != "geom-blank") && (isolate(input$stat) != default_stat)
+        processed_layer_code <- paste0(base_layer_code(),
+                                       ifelse((show_stat || nchar(layer_aesthetics$code()) || nchar(layer_params$code())) && nchar(position_code()), ",\n", ""),
+                                       position_code(),
+                                       ")")
+
+        return(processed_layer_code)
+      })
+
+      return(list(
+        code = layer_code,
+        stat = reactive({ input$stat %||% default_stat }),
+        aesthetics = layer_aesthetics$aesthetics
+      ))
     }
-  })
-
-  # Call position module
-  # Only need isolated base_data for now
-  position_code <- callModule(module = layerPositionServer,
-                              id = 'position',
-                              base_data = reactive({ ggdata$base_data }),
-                              default_position = tolower(stringr::str_remove(class(geom_proto$position)[1], "Position")))
-
-  base_layer_code <- dedupe(reactive({
-    req(!is.null(layer_aesthetics$code()))
-
-    processed_layer_code <- paste0(ifelse(geom_type == "geom-blank",
-                                          "ggplot",
-                                          stringr::str_replace(geom_type, "-", "_")), "(")
-
-    # Add stat, if appropriate
-    show_stat <- (geom_type != "geom-blank") && (input$stat != default_stat)
-    if (show_stat) {
-      processed_layer_code <- paste0(processed_layer_code,
-                                     "stat = ", squote(input$stat))
-    }
-
-    # Layer aesthetics
-    processed_layer_code <- paste0(processed_layer_code,
-                                   ifelse(show_stat && nchar(layer_aesthetics$code()), ", ", ""),
-                                   layer_aesthetics$code())
-
-    # Layer parameters
-    processed_layer_code <- paste0(processed_layer_code,
-                                   ifelse((show_stat || nchar(layer_aesthetics$code())) && nchar(layer_params$code()), ",\n", ""),
-                                   layer_params$code())
-
-    return(processed_layer_code)
-  }))
-
-  layer_code <- reactive({
-    req(!is.null(base_layer_code()),
-        !is.null(layer_params$code()),
-        !is.null(position_code()))
-
-    # Add position arguments
-    show_stat <- (geom_type != "geom-blank") && (isolate(input$stat) != default_stat)
-    processed_layer_code <- paste0(base_layer_code(),
-                                   ifelse((show_stat || nchar(layer_aesthetics$code()) || nchar(layer_params$code())) && nchar(position_code()), ",\n", ""),
-                                   position_code(),
-                                   ")")
-
-    return(processed_layer_code)
-  })
-
-  return(list(
-    code = layer_code,
-    stat = reactive({ input$stat %||% default_stat }),
-    aesthetics = layer_aesthetics$aesthetics
-  ))
+  )
 }

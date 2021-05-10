@@ -18,105 +18,109 @@ dataUI <- function(id) {
 
 #' Server for data module
 #'
-#' @param input   Shiny inputs
-#' @param output  Shiny outputs
-#' @param session Shiny user session
+#' @param id ID of data module
 #' @param dataset Passed in dataset for visualization
+#' @param layers State object of layers module
 #'
 #' @importFrom magrittr %>%
 #' @import shiny
 #'
-dataServer <- function(input, output, session, dataset, layers) {
-  var_names <- names(dataset)
+dataServer <- function(id, dataset, layers) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      var_names <- names(dataset)
 
-  output$dataset_vars <- renderUI({
-    tabsetPanel(
-      type = "tabs",
-      tabPanel(span(icon("database"), "Variables"),
-               div(
-                 class = "dataset-vars",
-                 dndselectr::dragZone(
-                   id = session$ns('datazone'),
-                   choices = dataInputChoices(dataset)
-                 )
-               )),
-      tabPanel(span(icon("calculator"), "Computed"),
-               div(
-                 class = "dataset-vars",
-                 em("No computed variables available for this layer.", class = "none-computed hidden"),
-                 dndselectr::dragZone(
-                   id = session$ns('computeddatazone'),
-                   choices = dataInputChoices(stat_computed_vars[["identity"]], type = "computed")
-                 )
-               )),
-      tabPanel(span(icon("paint-brush"), "Aesthetics"),
-               div(
-                 class = "dataset-vars",
-                 dndselectr::dragZone(
-                   id = session$ns('aestheticsdatazone'),
-                   choices = dataInputChoices(gg_aesthetics[["geom-blank"]], type = "aesthetics")
-                 )
-               ))
-    )
-  })
+      output$dataset_vars <- renderUI({
+        tabsetPanel(
+          type = "tabs",
+          tabPanel(span(icon("database"), "Variables"),
+                   div(
+                     class = "dataset-vars",
+                     dndselectr::dragZone(
+                       id = session$ns('datazone'),
+                       choices = dataInputChoices(dataset)
+                     )
+                   )),
+          tabPanel(span(icon("calculator"), "Computed"),
+                   div(
+                     class = "dataset-vars",
+                     em("No computed variables available for this layer.", class = "none-computed hidden"),
+                     dndselectr::dragZone(
+                       id = session$ns('computeddatazone'),
+                       choices = dataInputChoices(stat_computed_vars[["identity"]], type = "computed")
+                     )
+                   )),
+          tabPanel(span(icon("paint-brush"), "Aesthetics"),
+                   div(
+                     class = "dataset-vars",
+                     dndselectr::dragZone(
+                       id = session$ns('aestheticsdatazone'),
+                       choices = dataInputChoices(gg_aesthetics[["geom-blank"]], type = "aesthetics")
+                     )
+                   ))
+        )
+      })
 
-  # Handle stat changes
-  observe({
-    req(layers$selected_stat())
-    dndselectr::updateDragZone(session,
-                               id = session$ns("computeddatazone"),
-                               choices = dataInputChoices(stat_computed_vars[[layers$selected_stat()]], type = "computed"))
-    if (is.null(stat_computed_vars[[layers$selected_stat()]])) {
-      shinyjs::js$removeClass("hidden", "em.none-computed")
-    } else {
-      shinyjs::js$addClass("hidden", "em.none-computed")
+      # Handle stat changes
+      observe({
+        req(layers$selected_stat())
+        dndselectr::updateDragZone(session,
+                                   id = session$ns("computeddatazone"),
+                                   choices = dataInputChoices(stat_computed_vars[[layers$selected_stat()]], type = "computed"))
+        if (is.null(stat_computed_vars[[layers$selected_stat()]])) {
+          shinyjs::js$removeClass("hidden", "em.none-computed")
+        } else {
+          shinyjs::js$addClass("hidden", "em.none-computed")
+        }
+      })
+
+      # Handle aesthetic changes
+      observe({
+        req(layers$aesthetics())
+        dndselectr::updateDragZone(session,
+                                   id = session$ns("aestheticsdatazone"),
+                                   choices = dataInputChoices(layers$aesthetics(), type = "aesthetics"))
+      })
+
+      # load variable subset modules ====
+      subset_args <- purrr::map(var_names, ~ dataVarServer(id = .,
+                                                           var = dataset[[.]])
+      )
+
+      # process subset arguments ====
+      processed_args <- reactive({
+        # Evaluate reactives
+        args <- purrr::map(subset_args, ~ .())
+
+        # Pull out the filter and mutate elements
+        filter_args <- unlist(purrr::map(args, "filter"))
+        mutate_args <- unlist(purrr::map(args, "mutate"))
+
+        subset_data_code <- NULL
+
+        # Build filter code
+        if (length(filter_args)) {
+          subset_data_code <- paste0("filter(",
+                                     paste(filter_args, collapse = ", \n"),
+                                     ")")
+        }
+
+        # Build mutate code
+        if (length(mutate_args)) {
+          subset_data_code <- paste(subset_data_code,
+                                    ifelse(length(filter_args), "%>%\n", ""),
+                                    paste0("mutate(",
+                                           paste(mutate_args, collapse = ", \n"),
+                                           ")"))
+        }
+
+        return(subset_data_code)
+      })
+
+      return(processed_args)
     }
-  })
-
-  # Handle aesthetic changes
-  observe({
-    req(layers$aesthetics())
-    dndselectr::updateDragZone(session,
-                               id = session$ns("aestheticsdatazone"),
-                               choices = dataInputChoices(layers$aesthetics(), type = "aesthetics"))
-  })
-
-  # load variable subset modules ====
-  subset_args <- purrr::map(var_names, ~ callModule(module = dataVarServer,
-                                                    id = .,
-                                                    var = dataset[[.]]))
-
-  # process subset arguments ====
-  processed_args <- reactive({
-    # Evaluate reactives
-    args <- purrr::map(subset_args, ~ .())
-
-    # Pull out the filter and mutate elements
-    filter_args <- unlist(purrr::map(args, "filter"))
-    mutate_args <- unlist(purrr::map(args, "mutate"))
-
-    subset_data_code <- NULL
-
-    # Build filter code
-    if (length(filter_args)) {
-      subset_data_code <- paste0("filter(",
-                                 paste(filter_args, collapse = ", \n"),
-                                 ")")
-    }
-
-    # Build mutate code
-    if (length(mutate_args)) {
-      subset_data_code <- paste(subset_data_code,
-                                ifelse(length(filter_args), "%>%\n", ""),
-                                paste0("mutate(",
-                                       paste(mutate_args, collapse = ", \n"),
-                                       ")"))
-    }
-
-    return(subset_data_code)
-  })
-
-  return(processed_args)
+  )
 }
 
 #' UI for data choices, either for dropzone or picker

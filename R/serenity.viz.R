@@ -50,9 +50,7 @@ serenityVizAppServer <- function(input, output, session, dataset) {
   session$onSessionEnded(stopApp)
 
   # Call module
-  callModule(module = serenityVizServer,
-             id = "serenityVizApp",
-             dataset = dataset)
+  serenityVizServer(id = "serenityVizApp", dataset = dataset)
 }
 
 ## quiets concerns of R CMD check re: the .'s that appear in pipelines

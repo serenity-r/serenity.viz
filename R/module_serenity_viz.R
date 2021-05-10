@@ -39,270 +39,272 @@ serenityVizUI <- function(id, dataset, titlebar = FALSE, showcode = TRUE, height
 
 #' Server code for Serenity Viz module
 #'
-#' @param input Shiny input
-#' @param output Shiny output
-#' @param session Shiny session
+#' @param id ID of Serenity Viz module
 #' @param dataset Passed in dataset for visualization
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2 dplyr forcats luminophor
 #' @export
 #'
-serenityVizServer <- function(input, output, session, dataset) {
-  if (is.null(attr(dataset, "df_name"))) {
-    attr(dataset, "df_name") <- deparse(substitute(dataset))
-  }
+serenityVizServer <- function(id, dataset) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      if (is.null(attr(dataset, "df_name"))) {
+        attr(dataset, "df_name") <- deparse(substitute(dataset))
+      }
 
-  # Store log for warnings
-  ggplot2_log <- reactiveVal("")
+      # Store log for warnings
+      ggplot2_log <- reactiveVal("")
 
-  output$luminobox <- renderLuminophor({
-    luminophor() %>%
-      addWidget(id = session$ns("widget-layers"),
-                ui = layersUI(session$ns("layers")),
-                title = "Layers",
-                icon = icon("layer-group"),
-                closable = FALSE) %>%
-      addWidget(id = session$ns('widget-ggplot'),
-                refwidgetID = session$ns('widget-layers'),
-                insertmode = "split-left",
-                relsize = 0.66,
-                ui = tagList(
-                  widgetHeader(
-                    uiOutput(session$ns('widget-ggplot-header'))
-                  ),
-                  widgetBody(
-                    miniUI::miniContentPanel(
-                      class = "ggplot",
-                      style = "padding: 19px;",
-                      plotOutput(session$ns("viz"), height = "100%", click = "plot_click"),
-                      shinyjs::hidden(
-                        absolutePanel(id = session$ns("error-pane"),
-                                      class = "error-pane",
-                                      top = "20px",
-                                      draggable = FALSE
+      output$luminobox <- renderLuminophor({
+        luminophor() %>%
+          addWidget(id = session$ns("widget-layers"),
+                    ui = layersUI(session$ns("layers")),
+                    title = "Layers",
+                    icon = icon("layer-group"),
+                    closable = FALSE) %>%
+          addWidget(id = session$ns('widget-ggplot'),
+                    refwidgetID = session$ns('widget-layers'),
+                    insertmode = "split-left",
+                    relsize = 0.66,
+                    ui = tagList(
+                      widgetHeader(
+                        uiOutput(session$ns('widget-ggplot-header'))
+                      ),
+                      widgetBody(
+                        miniUI::miniContentPanel(
+                          class = "ggplot",
+                          style = "padding: 19px;",
+                          plotOutput(session$ns("viz"), height = "100%", click = "plot_click"),
+                          shinyjs::hidden(
+                            absolutePanel(id = session$ns("error-pane"),
+                                          class = "error-pane",
+                                          top = "20px",
+                                          draggable = FALSE
+                            )
+                          )
                         )
                       )
-                    )
-                  )
-                ),
-                title = "Plot",
-                icon = icon("image"),
-                closable = FALSE) %>%
-      addWidget(id = session$ns("widget-vars"),
-                refwidgetID = session$ns("widget-ggplot"),
-                insertmode = "split-left",
-                relsize = 0.33,
-                ui = dataUI(id = session$ns(attributes(dataset)$df_name)),
-                title = "Data",
-                icon = icon("database"),
-                closable = FALSE) %>%
-      addWidget(id = session$ns("aesthetics"),
-                refwidgetID = session$ns("widget-vars"),
-                insertmode = "split-bottom",
-                relsize = 0.66,
-                ui = uiOutput(session$ns("aesthetics")),
-                title = "Aesthetics",
-                icon = icon("paint-brush"),
-                closable = FALSE) %>%
-      addWidget(id = session$ns("widget-code"),
-                refwidgetID = session$ns('widget-ggplot'),
-                insertmode = "split-bottom",
-                relsize = 0.25,
-                ui = widgetBody(uiOutput(session$ns("code"),
-                                         class="terminal-dark-theme")),
-                title = "Code",
-                icon = icon("code")) %>%
-      addWidget(id = session$ns("widget-messages"),
-                refwidgetID = session$ns("widget-code"),
-                insertmode = "tab-after",
-                ui = widgetBody(uiOutput(session$ns("log"),
-                                         class="terminal-dark-theme")),
-                title = "Messages",
-                icon = icon("info")) %>%
-      addWidget(id = session$ns("widget-labels"),
-                refwidgetID = session$ns('widget-layers'),
-                insertmode = "tab-after",
-                ui = labelsUI(session$ns("labels")),
-                title = "Labels",
-                icon = icon("tags"),
-                closable = FALSE)
-  })
+                    ),
+                    title = "Plot",
+                    icon = icon("image"),
+                    closable = FALSE) %>%
+          addWidget(id = session$ns("widget-vars"),
+                    refwidgetID = session$ns("widget-ggplot"),
+                    insertmode = "split-left",
+                    relsize = 0.33,
+                    ui = dataUI(id = session$ns(attributes(dataset)$df_name)),
+                    title = "Data",
+                    icon = icon("database"),
+                    closable = FALSE) %>%
+          addWidget(id = session$ns("aesthetics"),
+                    refwidgetID = session$ns("widget-vars"),
+                    insertmode = "split-bottom",
+                    relsize = 0.66,
+                    ui = uiOutput(session$ns("aesthetics")),
+                    title = "Aesthetics",
+                    icon = icon("paint-brush"),
+                    closable = FALSE) %>%
+          addWidget(id = session$ns("widget-code"),
+                    refwidgetID = session$ns('widget-ggplot'),
+                    insertmode = "split-bottom",
+                    relsize = 0.25,
+                    ui = widgetBody(uiOutput(session$ns("code"),
+                                             class="terminal-dark-theme")),
+                    title = "Code",
+                    icon = icon("code")) %>%
+          addWidget(id = session$ns("widget-messages"),
+                    refwidgetID = session$ns("widget-code"),
+                    insertmode = "tab-after",
+                    ui = widgetBody(uiOutput(session$ns("log"),
+                                             class="terminal-dark-theme")),
+                    title = "Messages",
+                    icon = icon("info")) %>%
+          addWidget(id = session$ns("widget-labels"),
+                    refwidgetID = session$ns('widget-layers'),
+                    insertmode = "tab-after",
+                    ui = labelsUI(session$ns("labels")),
+                    title = "Labels",
+                    icon = icon("tags"),
+                    closable = FALSE)
+      })
 
-  output$`widget-ggplot-header` <- renderUI({
-    tagList(
-      prettyToggle(
-        inputId = session$ns("maximize"),
-        label_on = "",
-        label_off = "",
-        status_on = "default",
-        status_off = "default",
-        outline = TRUE,
-        plain = TRUE,
-        icon_on = icon("window-minimize"),
-        icon_off = icon("window-maximize"),
-        inline = TRUE
-      )
-    )
-  })
+      output$`widget-ggplot-header` <- renderUI({
+        tagList(
+          prettyToggle(
+            inputId = session$ns("maximize"),
+            label_on = "",
+            label_off = "",
+            status_on = "default",
+            status_off = "default",
+            outline = TRUE,
+            plain = TRUE,
+            icon_on = icon("window-minimize"),
+            icon_off = icon("window-maximize"),
+            inline = TRUE
+          )
+        )
+      })
 
-  observeEvent(input$maximize, {
-    if (input$maximize) {
-      luminophor::luminophorProxy(session$ns('luminobox')) %>%
-        luminophor::maximizeWidget(session$ns('widget-ggplot'))
-    } else {
-      luminophor::luminophorProxy(session$ns('luminobox')) %>%
-        luminophor::minimizeWidget(session$ns('widget-ggplot'))
-    }
-  })
+      observeEvent(input$maximize, {
+        if (input$maximize) {
+          luminophor::luminophorProxy(session$ns('luminobox')) %>%
+            luminophor::maximizeWidget(session$ns('widget-ggplot'))
+        } else {
+          luminophor::luminophorProxy(session$ns('luminobox')) %>%
+            luminophor::minimizeWidget(session$ns('widget-ggplot'))
+        }
+      })
 
-  # Layers module
-  layers <- callModule(module = layersServer,
-                       id = 'layers',
-                       dataset = dataset)
+      # Layers module
+      layers <- layersServer(id = 'layers',
+                             dataset = dataset)
 
-  # Data module
-  subsetted_data <- callModule(module = dataServer,
-                               id = attributes(dataset)$df_name,
-                               dataset = dataset,
-                               layers = layers)
+      # Data module
+      subsetted_data <- dataServer(id = attributes(dataset)$df_name,
+                                   dataset = dataset,
+                                   layers = layers)
 
-  # Aesthetics UI
-  output$aesthetics <- renderUI({
-    req(layers$selected_layer())
-    layerAestheticsUI(id = paste0(session$ns(paste0('layers-', layers$selected_layer())),'-aesthetics'))
-  })
+      # Aesthetics UI
+      output$aesthetics <- renderUI({
+        req(layers$selected_layer())
+        layerAestheticsUI(id = paste0(session$ns(paste0('layers-', layers$selected_layer())),'-aesthetics'),
+                          name = plots[plots$id == layers$selected_layer(), "name"])
+      })
 
-  ## Plot ====
-  output$viz <- renderPlot({
-    req(ggobj())
-    failure <- FALSE
-    # Try to plot.  If unsuccessful, pass error message to help pane.
-    # We need the print statement here or we can't capture errors
-    # See: https://aryoda.github.io/tutorials/tryCatchLog/tryCatchLog-intro-slides.html#/code-snippet-for-better-error-handling
-    tryCatch(
-      withCallingHandlers(
-        withRestarts(
-          print(ggobj()),
-          muffleError = function() {
-            failure <<- TRUE
-            NULL
+      ## Plot ====
+      output$viz <- renderPlot({
+        req(ggobj())
+        failure <- FALSE
+        # Try to plot.  If unsuccessful, pass error message to help pane.
+        # We need the print statement here or we can't capture errors
+        # See: https://aryoda.github.io/tutorials/tryCatchLog/tryCatchLog-intro-slides.html#/code-snippet-for-better-error-handling
+        tryCatch(
+          withCallingHandlers(
+            withRestarts(
+              print(ggobj()),
+              muffleError = function() {
+                failure <<- TRUE
+                NULL
+              }
+            ),
+            warning = function(w) {
+              isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:#C4A000'>**Warning**</span>: ", w$message, "<br/>", ggplot2_log())))
+              invokeRestart("muffleWarning")
+            },
+            message = function(m) {
+              isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:#3d77c2'>**Message**</span>: ",  m$message, "<br/>", ggplot2_log())))
+              invokeRestart("muffleMessage")
+            },
+            error = function(e) {
+              if (nchar(e$message)) {
+                isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:#CC0000'>**Error**</span>: ", e$message, "<br/>", ggplot2_log())))
+                shinyjs::show(id = "error-pane", anim = FALSE)
+                shinyjs::html(id = "error-pane", html = e$message)
+              }
+              invokeRestart("muffleError")
+            }),
+          finally = {
+            if (!failure) shinyjs::hide(id = "error-pane", anim = FALSE)
           }
-        ),
-        warning = function(w) {
-          isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:#C4A000'>**Warning**</span>: ", w$message, "<br/>", ggplot2_log())))
-          invokeRestart("muffleWarning")
-        },
-        message = function(m) {
-          isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:#3d77c2'>**Message**</span>: ",  m$message, "<br/>", ggplot2_log())))
-          invokeRestart("muffleMessage")
-        },
-        error = function(e) {
-          if (nchar(e$message)) {
-            isolate(ggplot2_log(paste0("[", format(Sys.time(), "%X"), "] <span style='color:#CC0000'>**Error**</span>: ", e$message, "<br/>", ggplot2_log())))
-            shinyjs::show(id = "error-pane", anim = FALSE)
-            shinyjs::html(id = "error-pane", html = e$message)
-          }
-          invokeRestart("muffleError")
-        }),
-      finally = {
-        if (!failure) shinyjs::hide(id = "error-pane", anim = FALSE)
-      }
-    )
-  })
+        )
+      })
 
-  ## Code ====
-  output$code <- renderUI({
-    req(ggcode())
-    lines <- fansi::sgr_to_html(prettycode::highlight(ggcode(),
-                                                      style = terminal_dark_theme()))
-    HTML(
-      paste0(
-        purrr::map2(
-          lines,
-          purrr::map(gregexpr("^\\s+", lines), ~ attr(., "match.length")),
-          ~ ifelse(.y > 0, stringr::str_replace(.x, "^\\s+", paste0(rep("&nbsp;", .y), collapse = "")), .x)
-        ),
-        collapse = "<br/>")
-    )
-  })
-  outputOptions(output, "code", suspendWhenHidden = FALSE)  # Look into Shiny way of handling tabs
+      ## Code ====
+      output$code <- renderUI({
+        req(ggcode())
+        lines <- fansi::sgr_to_html(prettycode::highlight(ggcode(),
+                                                          style = terminal_dark_theme()))
+        HTML(
+          paste0(
+            purrr::map2(
+              lines,
+              purrr::map(gregexpr("^\\s+", lines), ~ attr(., "match.length")),
+              ~ ifelse(.y > 0, stringr::str_replace(.x, "^\\s+", paste0(rep("&nbsp;", .y), collapse = "")), .x)
+            ),
+            collapse = "<br/>")
+        )
+      })
+      outputOptions(output, "code", suspendWhenHidden = FALSE)  # Look into Shiny way of handling tabs
 
-  output$log <- renderUI({
-    req(ggplot2_log())
-    HTML(markdown::markdownToHTML(text = ggplot2_log(), fragment.only = TRUE))
-  })
-  outputOptions(output, "log", suspendWhenHidden = FALSE)
+      output$log <- renderUI({
+        req(ggplot2_log())
+        HTML(markdown::markdownToHTML(text = ggplot2_log(), fragment.only = TRUE))
+      })
+      outputOptions(output, "log", suspendWhenHidden = FALSE)
 
-  ggcode <- reactive({
-    req(layers$code())
-    code <- attributes(dataset)$df_name
-    if (isTruthy(subsetted_data())) {
-      code <- paste(code,
-                    "%>%\n",
-                    subsetted_data()
-      )
+      ggcode <- reactive({
+        req(layers$code())
+        code <- attributes(dataset)$df_name
+        if (isTruthy(subsetted_data())) {
+          code <- paste(code,
+                        "%>%\n",
+                        subsetted_data()
+          )
+        }
+
+        if (isTruthy(layers$code())) {
+          code <- paste(code,
+                        "%>%\n",
+                        layers$code()
+          )
+        }
+
+        if (isTruthy(labs_code())) {
+          code <- paste(code,
+                        "+\n",
+                        labs_code()
+          )
+        }
+
+        return(styler::style_text(code))
+      })
+
+      ggobj <- reactive({
+        req(ggcode())
+        eval(parse(text=gsub(attributes(dataset)$df_name, "dataset", ggcode())))
+      })
+
+      # BEGIN: Labels module ----
+
+      # _ label reactives ----
+      xlabel <- reactive({
+        req(ggobj())
+        ggobj()$labels$x
+      })
+
+      ylabel <- reactive({
+        req(ggobj())
+        ggobj()$labels$y
+      })
+
+      labs_code <- callModule(module = labelsServer,
+                              id = "labels",
+                              xlabel = xlabel,
+                              ylabel = ylabel)
+
+      # END: Labels module ----
+
+      # Events ----------------------
+
+      # _ Done ====
+      # User is done - tried this, but didn't work
+      #   https://stackoverflow.com/questions/34731975/how-to-listen-for-more-than-one-event-expression-within-a-shiny-eventreactive-ha
+      observeEvent(input$done, {
+        shinyjs::js$close_window()
+        stopApp(returnValue = ggcode())
+      })
+
+      # _ Cancel ====
+      observeEvent(input$cancel, {
+        shinyjs::js$close_window()
+        stopApp(returnValue = NULL)
+      })
+
+      return(ggcode)
     }
-
-    if (isTruthy(layers$code())) {
-      code <- paste(code,
-                    "%>%\n",
-                    layers$code()
-      )
-    }
-
-    if (isTruthy(labs_code())) {
-      code <- paste(code,
-                    "+\n",
-                    labs_code()
-      )
-    }
-
-    return(styler::style_text(code))
-  })
-
-  ggobj <- reactive({
-    req(ggcode())
-    eval(parse(text=gsub(attributes(dataset)$df_name, "dataset", ggcode())))
-  })
-
-  # BEGIN: Labels module ----
-
-  # _ label reactives ----
-  xlabel <- reactive({
-    req(ggobj())
-    ggobj()$labels$x
-  })
-
-  ylabel <- reactive({
-    req(ggobj())
-    ggobj()$labels$y
-  })
-
-  labs_code <- callModule(module = labelsServer,
-                          id = "labels",
-                          xlabel = xlabel,
-                          ylabel = ylabel)
-
-  # END: Labels module ----
-
-  # Events ----------------------
-
-  # _ Done ====
-  # User is done - tried this, but didn't work
-  #   https://stackoverflow.com/questions/34731975/how-to-listen-for-more-than-one-event-expression-within-a-shiny-eventreactive-ha
-  observeEvent(input$done, {
-    shinyjs::js$close_window()
-    stopApp(returnValue = ggcode())
-  })
-
-  # _ Cancel ====
-  observeEvent(input$cancel, {
-    shinyjs::js$close_window()
-    stopApp(returnValue = NULL)
-  })
-
-  return(ggcode)
+  )
 }
 
 # GLOBALS ====

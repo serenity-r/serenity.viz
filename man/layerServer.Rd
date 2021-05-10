@@ -2,24 +2,12 @@
 % Please edit documentation in R/module_layer.R
 \name{layerServer}
 \alias{layerServer}
-\title{Server for layers module}
+\title{Server for layer module}
 \usage{
-layerServer(
-  input,
-  output,
-  session,
-  layers_selected,
-  geom_blank_input,
-  dataset,
-  ggbase = NULL
-)
+layerServer(id, layers_selected, geom_blank_input, dataset, ggbase = NULL)
 }
 \arguments{
-\item{input}{Shiny inputs}
-
-\item{output}{Shiny outputs}
-
-\item{session}{Shiny user session}
+\item{id}{ID of layer module}
 
 \item{layers_selected}{Reactive value of currently selected layer}
 
@@ -30,5 +18,5 @@ layerServer(
 \item{ggbase}{All your base are belong to us...}
 }
 \description{
-Server for layers module
+Server for layer module
 }

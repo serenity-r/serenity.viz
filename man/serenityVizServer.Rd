@@ -4,14 +4,10 @@
 \alias{serenityVizServer}
 \title{Server code for Serenity Viz module}
 \usage{
-serenityVizServer(input, output, session, dataset)
+serenityVizServer(id, dataset)
 }
 \arguments{
-\item{input}{Shiny input}
-
-\item{output}{Shiny output}
-
-\item{session}{Shiny session}
+\item{id}{ID of Serenity Viz module}
 
 \item{dataset}{Passed in dataset for visualization}
 }
