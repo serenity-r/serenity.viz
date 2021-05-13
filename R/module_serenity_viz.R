@@ -170,7 +170,7 @@ serenityVizServer <- function(id, dataset) {
       output$aesthetics <- renderUI({
         req(layers$selected_layer())
         layerAestheticsUI(id = paste0(session$ns(paste0('layers-', layers$selected_layer())),'-aesthetics'),
-                          name = plots[plots$id == layers$selected_layer(), "name"])
+                          name = plots[plots$id == dndselectr::multivalues(layers$selected_layer()), "name"])
       })
 
       ## Plot ====
@@ -393,7 +393,7 @@ addPlots <- function(plots, primitive = FALSE, data_dim = 0, data_types = "") {
 plots <- data.frame(
   id = "geom-blank",
   geom = "geom-blank",
-  name = "Blank Plot",
+  name = "Base Layer",
   primitive = TRUE,
   data_dim = 0,
   data_types = ""
@@ -536,6 +536,36 @@ makeReactiveTrigger <- function(init_val = NULL) {
     }
   )
 }
+
+all_aesthetics <- list(
+  "x" = c("x",
+          "xmin",
+          "xmax",
+          "xlower",
+          "xmiddle",
+          "xupper",
+          "xend",
+          "width"),
+  "y" = c("y",
+          "ymin",
+          "ymax",
+          "lower",
+          "middle",
+          "upper",
+          "yend",
+          "height"),
+  "colour" = c("colour",
+               "fill",
+               "alpha"),
+  "shape" = c("shape",
+              "linetype"),
+  "size" = c("size",
+             "stroke",
+             "weight"),
+  "group" = c("group",
+              "subgroup"),
+  "sample" = c("sample")
+)
 
 gg_aesthetics <- reorderElements(
   list(

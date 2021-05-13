@@ -20,13 +20,15 @@ layerAesMappingStageUI <- function(id) {
 #'   a single reactive, then understood as specifying mapping only.
 #' @param inherit Is this layer allowing aesthetic inheritance?
 #' @param linked Is this aesthetic inheriting from base?
+#' @param aesUpdateDependency Trigger update on layer change
 #'
 #' @return
 #' @export
 layerAesMappingStageServer <- function(id, stage, choices,
                                        default = list(),
                                        inherit = reactive({ TRUE }),
-                                       linked = reactive({ TRUE })) {
+                                       linked = reactive({ TRUE }),
+                                       aesUpdateDependency = reactive({ NULL })) {
   moduleServer(
     id,
     function (input, output, session) {
@@ -46,6 +48,8 @@ layerAesMappingStageServer <- function(id, stage, choices,
       # Stage UI ----
       ## _ renderUI ----
       output$stage_ui <- renderUI({
+        aesUpdateDependency()
+
         isolate({
           icons <- tagList(
             div(
@@ -128,7 +132,8 @@ layerAesMappingStageServer <- function(id, stage, choices,
           triggerCustomUpdate$depend()
           isolate(default$custom_mapping()) # Avoid updating on default change (only when linked() changes)
         }),
-        waitforit = 1
+        waitforit = 1,
+        aesUpdateDependency = aesUpdateDependency
       )
 
       # Entangle aesthetic picker and dropzone ----

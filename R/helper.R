@@ -126,3 +126,7 @@ getLayerInfo <- function(ns) {
 dropNulls <- function(x, except = NULL) {
   x[unlist(mapply(function(key, value) { switch(!is.null(value) || (key %in% except), key) }, names(x), x))]
 }
+
+keepTruthy <- function(x, except = NULL) {
+  x[unlist(mapply(function(key, value) { switch(isTruthy(value) || (key %in% except), key) }, names(x), x))]
+}

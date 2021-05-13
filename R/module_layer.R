@@ -129,15 +129,15 @@ layerChoiceUI <- function(plot_id) {
 #' Server for layer module
 #'
 #' @param id ID of layer module
-#' @param layers_selected Reactive value of currently selected layer
-#' @param geom_blank_input  Need geom_blank values to check for inheritance
+#' @param selected_layer Reactive value of currently selected layer
+#' @param base_layer_aesthetics  Need base layer aesthetic values to check for inheritance
 #' @param dataset Dataset
 #' @param ggbase  All your base are belong to us...
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerServer <- function(id, layers_selected, geom_blank_input, dataset, ggbase = NULL) {
+layerServer <- function(id, selected_layer, base_layer_aesthetics, dataset, ggbase = NULL) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -216,8 +216,8 @@ layerServer <- function(id, layers_selected, geom_blank_input, dataset, ggbase =
       layer_aesthetics <- layerAestheticsServer(id = 'aesthetics',
                                                 layer_id = layer_id,
                                                 geom = geom_type,
-                                                layers_selected,
-                                                geom_blank_input,
+                                                selected_layer,
+                                                base_layer_aesthetics,
                                                 dataset,
                                                 inherit.aes,
                                                 reactive({ input$stat %||% default_stat }))
@@ -267,10 +267,11 @@ layerServer <- function(id, layers_selected, geom_blank_input, dataset, ggbase =
                                               stringr::str_replace(geom_type, "-", "_")), "(")
 
         # Add stat, if appropriate
-        show_stat <- (geom_type != "geom-blank") && (input$stat != default_stat)
+        stat <- input$stat %||% default_stat
+        show_stat <- (geom_type != "geom-blank") && (stat != default_stat)
         if (show_stat) {
           processed_layer_code <- paste0(processed_layer_code,
-                                         "stat = ", squote(input$stat))
+                                         "stat = ", squote(stat))
         }
 
         # Layer aesthetics

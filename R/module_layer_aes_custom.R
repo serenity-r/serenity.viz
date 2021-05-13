@@ -18,10 +18,12 @@ layerAesCustomUI <- function(id) {
 #' @param waitforit If custom_for input is within renderUI, set to 1 to make
 #'   sure custom_for does not override custom_value.  REFACTOR: This is REALLY
 #'   cludgy. Couldn't figure out a more elegant way around this issue.
+#' @param aesUpdateDependency Trigger update on layer change
 #'
 #' @return
 #' @export
-layerAesCustomServer <- function(id, custom_for, custom_value = reactive({ NULL }), waitforit = 0) {
+layerAesCustomServer <- function(id, custom_for, custom_value = reactive({ NULL }),
+                                 waitforit = 0, aesUpdateDependency = reactive({ NULL })) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -30,13 +32,15 @@ layerAesCustomServer <- function(id, custom_for, custom_value = reactive({ NULL 
       ## Storing custom value state to utilize change on button press only
       customized <- reactiveVal(NULL)
 
-      ## Convert inputs to characters
+      ## Convert inputs to characters (dedupe)
       custom_for_text <- reactive({ as.character(custom_for()) })
       custom_value_text <- reactive({ as.character(custom_value()) })
 
       # Custom UI ----
       ## _ renderUI ----
       output$custom_ui <- renderUI({
+        aesUpdateDependency()
+
         isolate({
           req(!is.null(custom_for_text()), !is.null(custom_value_text()))
           init_value <- input$custom_text %T||% custom_value_text() %T||% custom_for_text()

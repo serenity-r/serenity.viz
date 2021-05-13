@@ -15,7 +15,8 @@ layerAesServer(
   required,
   dataset,
   computed_vars,
-  aesthetics
+  aesthetics,
+  aesUpdateDependency = reactive({     NULL })
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ layerAesServer(
 \item{computed_vars}{Reactive value of stat computed variables}
 
 \item{aesthetics}{Reactive value of aesthetics (combines layer and stat aesthetics)}
+
+\item{aesUpdateDependency}{Trigger update on layer change}
 }
 \description{
 Server for layer aesthetic submodule

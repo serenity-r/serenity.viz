@@ -1,15 +1,17 @@
 #' UI for layer aesthetic submodule
 #'
 #' @param id  ID of layer aesthetic
+#' @param aesthetic Aesthetic data attribute
 #'
 #' @return UI for layer aesthetic
 #' @export
-layerAesUI <- function(id) {
+layerAesUI <- function(id, aesthetic = NULL) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
   div(
     class = "aesthetic",
+    `data-aesthetic` = aesthetic,
     uiOutput(ns('aes_header_ui'),
              container = tags$header,
              class = "aes-header"),
@@ -41,6 +43,7 @@ layerAesUI <- function(id) {
 #' @param dataset Dataset
 #' @param computed_vars Reactive value of stat computed variables
 #' @param aesthetics Reactive value of aesthetics (combines layer and stat aesthetics)
+#' @param aesUpdateDependency Trigger update on layer change
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
@@ -48,11 +51,13 @@ layerAesUI <- function(id) {
 #' @export
 layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, default_geom_aes,
                            default_stat_aes, required, dataset, computed_vars,
-                           aesthetics) {
+                           aesthetics, aesUpdateDependency = reactive({ NULL })) {
   moduleServer(
     id,
     function(input, output, session) {
       output$aes_header_ui <- renderUI({
+        aesUpdateDependency()
+
         isolate({
           tagList(
             span(class = "aes-name", aesthetic),
@@ -114,7 +119,8 @@ layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, 
       value <- layerAesValueServer(
         "value",
         aesthetic = aesthetic,
-        initial = default_geom_aes
+        initial = default_geom_aes,
+        aesUpdateDependency = aesUpdateDependency
       )
 
       # Call mapping module ----
@@ -130,7 +136,8 @@ layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, 
         aesthetics = aesthetics,
         default_stat_aes = default_stat_aes,
         dataset = dataset,
-        computed_vars = computed_vars
+        computed_vars = computed_vars,
+        aesUpdateDependency = aesUpdateDependency
       )
 
       observeEvent(input$edit_value, {

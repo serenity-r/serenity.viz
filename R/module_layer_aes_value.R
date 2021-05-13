@@ -16,10 +16,12 @@ layerAesValueUI <- function(id) {
 #' @param aesthetic Input will be for this aesthetic (determines widget)
 #' @param initial Input initial value
 #' @param show_initial Reactive: Show initial value?
+#' @param aesUpdateDependency Trigger update on layer change
 #'
 #' @return String "<aesthetic> = <value>"
 #' @export
-layerAesValueServer <- function(id, aesthetic, initial, show_initial = reactive({ FALSE })) {
+layerAesValueServer <- function(id, aesthetic, initial, show_initial = reactive({ FALSE }),
+                                aesUpdateDependency = reactive({ NULL })) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -42,6 +44,8 @@ layerAesValueServer <- function(id, aesthetic, initial, show_initial = reactive(
       }
 
       output$value_ui <- renderUI({
+        aesUpdateDependency()
+
         isolate({
           init_value <- input$value %T||% initial
 
@@ -95,7 +99,8 @@ layerAesValueServer <- function(id, aesthetic, initial, show_initial = reactive(
       # Call custom module
       custom_value <- layerAesCustomServer(
         "value",
-        custom_for = reactive({ input$value })
+        custom_for = reactive({ input$value }),
+        aesUpdateDependency = aesUpdateDependency
       )
 
       # Show or hide aesthetic value reset button

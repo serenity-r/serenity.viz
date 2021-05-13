@@ -4,14 +4,14 @@
 \alias{layerServer}
 \title{Server for layer module}
 \usage{
-layerServer(id, layers_selected, geom_blank_input, dataset, ggbase = NULL)
+layerServer(id, layers_selected, base_layer_aesthetics, dataset, ggbase = NULL)
 }
 \arguments{
 \item{id}{ID of layer module}
 
 \item{layers_selected}{Reactive value of currently selected layer}
 
-\item{geom_blank_input}{Need geom_blank values to check for inheritance}
+\item{base_layer_aesthetics}{Need base layer aesthetic values to check for inheritance}
 
 \item{dataset}{Dataset}
 

@@ -16,7 +16,7 @@ layerAestheticsUI <- function(id, name) {
              style="float:right; margin-right:10px")
       ),
       widgetBody(
-        uiOutput(ns("layer_aesthetics"),
+        uiOutput(ns("layer_aesthetics_ui"),
                  class = "layer-aesthetics")
       )
     )
@@ -27,8 +27,8 @@ layerAestheticsUI <- function(id, name) {
 #' @param id ID of layer aesthetics submodule
 #' @param layer_id Layer ID
 #' @param geom Geom
-#' @param layer_selected Reactive value of ID of currently selected layer
-#' @param base_layer_stages  Need base layer aesthetic mappings for inheritance
+#' @param selected_layer Reactive value of ID of currently selected layer
+#' @param base_layer_aesthetics  Need base layer aesthetic mappings for inheritance
 #' @param dataset Dataset
 #' @param inherit_aes Reactive: Is this aesthetic inheritable?
 #' @param layer_stat Reactive value of currently selected layer stat
@@ -37,8 +37,8 @@ layerAestheticsUI <- function(id, name) {
 #' @import shiny ggplot2
 #'
 #' @export
-layerAestheticsServer <- function(id, layer_id, geom, layer_selected,
-                                  base_layer_stages, dataset, inherit_aes,
+layerAestheticsServer <- function(id, layer_id, geom, selected_layer,
+                                  base_layer_aesthetics, dataset, inherit_aes,
                                   layer_stat) {
   moduleServer(
     id,
@@ -47,14 +47,9 @@ layerAestheticsServer <- function(id, layer_id, geom, layer_selected,
       stat_proto <- reactive({ get(paste0("Stat", snakeToCamel(layer_stat(), capFirst = TRUE))) })
       geom_aesthetics <- gg_aesthetics[[geom]]
       geom_required_aesthetics <- (stringr::str_split(geom_proto$geom$required_aes, "[|]", simplify=TRUE) %T||% NULL)[,1]
-
-      # Create trigger for this layers update
-      triggerAesUpdate <- makeReactiveTrigger()
-      observeEvent(layer_selected(), {
-        if (layer_selected() == layer_id) {
-          triggerAesUpdate$trigger()
-        }
-      }, ignoreInit = TRUE)
+      if (length(geom_required_aesthetics) == 0) {
+        geom_required_aesthetics <- c("x", "y", "group")
+      }
 
       stat_aesthetics <- reactive({
         setdiff(
@@ -65,94 +60,111 @@ layerAestheticsServer <- function(id, layer_id, geom, layer_selected,
 
       # Refactor: This will become more involved when implementing true ggplot2 3.0.0
       #   support of axis choice
-      stat_required_aesthetics <- reactive({
-        (stringr::str_split(stat_proto()$required_aes, "[|]", simplify=TRUE) %T||% NULL)[,1]
+      required_aesthetics <- reactive({
+        unique(
+          c(geom_required_aesthetics,
+            (stringr::str_split(stat_proto()$required_aes, "[|]", simplify=TRUE) %T||% NULL)[,1])
+        )
       })
 
-      # Possible refactor:  Probably more efficient to just use insertUI and removeUI for
-      #  each aesthetic, rather than rerendering all aesthetics on every stat change.
-      #  Also, the "side-effect" in this reactive is making me twitch.
+      # Create trigger for this layers update
+      triggerAesUpdate <- makeReactiveTrigger()
+
       aesthetics <- reactive({
-        triggerAesUpdate$trigger() # Make sure individual aesthetics update as well (probably bad form as side effect)
-        cat("(Re)creating aesthetics\n")
+        # triggerAesUpdate$trigger() # Make sure individual aesthetics update as well (probably bad form as side effect)
         reorderElements(c(geom_aesthetics, stat_aesthetics()),
                         orderBy = unique(c(
-                          reorderElements(c(geom_required_aesthetics,
-                                            stat_required_aesthetics(),
+                          reorderElements(c(required_aesthetics(),
                                             names(stat_additional_defaults[[stringr::str_split(geom, "-")[[1]][2]]])),
                                           orderBy = unique(unlist(gg_aesthetics))),
                           unlist(gg_aesthetics))
                         ))
       })
 
-      # _ Aesthetic divs ====
-      output$layer_aesthetics <- renderUI({
-        req(aesthetics())
-        cat("Rendering aesthetic UIs...")
-        triggerAesUpdate$depend()
+      layer_aesthetics <- reactiveValues()
 
-        stuff <- tagList(
-          lapply(aesthetics(), function(aes) {
-            layerAesUI(id = session$ns(aes))
-          })
-        )
-        cat("done!\n")
-        stuff
+      # _ Aesthetic divs ====
+      output$layer_aesthetics_ui <- renderUI({
+        # Problems if this req(...) is triggerAesUpdate$depend()
+        req(selected_layer() == layer_id)
+
+        isolate({
+          tagList(
+            shinyWidgets::pickerInput(
+              inputId = session$ns('layer_aesthetics_chooser'),
+              label = "Aesthetics",
+              choices = keepTruthy(purrr::map(all_aesthetics, ~ { reorderElements(intersect(aesthetics(), .), unique(unlist(all_aesthetics))) })),
+              multiple = TRUE,
+              selected = input$layer_aesthetics_chooser %||% required_aesthetics(),
+              options = list(
+                size = 6,
+                `live-search` = TRUE,
+                `dropup-auto` = FALSE
+              )
+            ),
+            div(class = "aesthetics",
+                tagList(
+                  purrr::map(
+                    intersect( # Only show pre-rendered aesthetics
+                      input$layer_aesthetics_chooser %||% required_aesthetics(),
+                      names(layer_aesthetics)
+                    ), ~ {
+                      layerAesUI(session$ns(.), aesthetic = .)
+                    })
+                )
+            )
+          )
+        })
       })
 
       # MAIN ----
 
-      # _ load variable subset modules ====
-      withProgress(message = 'Rendering geom aesthetics', value = 0, {
-        geom_aes_args <- purrr::map(geom_aesthetics, ~ {
-          # aesUpdateDependency = reactive({ triggerAesUpdate$depend() })
-          incProgress(1/length(geom_aesthetics), detail = .)
-          layerAesServer(
-            id = .,
-            geom = geom,
-            aesthetic = .,
-            base_layer_stages = switch(geom != "geom-blank", base_layer_stages[[.]]),
-            inherit_aes = inherit_aes,
-            default_geom_aes = geom_proto$geom$default_aes[[.]],
-            default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
-            required = reactive({ . %in% c(stat_required_aesthetics(), geom_required_aesthetics) }),
-            dataset = dataset,
-            computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }),
-            aesthetics = aesthetics
-          )
-        })
-      })
+      observeEvent(selected_layer(), {
+        if (selected_layer() == layer_id) {
+          triggerAesUpdate$trigger()
+        }
+      }, ignoreInit = TRUE)
 
-      stat_aes_args <- list()
-      observe({
-        req(stat_aesthetics())
-        cat("Loading stat aesthetic servers...\n")
-        stat_aes_args <<- purrr::map(stat_aesthetics(), ~ {
-          # aesUpdateDependency = reactive({ triggerAesUpdate$depend() })
-          cat(paste(., "\n"))
-          layerAesServer(
+      observeEvent(input$layer_aesthetics_chooser, {
+        # Adding new layers
+        # Note: Uh, for loop doesn't work here - duplicates y???
+        purrr::walk(setdiff(input$layer_aesthetics_chooser, names(layer_aesthetics)), ~ {
+          # Update layer module output reactives - create only once!
+          # Where to insert?
+          # ind <- which(. == input$layer_aesthetics_chooser) - 1
+          # selector <- paste0('#', session$ns('layer_aesthetics'),
+          #                    ifelse())
+          insertUI(
+            selector = paste0('#', session$ns('layer_aesthetics_ui'), ' > .aesthetics'),
+            where = "beforeEnd",
+            ui = layerAesUI(session$ns(.), aesthetic = .)
+          )
+          layer_aesthetics[[.]] <- layerAesServer(
             id = .,
             geom = geom,
             aesthetic = .,
-            base_layer_stages = switch(geom != "geom-blank", base_layer_stages[[.]]),
+            base_layer_stages = base_layer_aesthetics[[.]],
             inherit_aes = inherit_aes,
             default_geom_aes = geom_proto$geom$default_aes[[.]],
             default_stat_aes = reactive({ stat_proto()$default_aes[[.]] %||% stat_additional_defaults[[layer_stat()]][[.]] }),
             required = reactive({ . %in% c(stat_required_aesthetics(), geom_required_aesthetics) }),
             dataset = dataset,
             computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }),
-            aesthetics = aesthetics
+            aesthetics = aesthetics,
+            aesUpdateDependency = triggerAesUpdate$depend
           )
         })
-      })
+
+        purrr::walk(setdiff(names(layer_aesthetics), input$layer_aesthetics_chooser), ~ {
+          layer_aesthetics[[.]] <- NULL
+          removeUI(paste0('#', session$ns('layer_aesthetics_ui'), ' .aesthetics > div[data-aesthetic="', ., '"]'))
+        })
+      }, ignoreInit = TRUE)
 
       # _ process subset arguments ====
-      # Refactor: Why is this an eventReactive??
-      aes_code <- eventReactive(paste(purrr::map(c(geom_aes_args,
-                                                   stat_aes_args), ~ .$code())), {
-        cat("Rendering code...\n")
+      aes_code <- reactive({
         # Evaluate reactives
-        args <- purrr::map(c(geom_aes_args, stat_aes_args), ~ .$code())
+        args <- purrr::map(reactiveValuesToList(layer_aesthetics), ~ { .$code() })
 
         # Pull out the filter and mutate elements
         mapping_args <- unlist(purrr::map(args, "mapping"))
@@ -175,7 +187,7 @@ layerAestheticsServer <- function(id, layer_id, geom, layer_selected,
         }
 
         return(processed_aes_code)
-      }, ignoreInit = TRUE)
+      })
 
       return(
         list(

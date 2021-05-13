@@ -10,7 +10,8 @@ layerAesMappingStageServer(
   choices,
   default = list(),
   inherit = reactive({     TRUE }),
-  linked = reactive({     TRUE })
+  linked = reactive({     TRUE }),
+  aesUpdateDependency = reactive({     NULL })
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ a single reactive, then understood as specifying mapping only.}
 \item{inherit}{Is this layer allowing aesthetic inheritance?}
 
 \item{linked}{Is this aesthetic inheriting from base?}
+
+\item{aesUpdateDependency}{Trigger update on layer change}
 }
 \value{
 

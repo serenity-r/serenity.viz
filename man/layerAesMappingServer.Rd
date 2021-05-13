@@ -13,7 +13,8 @@ layerAesMappingServer(
   aesthetics,
   default_stat_aes,
   dataset,
-  computed_vars
+  computed_vars,
+  aesUpdateDependency = reactive({     NULL })
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ base layer stages. Used for inheritance and linking.}
 
 \item{computed_vars}{Reactive of stat computed variables for \code{after_stat}
 stage.}
+
+\item{aesUpdateDependency}{Trigger update on layer change}
 }
 \value{
 

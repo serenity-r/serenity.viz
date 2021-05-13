@@ -9,7 +9,7 @@ layerAestheticsServer(
   layer_id,
   geom,
   layer_selected,
-  base_layer_stages,
+  base_layer_aesthetics,
   dataset,
   inherit_aes,
   layer_stat
@@ -24,7 +24,7 @@ layerAestheticsServer(
 
 \item{layer_selected}{Reactive value of ID of currently selected layer}
 
-\item{base_layer_stages}{Need base layer aesthetic mappings for inheritance}
+\item{base_layer_aesthetics}{Need base layer aesthetic mappings for inheritance}
 
 \item{dataset}{Dataset}
 

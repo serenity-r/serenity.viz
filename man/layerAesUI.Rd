@@ -4,10 +4,12 @@
 \alias{layerAesUI}
 \title{UI for layer aesthetic submodule}
 \usage{
-layerAesUI(id)
+layerAesUI(id, aesthetic = NULL)
 }
 \arguments{
 \item{id}{ID of layer aesthetic}
+
+\item{aesthetic}{Aesthetic data attribute}
 }
 \value{
 UI for layer aesthetic

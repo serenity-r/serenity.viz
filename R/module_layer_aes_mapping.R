@@ -31,11 +31,13 @@ layerAesMappingUI <- function(id) {
 #' @param dataset Dataset
 #' @param computed_vars Reactive of stat computed variables for \code{after_stat}
 #'   stage.
+#' @param aesUpdateDependency Trigger update on layer change
 #'
 #' @return
 #' @export
 layerAesMappingServer <- function(id, stage, aesthetic, inheritable, base_layer_stages,
-                                  aesthetics, default_stat_aes, dataset, computed_vars) {
+                                  aesthetics, default_stat_aes, dataset, computed_vars,
+                                  aesUpdateDependency = reactive({ NULL })) {
   moduleServer(
     id,
     function (input, output, session) {
@@ -46,11 +48,13 @@ layerAesMappingServer <- function(id, stage, aesthetic, inheritable, base_layer_
 
       # Mapping UI ----
       output$mapping_ui <- renderUI({
+        aesUpdateDependency()
+
         isolate({
           tagList(
             prettyToggle(
               inputId = session$ns("linked"),
-              value = input$linked %T||% TRUE,
+              value = input$linked %||% TRUE,
               label_on = "",
               label_off = "",
               status_on = "default",
@@ -87,8 +91,8 @@ layerAesMappingServer <- function(id, stage, aesthetic, inheritable, base_layer_
       })
       outputOptions(output, "mapping_ui", suspendWhenHidden = FALSE)
 
-      after_scale_default <- reactive({ ifelse(inheritable$from_base(), base_layer_stages$after_scale$mapping(), aesthetic) })
-      after_scale_custom_mapping <- reactive({ ifelse(inheritable$from_base(), base_layer_stages$after_scale$custom_mapping(), aesthetic) })
+      after_scale_default <- reactive({ switch(as.character(inheritable$from_base()), "TRUE" = base_layer_stages$after_scale$mapping(), "FALSE" = aesthetic) })
+      after_scale_custom_mapping <- reactive({ switch(as.character(inheritable$from_base()), "TRUE" = base_layer_stages$after_scale$custom_mapping(), "FALSE" = aesthetic) })
       stages <- list(
         # callModule: Call start mapping module ----
         start = layerAesMappingStageServer(
@@ -103,7 +107,8 @@ layerAesMappingServer <- function(id, stage, aesthetic, inheritable, base_layer_
             custom_toggle = reactive({ ifelse(inheritable$from_base(), base_layer_stages$start$custom_toggle(), FALSE) })
           ),
           inherit = reactive({ inheritable$from_base() }),
-          linked = reactive({ input$linked })
+          linked = reactive({ input$linked }),
+          aesUpdateDependency = aesUpdateDependency
         ),
         # callModule: Call after_stat mapping module ----
         after_stat = layerAesMappingStageServer(
@@ -118,7 +123,8 @@ layerAesMappingServer <- function(id, stage, aesthetic, inheritable, base_layer_
             custom_toggle = reactive({ FALSE })
           ),
           inherit = reactive({ FALSE }),
-          linked = reactive({ FALSE })
+          linked = reactive({ FALSE }),
+          aesUpdateDependency = aesUpdateDependency
         ),
         # callModule: Call after_scale mapping module ----
         after_scale = layerAesMappingStageServer(
@@ -133,7 +139,8 @@ layerAesMappingServer <- function(id, stage, aesthetic, inheritable, base_layer_
             custom_toggle = reactive({ ifelse(inheritable$from_base(), base_layer_stages$after_scale$custom_toggle(), FALSE) })
           ),
           inherit = reactive({ inheritable$from_base() }),
-          linked = reactive({ input$linked })
+          linked = reactive({ input$linked }),
+          aesUpdateDependency = aesUpdateDependency
         )
       )
 

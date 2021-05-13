@@ -8,7 +8,8 @@ layerAesCustomServer(
   id,
   custom_for,
   custom_value = reactive({     NULL }),
-  waitforit = 0
+  waitforit = 0,
+  aesUpdateDependency = reactive({     NULL })
 )
 }
 \arguments{
@@ -21,6 +22,8 @@ layerAesCustomServer(
 \item{waitforit}{If custom_for input is within renderUI, set to 1 to make
 sure custom_for does not override custom_value.  REFACTOR: This is REALLY
 cludgy. Couldn't figure out a more elegant way around this issue.}
+
+\item{aesUpdateDependency}{Trigger update on layer change}
 }
 \value{
 
