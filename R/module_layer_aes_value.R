@@ -61,7 +61,7 @@ layerAesValueServer <- function(id, aesthetic, initial, show_initial = reactive(
               outline = TRUE,
               plain = TRUE,
               icon_on = icon("times"),
-              icon_off = icon("pencil"),
+              icon_off = icon("pencil-alt"),
               inline = TRUE
             ) %>% {
               .$attribs$class <- paste(c(.$attribs$class, "custom-toggle"), collapse = " ")

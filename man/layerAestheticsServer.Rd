@@ -8,7 +8,7 @@ layerAestheticsServer(
   id,
   layer_id,
   geom,
-  layer_selected,
+  selected_layer,
   base_layer_aesthetics,
   dataset,
   inherit_aes,
@@ -22,7 +22,7 @@ layerAestheticsServer(
 
 \item{geom}{Geom}
 
-\item{layer_selected}{Reactive value of ID of currently selected layer}
+\item{selected_layer}{Reactive value of ID of currently selected layer}
 
 \item{base_layer_aesthetics}{Need base layer aesthetic mappings for inheritance}
 

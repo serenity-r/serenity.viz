@@ -8,7 +8,8 @@ layerAesValueServer(
   id,
   aesthetic,
   initial,
-  show_initial = reactive({     FALSE })
+  show_initial = reactive({     FALSE }),
+  aesUpdateDependency = reactive({     NULL })
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ layerAesValueServer(
 \item{initial}{Input initial value}
 
 \item{show_initial}{Reactive: Show initial value?}
+
+\item{aesUpdateDependency}{Trigger update on layer change}
 }
 \value{
 String "<aesthetic> = <value>"
