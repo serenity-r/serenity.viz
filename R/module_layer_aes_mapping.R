@@ -33,7 +33,12 @@ layerAesMappingUI <- function(id) {
 #'   stage.
 #' @param aesUpdateDependency Trigger update on layer change
 #'
-#' @return
+#' @return List containing layer aesthetic mapping module state.
+#' \describe{
+#'   \item{stages}{List of reactive expressions of each stage's state (\code{start}, \code{after_stat}, \code{after_stage})}
+#'   \item{code}{Reactive expression of aesthetic mapping code (string)}
+#' }
+#'
 #' @export
 layerAesMappingServer <- function(id, stage, aesthetic, inheritable, base_layer_stages,
                                   aesthetics, default_stat_aes, dataset, computed_vars,

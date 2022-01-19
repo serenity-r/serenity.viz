@@ -17,12 +17,12 @@ layerAesMappingStageServer(
 \arguments{
 \item{id}{ID of layer aesthetic stage submodule}
 
-\item{stage}{Which stage?}
+\item{stage}{Which stage? Possible values include \code{start}, \code{after_stat}, and \code{after_scale}.}
 
-\item{choices}{Reactive: Stage choices (given by dataInputChoices)}
+\item{choices}{Reactive: Stage choices (given by \code{dataInputChoices})}
 
-\item{default}{Reactive or list of reactive default values (mapping,
-custom_mapping, and custom_toggle). Defaults to NULL for all three. If
+\item{default}{Reactive or list of reactive default values (\code{mapping},
+\code{custom_mapping}, and \code{custom_toggle}). Defaults to NULL for all three. If
 a single reactive, then understood as specifying mapping only.}
 
 \item{inherit}{Is this layer allowing aesthetic inheritance?}
@@ -32,7 +32,14 @@ a single reactive, then understood as specifying mapping only.}
 \item{aesUpdateDependency}{Trigger update on layer change}
 }
 \value{
-
+List containing layer aesthetic mapping stage module state.
+\describe{
+  \item{mapping}{Reactive expression of stage mapping state}
+  \item{custom_mapping}{Reactive expression of stage custom mapping state (used for initialization of \code{default})}
+  \item{custom_toggle}{Reactive expression of stage custom toggle state (used for initialization of \code{default})}
+  \item{changed}{Reactive expression triggered when mapping changes (used for unlinking to base layer)}
+  \item{code}{Reactive expression of aesthetic mapping stage code (string)}
+}
 }
 \description{
 Server for layer aesthetic stage submodule

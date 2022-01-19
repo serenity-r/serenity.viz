@@ -17,6 +17,14 @@ layerServer(id, selected_layer, base_layer_aesthetics, dataset, ggbase = NULL)
 
 \item{ggbase}{All your base are belong to us...}
 }
+\value{
+List containing individual layer module state.
+\describe{
+  \item{code}{Reactive expression of layer code (string)}
+  \item{stat}{Reactive expression of currently selected stat (string)}
+  \item{aesthetics}{Reactive expression of layer aesthetics (vector of strings)}
+}
+}
 \description{
 Server for layer module
 }

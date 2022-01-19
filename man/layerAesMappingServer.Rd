@@ -45,7 +45,11 @@ stage.}
 \item{aesUpdateDependency}{Trigger update on layer change}
 }
 \value{
-
+List containing layer aesthetic mapping module state.
+\describe{
+  \item{stages}{List of reactive expressions of each stage's state (\code{start}, \code{after_stat}, \code{after_stage})}
+  \item{code}{Reactive expression of aesthetic mapping code (string)}
+}
 }
 \description{
 Server for layer aesthetic mapping submodule

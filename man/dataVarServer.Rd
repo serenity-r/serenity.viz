@@ -11,6 +11,9 @@ dataVarServer(id, var)
 
 \item{var}{Variable from data frame}
 }
+\value{
+Reactive expression for variable filtering code (string)
+}
 \description{
 Server for data variable module
 }

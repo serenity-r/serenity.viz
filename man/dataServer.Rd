@@ -13,6 +13,9 @@ dataServer(id, dataset, layers)
 
 \item{layers}{State object of layers module}
 }
+\value{
+Reactive expression of data manipulation pipeline (string)
+}
 \description{
 Server for data module
 }

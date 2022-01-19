@@ -48,6 +48,12 @@ layerAesUI <- function(id, aesthetic = NULL) {
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
+#' @return List containing layer aesthetic module state.
+#' \describe{
+#'   \item{stages}{List of reactive expressions of each stage's state (\code{start}, \code{after_stat}, \code{after_stage})}
+#'   \item{code}{Reactive expression of aesthetic code (string)}
+#' }
+#'
 #' @export
 layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, default_geom_aes,
                            default_stat_aes, required, dataset, computed_vars,

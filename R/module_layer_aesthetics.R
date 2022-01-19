@@ -36,6 +36,12 @@ layerAestheticsUI <- function(id, name) {
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
+#' @return List containing layer aesthetics module state.
+#' \describe{
+#'   \item{code}{Reactive expression of layer aesthetics code (string)}
+#'   \item{aesthetics}{Reactive expression of selected layer aesthetics (vector of strings)}
+#' }
+#'
 #' @export
 layerAestheticsServer <- function(id, layer_id, geom, selected_layer,
                                   base_layer_aesthetics, dataset, inherit_aes,

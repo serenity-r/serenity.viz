@@ -26,7 +26,7 @@ cludgy. Couldn't figure out a more elegant way around this issue.}
 \item{aesUpdateDependency}{Trigger update on layer change}
 }
 \value{
-
+Reactive value of custom input
 }
 \description{
 Server for layer aesthetic submodule

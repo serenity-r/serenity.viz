@@ -20,7 +20,8 @@ layerAesCustomUI <- function(id) {
 #'   cludgy. Couldn't figure out a more elegant way around this issue.
 #' @param aesUpdateDependency Trigger update on layer change
 #'
-#' @return
+#' @return Reactive value of custom input
+#'
 #' @export
 layerAesCustomServer <- function(id, custom_for, custom_value = reactive({ NULL }),
                                  waitforit = 0, aesUpdateDependency = reactive({ NULL })) {

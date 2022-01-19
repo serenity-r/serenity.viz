@@ -17,6 +17,9 @@ labelsServer(input, output, session, xlabel, ylabel)
 
 \item{ylabel}{y-label reactive to replace placeholder}
 }
+\value{
+Reactive expression for label code (string)
+}
 \description{
 Server for labels module
 }

@@ -4,18 +4,21 @@
 \alias{layerParamsServer}
 \title{Server for layer parameters submodule}
 \usage{
-layerParamsServer(input, output, session, base_data, layer_stat)
+layerParamsServer(id, base_data, layer_stat)
 }
 \arguments{
-\item{input}{Shiny inputs}
-
-\item{output}{Shiny outputs}
-
-\item{session}{Shiny user session}
+\item{id}{ID of layer parameter module}
 
 \item{base_data}{Reactive values of ggplot plot object states (data and scales)}
 
 \item{layer_stat}{Reactive value of currently selected layer stat}
+}
+\value{
+List containing layer parameter module state.
+\describe{
+  \item{inherit.aes}{Reactive expression of aesthetic inheritance layer setting (boolean)}
+  \item{code}{Reactive expression of layer parameter code}
+}
 }
 \description{
 Server for layer parameters submodule

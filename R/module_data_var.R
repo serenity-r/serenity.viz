@@ -47,6 +47,7 @@ dataVarUI <- function(id, var, default='') {
 #' @param id ID of data variable module
 #' @param var Variable from data frame
 #'
+#' @return Reactive expression for variable filtering code (string)
 dataVarServer <- function(id, var) {
   moduleServer(
     id,

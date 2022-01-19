@@ -137,6 +137,12 @@ layerChoiceUI <- function(plot_id) {
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
+#' @return List containing individual layer module state.
+#' \describe{
+#'   \item{code}{Reactive expression of layer code (string)}
+#'   \item{stat}{Reactive expression of currently selected stat (string)}
+#'   \item{aesthetics}{Reactive expression of layer aesthetics (vector of strings)}
+#' }
 layerServer <- function(id, selected_layer, base_layer_aesthetics, dataset, ggbase = NULL) {
   moduleServer(
     id,
@@ -197,10 +203,9 @@ layerServer <- function(id, selected_layer, base_layer_aesthetics, dataset, ggba
 
       layer_params <- list(code = reactive({ "" }))
       if (geom_type != "geom-blank") {
-        layer_params <- callModule(module = layerParamsServer,
-                                   id = 'params',
-                                   base_data = reactive({ ggdata$base_data }),
-                                   layer_stat = reactive({ input$stat %||% default_stat })
+        layer_params <- layerParamsServer(id = 'params',
+                                          base_data = reactive({ ggdata$base_data }),
+                                          layer_stat = reactive({ input$stat %||% default_stat })
         )
       }
 
@@ -254,10 +259,9 @@ layerServer <- function(id, selected_layer, base_layer_aesthetics, dataset, ggba
 
       # Call position module
       # Only need isolated base_data for now
-      position_code <- callModule(module = layerPositionServer,
-                                  id = 'position',
-                                  base_data = reactive({ ggdata$base_data }),
-                                  default_position = tolower(stringr::str_remove(class(geom_proto$position)[1], "Position")))
+      position_code <- layerPositionServer(id = 'position',
+                                           base_data = reactive({ ggdata$base_data }),
+                                           default_position = tolower(stringr::str_remove(class(geom_proto$position)[1], "Position")))
 
       base_layer_code <- dedupe(reactive({
         req(!is.null(layer_aesthetics$code()))

@@ -29,6 +29,8 @@ labelsUI <- function(id) {
 #'
 #' @import shiny
 #'
+#' @return Reactive expression for label code (string)
+#'
 labelsServer <- function(input, output, session, xlabel, ylabel) {
   output$ui <- renderUI({
     ns <- session$ns

@@ -24,7 +24,7 @@ layerAesValueServer(
 \item{aesUpdateDependency}{Trigger update on layer change}
 }
 \value{
-String "<aesthetic> = <value>"
+Reactive expression of layer aesthetic value (string)
 }
 \description{
 Server for layer aesthetic submodule

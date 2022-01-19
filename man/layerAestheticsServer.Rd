@@ -32,6 +32,13 @@ layerAestheticsServer(
 
 \item{layer_stat}{Reactive value of currently selected layer stat}
 }
+\value{
+List containing layer aesthetics module state.
+\describe{
+  \item{code}{Reactive expression of layer aesthetics code (string)}
+  \item{aesthetics}{Reactive expression of selected layer aesthetics (vector of strings)}
+}
+}
 \description{
 Server for layer aesthetics module
 }

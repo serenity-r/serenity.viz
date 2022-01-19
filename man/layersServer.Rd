@@ -11,6 +11,15 @@ layersServer(id, dataset)
 
 \item{dataset}{Dataset}
 }
+\value{
+List containing layers module state.
+\describe{
+  \item{code}{Reactive expression of layers code (string)}
+  \item{selected_layer}{Reactive expression of currently selected layer (string)}
+  \item{selected_stat}{Reactive expression of currently selected layer (string)}
+  \item{aesthetics}{Reactive expression of selected layer aesthetics (vector of strings)}
+}
+}
 \description{
 Server for all layers module
 }

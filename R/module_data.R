@@ -25,6 +25,7 @@ dataUI <- function(id) {
 #' @importFrom magrittr %>%
 #' @import shiny
 #'
+#' @return Reactive expression of data manipulation pipeline (string)
 dataServer <- function(id, dataset, layers) {
   moduleServer(
     id,

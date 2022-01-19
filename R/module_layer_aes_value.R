@@ -18,7 +18,8 @@ layerAesValueUI <- function(id) {
 #' @param show_initial Reactive: Show initial value?
 #' @param aesUpdateDependency Trigger update on layer change
 #'
-#' @return String "<aesthetic> = <value>"
+#' @return Reactive expression of layer aesthetic value (string)
+#'
 #' @export
 layerAesValueServer <- function(id, aesthetic, initial, show_initial = reactive({ FALSE }),
                                 aesUpdateDependency = reactive({ NULL })) {

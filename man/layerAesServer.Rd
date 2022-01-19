@@ -44,6 +44,13 @@ layerAesServer(
 
 \item{aesUpdateDependency}{Trigger update on layer change}
 }
+\value{
+List containing layer aesthetic module state.
+\describe{
+  \item{stages}{List of reactive expressions of each stage's state (\code{start}, \code{after_stat}, \code{after_stage})}
+  \item{code}{Reactive expression of aesthetic code (string)}
+}
+}
 \description{
 Server for layer aesthetic submodule
 }

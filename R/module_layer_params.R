@@ -12,92 +12,100 @@ layerParamsUI <- function(id) {
 
 #' Server for layer parameters submodule
 #'
-#' @param input   Shiny inputs
-#' @param output  Shiny outputs
-#' @param session Shiny user session
+#' @param id ID of layer parameter module
 #' @param base_data Reactive values of ggplot plot object states (data and scales)
 #' @param layer_stat Reactive value of currently selected layer stat
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerParamsServer <- function(input, output, session, base_data, layer_stat) {
-  ns <- session$ns
+#' @return List containing layer parameter module state.
+#' \describe{
+#'   \item{inherit.aes}{Reactive expression of aesthetic inheritance layer setting (boolean)}
+#'   \item{code}{Reactive expression of layer parameter code}
+#' }
+layerParamsServer <- function(id, base_data, layer_stat) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      ns <- session$ns
 
-  geom_fun <- stringr::str_replace(getLayerInfo(ns)$geom, "-", "_")
+      geom_fun <- stringr::str_replace(getLayerInfo(ns)$geom, "-", "_")
 
-  # This stores returned reactives from stat modules
-  stat_modules <- reactiveValues()
+      # This stores returned reactives from stat modules
+      stat_modules <- reactiveValues()
 
-  # Call geom param module (if exists)
-  geom_params_code <- reactive({ "" })
-  geom_params_ui <- paste0("layerParams", snakeToCamel(geom_fun, capFirst = TRUE), "UI")
-  geom_params_module <- paste0("layerParams", snakeToCamel(geom_fun, capFirst = TRUE), "Server")
-  if (exists(geom_params_module)) {
-    geom_params_code <- callModule(module = get(geom_params_module),
-                                   id = geom_fun,
-                                   base_data = base_data,
-                                   session = session)
-  }
+      # Call geom param module (if exists)
+      geom_params_code <- reactive({ "" })
+      geom_params_ui <- paste0("layerParams", snakeToCamel(geom_fun, capFirst = TRUE), "UI")
+      geom_params_module <- paste0("layerParams", snakeToCamel(geom_fun, capFirst = TRUE), "Server")
+      if (exists(geom_params_module)) {
+        geom_params_code <- callModule(module = get(geom_params_module),
+                                       id = geom_fun,
+                                       base_data = base_data,
+                                       session = session)
+      }
 
-  # Update stat module output reactives - create only once!
-  observeEvent(layer_stat(), {
-    stat_params_module <- paste0("layerParamsStat", snakeToCamel(layer_stat(), capFirst = TRUE), "Server")
-    if (!(layer_stat() %in% names(stat_modules))) {
-      stat_modules[[layer_stat()]] <- switch(as.character(exists(stat_params_module)),
-                                             "TRUE" = callModule(module = get(stat_params_module),
-                                                                 id = paste0("stat_", layer_stat()),
-                                                                 base_data = base_data,
-                                                                 session = session),
-                                             "FALSE" = reactive({ "" })
+      # Update stat module output reactives - create only once!
+      observeEvent(layer_stat(), {
+        stat_params_module <- paste0("layerParamsStat", snakeToCamel(layer_stat(), capFirst = TRUE), "Server")
+        if (!(layer_stat() %in% names(stat_modules))) {
+          stat_modules[[layer_stat()]] <- switch(as.character(exists(stat_params_module)),
+                                                 "TRUE" = callModule(module = get(stat_params_module),
+                                                                     id = paste0("stat_", layer_stat()),
+                                                                     base_data = base_data,
+                                                                     session = session),
+                                                 "FALSE" = reactive({ "" })
+          )
+        }
+      }, priority = 1)
+
+      output$params <- renderUI({
+        isolate({
+          tagList(
+            switch(exists(geom_params_ui), tagList(get(geom_params_ui)(session$ns(geom_fun)), hr())),
+            uiOutput(session$ns('stat_ui')),
+            common_params_ui(input, session)
+          )
+        })
+      })
+      outputOptions(output, "params", suspendWhenHidden = FALSE)
+
+      output$stat_ui <- renderUI({
+        req(layer_stat())
+        stat_params_ui <- paste0("layerParamsStat", snakeToCamel(layer_stat(), capFirst = TRUE), "UI")
+        switch(exists(stat_params_ui), tagList(get(stat_params_ui)(session$ns(paste0("stat_", layer_stat()))), hr()))
+      })
+      outputOptions(output, "stat_ui", suspendWhenHidden = FALSE)
+
+      params_code <- dedupe(reactive({
+        req(!is.null(geom_params_code()),
+            isTruthy(stat_modules[[layer_stat()]]) && !is.null(stat_modules[[layer_stat()]]()))
+
+        # Get specific geom params
+        processed_params_code <- geom_params_code()
+
+        # Get specific stat params
+        processed_params_code <- paste0(processed_params_code,
+                                        ifelse(nchar(processed_params_code) > 0 && nchar(stat_modules[[layer_stat()]]()) > 0, ", ", ""),
+                                        stat_modules[[layer_stat()]]())
+
+        # Get common layer params
+        common_layer_code <- process_args(formals(geom_fun)[c("na.rm", "show.legend", "inherit.aes")], input, base_data)
+        processed_params_code <- paste0(processed_params_code,
+                                        ifelse(nchar(processed_params_code) > 0 && nchar(common_layer_code) > 0, ",\n", ""),
+                                        common_layer_code)
+
+        return(processed_params_code)
+      }))
+
+      return(
+        list(
+          inherit.aes = reactive({ input[['inherit.aes']] }),
+          code = params_code
+        )
       )
     }
-  }, priority = 1)
-
-  output$params <- renderUI({
-    isolate({
-      tagList(
-        switch(exists(geom_params_ui), tagList(get(geom_params_ui)(session$ns(geom_fun)), hr())),
-        uiOutput(session$ns('stat_ui')),
-        common_params_ui(input, session)
-      )
-    })
-  })
-  outputOptions(output, "params", suspendWhenHidden = FALSE)
-
-  output$stat_ui <- renderUI({
-    req(layer_stat())
-    stat_params_ui <- paste0("layerParamsStat", snakeToCamel(layer_stat(), capFirst = TRUE), "UI")
-    switch(exists(stat_params_ui), tagList(get(stat_params_ui)(session$ns(paste0("stat_", layer_stat()))), hr()))
-  })
-  outputOptions(output, "stat_ui", suspendWhenHidden = FALSE)
-
-  params_code <- dedupe(reactive({
-    req(!is.null(geom_params_code()),
-        isTruthy(stat_modules[[layer_stat()]]) && !is.null(stat_modules[[layer_stat()]]()))
-
-    # Get specific geom params
-    processed_params_code <- geom_params_code()
-
-    # Get specific stat params
-    processed_params_code <- paste0(processed_params_code,
-                                    ifelse(nchar(processed_params_code) > 0 && nchar(stat_modules[[layer_stat()]]()) > 0, ", ", ""),
-                                    stat_modules[[layer_stat()]]())
-
-    # Get common layer params
-    common_layer_code <- process_args(formals(geom_fun)[c("na.rm", "show.legend", "inherit.aes")], input, base_data)
-    processed_params_code <- paste0(processed_params_code,
-                                    ifelse(nchar(processed_params_code) > 0 && nchar(common_layer_code) > 0, ",\n", ""),
-                                    common_layer_code)
-
-    return(processed_params_code)
-  }))
-
-  return(
-    list(
-      inherit.aes = reactive({ input[['inherit.aes']] }),
-      code = params_code
-    )
   )
 }
 

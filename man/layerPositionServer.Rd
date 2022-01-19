@@ -4,18 +4,17 @@
 \alias{layerPositionServer}
 \title{Server function for position arguments}
 \usage{
-layerPositionServer(input, output, session, base_data, default_position)
+layerPositionServer(id, base_data, default_position)
 }
 \arguments{
-\item{input}{Shiny inputs}
-
-\item{output}{Shiny outputs}
-
-\item{session}{Shiny user session}
+\item{id}{ID of layer position module}
 
 \item{base_data}{Pre-isolated reactive to base layer data}
 
 \item{default_position}{Default layer position}
+}
+\value{
+Reactive expression for layer position code (string)
 }
 \description{
 Server function for position arguments

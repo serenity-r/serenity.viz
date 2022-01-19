@@ -10,176 +10,181 @@ layerPositionUI <- function(id) {
 
 #' Server function for position arguments
 #'
-#' @param input   Shiny inputs
-#' @param output  Shiny outputs
-#' @param session Shiny user session
+#' @param id ID of layer position module
 #' @param base_data Pre-isolated reactive to base layer data
 #' @param default_position  Default layer position
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
 #'
-layerPositionServer <- function(input, output, session, base_data, default_position) {
-  positions <- c("identity", "jitter", "dodge", "dodge2", "jitterdodge", "nudge", "stack", "fill")
+#' @return Reactive expression for layer position code (string)
+#'
+layerPositionServer <- function(id, base_data, default_position) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      positions <- c("identity", "jitter", "dodge", "dodge2", "jitterdodge", "nudge", "stack", "fill")
 
-  # Need a reactive trigger to fix a shinyWidgets bug
-  refreshWidget <- makeReactiveTrigger()
+      # Need a reactive trigger to fix a shinyWidgets bug
+      refreshWidget <- makeReactiveTrigger()
 
-  # Sub-positions that share settings
-  pos_to_sub <- list(
-    "dodge" = "dodge2",
-    "stack" = "fill"
-  )
-  sub_to_pos <- as.list(names(pos_to_sub))
-  names(sub_to_pos) <- purrr::flatten_chr(pos_to_sub)
+      # Sub-positions that share settings
+      pos_to_sub <- list(
+        "dodge" = "dodge2",
+        "stack" = "fill"
+      )
+      sub_to_pos <- as.list(names(pos_to_sub))
+      names(sub_to_pos) <- purrr::flatten_chr(pos_to_sub)
 
-  # Load position server code (if present)
-  # Note that for now all _server function need the additional argument refreshWidget
-  #   Can remove once bug in shinyWidgets is addressed
-  purrr::map(positions, ~ tryCatch(
-    do.call(paste0(.,'_server'),
-            list(session = session, refreshWidget = refreshWidget)),
-    error = function(e) NULL)
-  )
+      # Load position server code (if present)
+      # Note that for now all _server function need the additional argument refreshWidget
+      #   Can remove once bug in shinyWidgets is addressed
+      purrr::map(positions, ~ tryCatch(
+        do.call(paste0(.,'_server'),
+                list(session = session, refreshWidget = refreshWidget)),
+        error = function(e) NULL)
+      )
 
-  output$position_chooser <- renderUI({
-    init_position <- input$position %||% sub_to_pos[[default_position]] %||% default_position
-    isolate({
-      tagList(
-        selectizeInput(session$ns('position'),
-                       label = NULL,
-                       choices = list("Identity" = "identity",
-                                      "Jitter" = "jitter",
-                                      "Dodge" = "dodge",
-                                      "Jitter-Dodge" = "jitterdodge",
-                                      "Nudge" = "nudge",
-                                      "Stack" = "stack"),
-                       options = list(render = I(
-                         "{
+      output$position_chooser <- renderUI({
+        init_position <- input$position %||% sub_to_pos[[default_position]] %||% default_position
+        isolate({
+          tagList(
+            selectizeInput(session$ns('position'),
+                           label = NULL,
+                           choices = list("Identity" = "identity",
+                                          "Jitter" = "jitter",
+                                          "Dodge" = "dodge",
+                                          "Jitter-Dodge" = "jitterdodge",
+                                          "Nudge" = "nudge",
+                                          "Stack" = "stack"),
+                           options = list(render = I(
+                             "{
                         option: function(item, escape) {
                         return '<div class = \"position\"><span data-value = \"' + escape(item.value) + '\"></span>' + escape(item.label) + '</div>'
                        }
     }")),
-                       selected = init_position
-        ),
-        switch(init_position %in% names(pos_to_sub),
-               checkboxInput(session$ns('position_sub'),
-                             label = switch(pos_to_sub[[init_position]],
-                                            "fill" = "Normalize heights?",
-                                            "dodge2" = "Variable widths?"),
-                             value = input[["position_sub"]] %||% (default_position %in% names(sub_to_pos))),
-               NULL)
-      )
-    })
-  })
-  # _ Make sure position chooser always update ====
-  outputOptions(output, "position_chooser", suspendWhenHidden = FALSE)
-
-  position_sub <- reactive({
-    req(input$position)
-    pos_to_sub[[ifelse(is.logical(input$position_sub) %||% NULL,
-                       ifelse(input$position_sub,
-                              input$position,
-                              NA),
-                       NA)]]
-  })
-
-  position <- reactive({
-    req(input$position)
-    position_sub() %||% input$position
-  })
-
-  additional_args <- reactive({
-    req(input$position)
-    pos_args <- formals(paste0("position_", input$position))
-    sub_args <- formals(paste0("position_", position_sub()))
-    sub_args[!(names(sub_args) %in% names(pos_args))]
-  })
-
-  output$position_options <- renderUI({
-    req(input$position, base_data())
-    refreshWidget$depend()
-
-    isolate({
-      if (isTruthy(base_data())) {
-        tagList(
-          # Main options
-          purrr::imap(formals(paste0("position_", input$position)), ~ {
-            tryCatch(
-              do.call(paste0(input$position, '_', .y, '_ui'),
-                      list(value = .x, input = input, session = session, base_data = base_data)),
-              error = function(e) {
-                tryCatch(
-                  do.call(paste0(.y,'_ui'),
-                          list(value = .x, input = input, session = session, base_data = base_data)),
-                  error = function(e) NULL
-                )
-              })
-          }
+                           selected = init_position
+            ),
+            switch(init_position %in% names(pos_to_sub),
+                   checkboxInput(session$ns('position_sub'),
+                                 label = switch(pos_to_sub[[init_position]],
+                                                "fill" = "Normalize heights?",
+                                                "dodge2" = "Variable widths?"),
+                                 value = input[["position_sub"]] %||% (default_position %in% names(sub_to_pos))),
+                   NULL)
           )
-        )
-      } else {
-        span("Please fix layer error before continuing.")
-      }
-    })
-  })
-  # _ Make sure position chooser always update ====
-  outputOptions(output, "position_options", suspendWhenHidden = FALSE)
-
-  output$position_sub_options <- renderUI({
-    req(position_sub())
-
-    # Sub options
-    isolate({
-      tagList(
-        purrr::imap(additional_args(), ~ {
-          tryCatch(
-          do.call(paste0(position_sub(), '_', .y, '_ui'),
-                  list(value = .x, input = input, session = session, base_data = base_data)),
-          error = function(e) {
-            tryCatch(
-              do.call(paste0(.y,'_ui'),
-                      list(value = .x, input = input, session = session, base_data = base_data)),
-              error = function(e) NULL
-            )
-          })
         })
+      })
+      # _ Make sure position chooser always update ====
+      outputOptions(output, "position_chooser", suspendWhenHidden = FALSE)
+
+      position_sub <- reactive({
+        req(input$position)
+        pos_to_sub[[ifelse(is.logical(input$position_sub) %||% NULL,
+                           ifelse(input$position_sub,
+                                  input$position,
+                                  NA),
+                           NA)]]
+      })
+
+      position <- reactive({
+        req(input$position)
+        position_sub() %||% input$position
+      })
+
+      additional_args <- reactive({
+        req(input$position)
+        pos_args <- formals(paste0("position_", input$position))
+        sub_args <- formals(paste0("position_", position_sub()))
+        sub_args[!(names(sub_args) %in% names(pos_args))]
+      })
+
+      output$position_options <- renderUI({
+        req(input$position, base_data())
+        refreshWidget$depend()
+
+        isolate({
+          if (isTruthy(base_data())) {
+            tagList(
+              # Main options
+              purrr::imap(formals(paste0("position_", input$position)), ~ {
+                tryCatch(
+                  do.call(paste0(input$position, '_', .y, '_ui'),
+                          list(value = .x, input = input, session = session, base_data = base_data)),
+                  error = function(e) {
+                    tryCatch(
+                      do.call(paste0(.y,'_ui'),
+                              list(value = .x, input = input, session = session, base_data = base_data)),
+                      error = function(e) NULL
+                    )
+                  })
+              }
+              )
+            )
+          } else {
+            span("Please fix layer error before continuing.")
+          }
+        })
+      })
+      # _ Make sure position chooser always update ====
+      outputOptions(output, "position_options", suspendWhenHidden = FALSE)
+
+      output$position_sub_options <- renderUI({
+        req(position_sub())
+
+        # Sub options
+        isolate({
+          tagList(
+            purrr::imap(additional_args(), ~ {
+              tryCatch(
+                do.call(paste0(position_sub(), '_', .y, '_ui'),
+                        list(value = .x, input = input, session = session, base_data = base_data)),
+                error = function(e) {
+                  tryCatch(
+                    do.call(paste0(.y,'_ui'),
+                            list(value = .x, input = input, session = session, base_data = base_data)),
+                    error = function(e) NULL
+                  )
+                })
+            })
+          )
+        })
+      })
+      # _ Make sure position chooser always update ====
+      outputOptions(output, "position_sub_options", suspendWhenHidden = FALSE)
+
+      updateSelectizeInput(
+        session, 'position', server = TRUE,
+        choices = list("Identity" = "identity",
+                       "Jitter" = "jitter",
+                       "Dodge" = "dodge",
+                       "Jitter-Dodge" = "jitterdodge",
+                       "Nudge" = "nudge",
+                       "Stack" = "stack")
       )
-    })
-  })
-  # _ Make sure position chooser always update ====
-  outputOptions(output, "position_sub_options", suspendWhenHidden = FALSE)
 
-  updateSelectizeInput(
-    session, 'position', server = TRUE,
-    choices = list("Identity" = "identity",
-                   "Jitter" = "jitter",
-                   "Dodge" = "dodge",
-                   "Jitter-Dodge" = "jitterdodge",
-                   "Nudge" = "nudge",
-                   "Stack" = "stack")
-  )
+      position_code <- dedupe(reactive({
+        processed_position_code <- ''
+        if (isTruthy(input$position)) {
+          # Process arguments
+          args <- process_position_args(input$position, input, base_data)
+          subargs <- process_position_args(position_sub(), input, base_data)
 
-  position_code <- dedupe(reactive({
-    processed_position_code <- ''
-    if (isTruthy(input$position)) {
-      # Process arguments
-      args <- process_position_args(input$position, input, base_data)
-      subargs <- process_position_args(position_sub(), input, base_data)
+          args <- paste(c(switch(isTruthy(args), args), switch(isTruthy(subargs), subargs)), collapse = ", ")
 
-      args <- paste(c(switch(isTruthy(args), args), switch(isTruthy(subargs), subargs)), collapse = ", ")
+          if ((position() != default_position) || isTruthy(args)) {
+            processed_position_code <- paste0("position = position_", position(), "(")
+            processed_position_code <- paste0(processed_position_code, args)
+            processed_position_code <- paste0(processed_position_code, ")")
+          }
+        }
 
-      if ((position() != default_position) || isTruthy(args)) {
-        processed_position_code <- paste0("position = position_", position(), "(")
-        processed_position_code <- paste0(processed_position_code, args)
-        processed_position_code <- paste0(processed_position_code, ")")
-      }
+        return(processed_position_code)
+      }))
+
+      return(position_code)
     }
-
-    return(processed_position_code)
-  }))
-
-  return(position_code)
+  )
 }
 
 # Option inputs  ----
