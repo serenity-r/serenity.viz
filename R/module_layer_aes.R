@@ -44,6 +44,7 @@ layerAesUI <- function(id, aesthetic = NULL) {
 #' @param computed_vars Reactive value of stat computed variables
 #' @param aesthetics Reactive value of aesthetics (combines layer and stat aesthetics)
 #' @param aesUpdateDependency Trigger update on layer change
+#' @param post_aesthetics_render_update JS->R reactive to signal post-aesthetic render update (tracks state in UI)
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
@@ -57,7 +58,8 @@ layerAesUI <- function(id, aesthetic = NULL) {
 #' @export
 layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, default_geom_aes,
                            default_stat_aes, required, dataset, computed_vars,
-                           aesthetics, aesUpdateDependency = reactive({ NULL })) {
+                           aesthetics, aesUpdateDependency = reactive({ NULL }),
+                           post_aesthetics_render_update) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -153,9 +155,9 @@ layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, 
         shinyjs::toggleState(id = "stage", condition = !input$edit_value)
       }, ignoreInit = TRUE)
 
-      createStageStateChangeEvent("start", mapping)
-      createStageStateChangeEvent("after_stat", mapping)
-      createStageStateChangeEvent("after_scale", mapping)
+      createStageStateChangeEvent("start", mapping, post_aesthetics_render_update)
+      createStageStateChangeEvent("after_stat", mapping, post_aesthetics_render_update)
+      createStageStateChangeEvent("after_scale", mapping, post_aesthetics_render_update)
 
       # _ Aesthetic to code ====
       aes_code <- reactive({
@@ -186,22 +188,27 @@ layerAesServer <- function(id, geom, aesthetic, base_layer_stages, inherit_aes, 
 #' @param session Session
 #'
 #' @return observeEvent
-createStageStateChangeEvent <- function(stage = "start", mapping, session = getDefaultReactiveDomain()) {
+createStageStateChangeEvent <- function(stage = "start", mapping, post_aesthetics_render_update, session = getDefaultReactiveDomain()) {
   return(eval(rlang::expr(
     observeEvent(c(
       mapping$stages[[!!stage]]$mapping(),
-      mapping$stages[[!!stage]]$custom_mapping()
+      mapping$stages[[!!stage]]$custom_mapping(),
+      post_aesthetics_render_update()
     ), {
-      shinyjs::toggleClass(
-        class = "set",
-        condition = isTruthy(
-          switch(as.character(!mapping$stages[[!!stage]]$custom_toggle()),
-                 "TRUE" = mapping$stages[[!!stage]]$mapping(),
-                 "FALSE" = mapping$stages[[!!stage]]$custom_mapping())
-        ),
-        selector = paste(paste0("#", session$ns("stage")), ".btn-group-toggle:nth-child(",
-                         switch(!!stage, "start" = 1, "after_stat" = 2, "after_scale" = 3),
-                         ")"))
+      selector = paste(paste0("#", session$ns("stage")), ".btn-group-toggle:nth-child(",
+                       switch(!!stage, "start" = 1, "after_stat" = 2, "after_scale" = 3),
+                       ")")
+      condition = isTruthy(
+        switch(as.character(!mapping$stages[[!!stage]]$custom_toggle()),
+               "TRUE" = mapping$stages[[!!stage]]$mapping(),
+               "FALSE" = mapping$stages[[!!stage]]$custom_mapping())
+      )
+      # Not sure why, but shinyjs::toggleClass(class = "set", condition = condition, selector = selector) does not work here
+      if (condition) {
+        shinyjs::js$addClass("set", selector)
+      } else {
+        shinyjs::js$removeClass("set", selector)
+      }
     }, ignoreNULL = FALSE)
   )))
 }

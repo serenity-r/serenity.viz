@@ -16,7 +16,8 @@ layerAesServer(
   dataset,
   computed_vars,
   aesthetics,
-  aesUpdateDependency = reactive({     NULL })
+  aesUpdateDependency = reactive({     NULL }),
+  post_aesthetics_render_update
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ layerAesServer(
 \item{aesthetics}{Reactive value of aesthetics (combines layer and stat aesthetics)}
 
 \item{aesUpdateDependency}{Trigger update on layer change}
+
+\item{post_aesthetics_render_update}{JS->R reactive to signal post-aesthetic render update (tracks state in UI)}
 }
 \value{
 List containing layer aesthetic module state.

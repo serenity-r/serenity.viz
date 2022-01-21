@@ -32,6 +32,7 @@ layerAestheticsUI <- function(id, name) {
 #' @param dataset Dataset
 #' @param inherit_aes Reactive: Is this aesthetic inheritable?
 #' @param layer_stat Reactive value of currently selected layer stat
+#' @param post_aesthetics_render_update JS->R reactive to signal post-aesthetic render update (tracks state in UI)
 #'
 #' @importFrom magrittr %>%
 #' @import shiny ggplot2
@@ -45,7 +46,7 @@ layerAestheticsUI <- function(id, name) {
 #' @export
 layerAestheticsServer <- function(id, layer_id, geom, selected_layer,
                                   base_layer_aesthetics, dataset, inherit_aes,
-                                  layer_stat) {
+                                  layer_stat, post_aesthetics_render_update) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -54,7 +55,7 @@ layerAestheticsServer <- function(id, layer_id, geom, selected_layer,
       geom_aesthetics <- gg_aesthetics[[geom]]
       geom_required_aesthetics <- (stringr::str_split(geom_proto$geom$required_aes, "[|]", simplify=TRUE) %T||% NULL)[,1]
       if (length(geom_required_aesthetics) == 0) {
-        geom_required_aesthetics <- c("x", "y", "group")
+        geom_required_aesthetics <- c("x", "y")
       }
 
       stat_aesthetics <- reactive({
@@ -157,7 +158,8 @@ layerAestheticsServer <- function(id, layer_id, geom, selected_layer,
             dataset = dataset,
             computed_vars = reactive({ stat_computed_vars[[layer_stat()]] }),
             aesthetics = aesthetics,
-            aesUpdateDependency = triggerAesUpdate$depend
+            aesUpdateDependency = triggerAesUpdate$depend,
+            post_aesthetics_render_update = post_aesthetics_render_update
           )
         })
 

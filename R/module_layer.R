@@ -132,6 +132,7 @@ layerChoiceUI <- function(plot_id) {
 #' @param selected_layer Reactive value of currently selected layer
 #' @param base_layer_aesthetics  Need base layer aesthetic values to check for inheritance
 #' @param dataset Dataset
+#' @param post_aesthetics_render_update JS->R reactive to signal post-aesthetic render update (tracks state in UI)
 #' @param ggbase  All your base are belong to us...
 #'
 #' @importFrom magrittr %>%
@@ -143,7 +144,8 @@ layerChoiceUI <- function(plot_id) {
 #'   \item{stat}{Reactive expression of currently selected stat (string)}
 #'   \item{aesthetics}{Reactive expression of layer aesthetics (vector of strings)}
 #' }
-layerServer <- function(id, selected_layer, base_layer_aesthetics, dataset, ggbase = NULL) {
+layerServer <- function(id, selected_layer, base_layer_aesthetics, dataset,
+                        post_aesthetics_render_update, ggbase = NULL) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -225,7 +227,8 @@ layerServer <- function(id, selected_layer, base_layer_aesthetics, dataset, ggba
                                                 base_layer_aesthetics,
                                                 dataset,
                                                 inherit.aes,
-                                                reactive({ input$stat %||% default_stat }))
+                                                reactive({ input$stat %||% default_stat }),
+                                                post_aesthetics_render_update)
 
       # Could be conditionalPanel, but shinyWidget switch wasn't rendering correctly
       output$params <- renderUI({

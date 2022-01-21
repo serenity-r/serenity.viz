@@ -7,6 +7,7 @@
 createStageStateChangeEvent(
   stage = "start",
   mapping,
+  post_aesthetics_render_update,
   session = getDefaultReactiveDomain()
 )
 }

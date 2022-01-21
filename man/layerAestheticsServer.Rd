@@ -12,7 +12,8 @@ layerAestheticsServer(
   base_layer_aesthetics,
   dataset,
   inherit_aes,
-  layer_stat
+  layer_stat,
+  post_aesthetics_render_update
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ layerAestheticsServer(
 \item{inherit_aes}{Reactive: Is this aesthetic inheritable?}
 
 \item{layer_stat}{Reactive value of currently selected layer stat}
+
+\item{post_aesthetics_render_update}{JS->R reactive to signal post-aesthetic render update (tracks state in UI)}
 }
 \value{
 List containing layer aesthetics module state.

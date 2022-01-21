@@ -4,7 +4,14 @@
 \alias{layerServer}
 \title{Server for layer module}
 \usage{
-layerServer(id, selected_layer, base_layer_aesthetics, dataset, ggbase = NULL)
+layerServer(
+  id,
+  selected_layer,
+  base_layer_aesthetics,
+  dataset,
+  post_aesthetics_render_update,
+  ggbase = NULL
+)
 }
 \arguments{
 \item{id}{ID of layer module}
@@ -14,6 +21,8 @@ layerServer(id, selected_layer, base_layer_aesthetics, dataset, ggbase = NULL)
 \item{base_layer_aesthetics}{Need base layer aesthetic values to check for inheritance}
 
 \item{dataset}{Dataset}
+
+\item{post_aesthetics_render_update}{JS->R reactive to signal post-aesthetic render update (tracks state in UI)}
 
 \item{ggbase}{All your base are belong to us...}
 }

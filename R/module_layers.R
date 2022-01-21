@@ -74,6 +74,7 @@ layersServer <- function(id, dataset) {
 
       output$`widget-layers-body` <- renderUI({
         tagList(
+          actionButton(session$ns("post_aesthetics_render_update"), "", class = "hidden"),
           div(
             class = "layers-wrapper",
             div(
@@ -241,6 +242,7 @@ layersServer <- function(id, dataset) {
                                             selected_layer,
                                             get_base_layer_aesthetics(),
                                             dataset = dataset,
+                                            post_aesthetics_render_update = reactive({ input$post_aesthetics_render_update }),
                                             ggbase = switch(as.character(. != "geom-blank-ds-1"),
                                                             "TRUE" = layer_modules[["geom-blank-ds-1"]]$code,
                                                             "FALSE" = reactive({ NULL }))
